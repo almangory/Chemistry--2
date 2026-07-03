@@ -387,11 +387,15 @@ const experiments: Experiment[] = [
 interface VirtualLabProps {
   selectedExperimentId?: string | null;
   setSelectedExperimentId?: (id: string | null) => void;
+  completedLabs?: string[];
+  onLabComplete?: (labId: string) => void;
 }
 
 export const VirtualLab: React.FC<VirtualLabProps> = ({
   selectedExperimentId,
-  setSelectedExperimentId
+  setSelectedExperimentId,
+  completedLabs = [],
+  onLabComplete
 }) => {
   const [selectedUnitFilter, setSelectedUnitFilter] = useState<string>("all");
   const [selectedExp, setSelectedExp] = useState<Experiment>(experiments[3]); // Default to alkali reaction
@@ -447,6 +451,9 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
     } else {
       setIsCompleted(true);
       setChamberStatus("اكتمل التفاعل بنجاح!");
+      if (onLabComplete) {
+        onLabComplete(selectedExp.id);
+      }
     }
   };
 

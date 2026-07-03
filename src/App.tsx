@@ -231,6 +231,14 @@ export default function App() {
     }
   };
 
+  const handleLabComplete = (labId: string) => {
+    if (!completedLabs.includes(labId)) {
+      const updated = [...completedLabs, labId];
+      setCompletedLabs(updated);
+      localStorage.setItem("sd_chem_labs", JSON.stringify(updated));
+    }
+  };
+
   const menuItems = [
     { id: "dashboard", label: "الرئيسة والمؤشرات", icon: Award },
     { id: "syllabus", label: "قسم المنهج والدروس", icon: BookOpen },
@@ -442,6 +450,8 @@ export default function App() {
                 <VirtualLab
                   selectedExperimentId={selectedExperimentId}
                   setSelectedExperimentId={setSelectedExperimentId}
+                  completedLabs={completedLabs}
+                  onLabComplete={handleLabComplete}
                 />
               )}
               {activeTab === "glossary" && <GlossaryView />}

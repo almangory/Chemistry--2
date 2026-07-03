@@ -18,8 +18,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   activeTabSetter,
   onNavigateToLesson
 }) => {
-  const totalLessonsCount = 20; // estimate of total lessons across 6 units
-  const totalLabsCount = 4;
+  const totalLessonsCount = 21; // Exactly 21 lessons across 6 units
+  const totalLabsCount = 21;    // Exactly 21 matching interactive virtual lab experiments
   const totalUnitsCount = 6;
 
   // Calculate percentage of curriculum read
