@@ -1,0 +1,185 @@
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Cairo", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Amiri", "Playfair Display", Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+/* Custom scrollbar styling for high-polish editorial theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #FDFCFB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #E5E2DE;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #BDC3C7;
+}
+
+/* Custom utilities for interactive animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+/* ==========================================
+   وضع القراءة الليلي (Premium Dark Mode)
+   ========================================== */
+.dark {
+  color-scheme: dark;
+}
+
+/* Global transitions and overrides */
+.dark body,
+.dark .bg-\[\#FDFCFB\] {
+  background-color: #121214 !important;
+  color: #E2E8F0 !important;
+}
+
+/* Card-level backgrounds */
+.dark .bg-white {
+  background-color: #1A1A1E !important;
+  border-color: #2D2D34 !important;
+  color: #F1F5F9 !important;
+}
+
+.dark .bg-\[\#F9F8F6\] {
+  background-color: #161619 !important;
+  border-color: #2D2D34 !important;
+  color: #E2E8F0 !important;
+}
+
+/* Secondary alerts, boxes, and highlights */
+.dark .bg-slate-50,
+.dark .bg-amber-50\/55,
+.dark .bg-amber-50,
+.dark .bg-amber-50\/50,
+.dark .bg-emerald-50,
+.dark .bg-orange-50 {
+  background-color: #1E293B !important;
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+/* Borders mapping */
+.dark .border-\[\#E5E2DE\] {
+  border-color: #2D2D34 !important;
+}
+
+.dark .border-l-\[\#E5E2DE\],
+.dark .border-r-\[\#E5E2DE\],
+.dark .border-b-\[\#E5E2DE\],
+.dark .border-t-\[\#E5E2DE\] {
+  border-color: #2D2D34 !important;
+}
+
+/* Text elements mapping */
+.dark .text-\[\#2C3E50\] {
+  color: #F1F5F9 !important;
+}
+
+.dark .text-\[\#1A1A1A\] {
+  color: #E2E8F0 !important;
+}
+
+.dark .text-\[\#1E1E1E\] {
+  color: #E2E8F0 !important;
+}
+
+.dark .text-\[\#7F8C8D\],
+.dark .text-\[\#95A5A6\] {
+  color: #94A3B8 !important;
+}
+
+/* Selection and interactive fields */
+.dark select,
+.dark input,
+.dark textarea {
+  background-color: #161619 !important;
+  color: #F1F5F9 !important;
+  border-color: #2D2D34 !important;
+}
+
+.dark select option {
+  background-color: #1A1A1E !important;
+  color: #F1F5F9 !important;
+}
+
+/* Header, sidebar elements */
+.dark header {
+  background-color: #1A1A1E !important;
+  border-color: #2D2D34 !important;
+}
+
+.dark aside {
+  background-color: #161619 !important;
+  border-color: #2D2D34 !important;
+}
+
+.dark aside button:hover {
+  background-color: #1E1E24 !important;
+}
+
+.dark aside button.bg-white {
+  background-color: #1E1E24 !important;
+  border-color: #2D2D34 !important;
+  color: #F1F5F9 !important;
+}
+
+/* Interactive hover elements in lists */
+.dark .hover\:bg-\[\#F9F8F6\]:hover,
+.dark .hover\:bg-\[\#E5E2DE\]\/30:hover {
+  background-color: #1E1E24 !important;
+}
+
+.dark .bg-slate-900 {
+  background-color: #0A0A0C !important;
+}
+
+.dark .text-slate-400 {
+  color: #94A3B8 !important;
+}
+
+/* SVG animations and diagrams */
+.dark svg text {
+  fill: #F1F5F9 !important;
+}
+
+.dark .text-emerald-800 {
+  color: #34D399 !important;
+}
+
+.dark .text-red-800 {
+  color: #F87171 !important;
+}
+
+/* Scrollbar dark mode adjustments */
+.dark ::-webkit-scrollbar-track {
+  background: #121214 !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #2D2D34 !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #4E4E5A !important;
+}
