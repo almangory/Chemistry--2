@@ -142,21 +142,37 @@ const experiments: Experiment[] = [
   },
   {
     id: "u3_l2",
-    title: "قواعد التسمية وتصنيف سلاسل الكربون",
+    title: "تطبيق قواعد التسمية المنهجية (IUPAC) وبناء متفرعات الكربون",
     unit: "الوحدة الثالثة: الكيمياء العضوية",
     unitId: "u3",
     dangerLevel: "منخفض",
     apparatus: ["مجموعات نمذجة الجزيئات ثلاثية الأبعاد", "شاشة الكاميرا الكيميائية الذكية"],
     chemicals: ["نماذج ذرات الكربون سوداء", "نماذج ذرات الهيدروجين بيضاء", "روابط تساهمية مرنة"],
-    equation: "صيغة البنتان العادي CH3-(CH2)3-CH3 مقابل صيغة البنتان الحلقي C5H10",
+    equation: "تطبيق التسمية: أطول سلسلة ⟶ ترقيم من الطرف الأقرب للتفرع ⟶ 2-ميثيل بنتان",
     steps: [
-      { text: "قم ببناء نموذج لسلسلة كربون مستمرة من خمس ذرات كربون مشبعة بالهيدروجين.", chemicalChange: "تكوين جزيء البنتان العادي مفتوح السلسلة ذي الصيغة العامة CnH2n+2.", animationState: "build_pentane" },
-      { text: "الآن، اضمم السلسلة المستمرة لتغلق فوهتها مكوناً شكلاً خماسياً حلقياً.", chemicalChange: "تكون جزيء البنتان الحلقي المشبع ذي الصيغة CnH2n (فقد ذرتي هيدروجين لإتمام الحلقة).", animationState: "build_cyclopentane" },
-      { text: "أدخل فرعاً جانبياً (مجموعة ميثيل -CH3) على ذرة الكربون رقم 2 في جزيء البنتان المفتوح.", chemicalChange: "تحول الجزيء كيميائياً لأيزومر جديد يسمى (2-ميثيل بيوتان) حسب قواعد الأيوباك IUPAC.", animationState: "iupac_naming" }
+      { text: "قم ببناء سلسلة كربون رئيسية مستمرة مكونة من 5 ذرات كربون واعتبرها السلسلة الأم.", chemicalChange: "تحديد السلسلة الأم وهي البنتان (Pentane) لاحتوائها على 5 ذرات كربون.", animationState: "build_pentane" },
+      { text: "أضف تفرعاً ألكيلياً (مجموعة ميثيل -CH3) على ذرة الكربون رقم 2 بدءاً بالترقيم من الطرف الأيمن الأقرب.", chemicalChange: "تطبيق قاعدة الترقيم من الطرف الذي يعطي المتفرع أصغر رقم (الرقم 2 وليس 4).", animationState: "iupac_naming" },
+      { text: "أضف مجموعة ميثيل أخرى على ذرة الكربون رقم 4 ولاحظ استخدام السابقة (ثنائي).", chemicalChange: "تطبيق قاعدة تكرار المتفرع: تسمية المركب 2,4-ثنائي ميثيل بنتان وفق أمثلة كتاب الوزارة.", animationState: "iupac_di_methyl" }
     ]
   },
   {
     id: "u3_l3",
+    title: "تصنيف الهيدروكربونات ومقارنة السلاسل المفتوحة والمغلقة",
+    unit: "الوحدة الثالثة: الكيمياء العضوية",
+    unitId: "u3",
+    dangerLevel: "منخفض",
+    apparatus: ["نماذج جزيئية تفاعلية", "كؤوس مقارنة للمركبات المتقابلة"],
+    chemicals: ["غاز الإيثان C2H6", "غاز الإيثين C2H4", "غاز الإيثاين C2H2"],
+    equation: "مركبات متقابلة تتساوى في ذرات الكربون (C2) وتختلف في نوع الروابط ودرجة الإشباع",
+    steps: [
+      { text: "افحص جزيئات الإيثان والإيثين والإيثاين؛ كمركبات متقابلة لتساويها في ذرتي كربون.", chemicalChange: "فحص مفهوم المركبات المتقابلة الوارد في كتاب كيمياء الثاني ثانوي ص 50.", animationState: "examine_homologous" },
+      { text: "افحص الرابطة التساهمية الأحادية بين ذرتي كربون الإيثان (مشبع وخامل نسبياً).", chemicalChange: "الرابطة سيجما القوية يصعب كسرها في الألكانات المشبعة.", animationState: "examine_single_bond" },
+      { text: "افحص الرابطة الثنائية في الإيثين (رابطة سيجما + رابطة باي ضعيفة سهلة الكسر).", chemicalChange: "وجود رابطة باي يمنح الألكينات نشاطاً كيميائياً فائقاً وقابلية لتفاعلات الإضافة.", animationState: "examine_double_bond" },
+      { text: "اغلق سلسلة من 3 ذرات كربون لتكوين البروبان الحلقي المشبع.", chemicalChange: "التحول من سلسلة مفتوحة إلى سلسلة مغلقة حلقية C3H6 بزاوية 60 درجة متوترة.", animationState: "build_cyclopropane" }
+    ]
+  },
+  {
+    id: "u3_l4",
     title: "تحضير غاز الميثان معملياً بالتقطير الجاف",
     unit: "الوحدة الثالثة: الكيمياء العضوية",
     unitId: "u3",
@@ -172,8 +188,8 @@ const experiments: Experiment[] = [
     ]
   },
   {
-    id: "u3_l4",
-    title: "اختبار ماء البروم الأحمر للكشف عن عدم التشبع",
+    id: "u3_l5",
+    title: "اختبار ماء البروم الأحمر للكشف عن عدم التشبع في الإيثين",
     unit: "الوحدة الثالثة: الكيمياء العضوية",
     unitId: "u3",
     dangerLevel: "متوسط",
@@ -188,8 +204,8 @@ const experiments: Experiment[] = [
     ]
   },
   {
-    id: "u3_l5",
-    title: "تحضير غاز الإيثاين بتنقيط الماء على الكاربيد",
+    id: "u3_l6",
+    title: "تحضير غاز الإيثاين بتنقيط الماء على كربيد الكالسيوم",
     unit: "الوحدة الثالثة: الكيمياء العضوية",
     unitId: "u3",
     dangerLevel: "مرتفع",
@@ -204,8 +220,8 @@ const experiments: Experiment[] = [
     ]
   },
   {
-    id: "u3_l6",
-    title: "ثبات رنين البنزين ومقاومته للأكسدة",
+    id: "u3_l7",
+    title: "ثبات رنين البنزين ومقارنة شد الرابطة للبروبان الحلقي",
     unit: "الوحدة الثالثة: الكيمياء العضوية",
     unitId: "u3",
     dangerLevel: "متوسط",
@@ -219,18 +235,19 @@ const experiments: Experiment[] = [
     ]
   },
   {
-    id: "u3_l7",
-    title: "التمييز بين أيزوميرات صيغة الإيثانول والإيثر",
+    id: "u3_l8",
+    title: "التماكب السلسلي: متماكبات C5H12 والتمييز بين مركبي C3H6",
     unit: "الوحدة الثالثة: الكيمياء العضوية",
     unitId: "u3",
     dangerLevel: "متوسط",
-    apparatus: ["كأسان زجاجيان دقيقان", "ملقط لقط الصوديوم", "ورق تجفيف"],
-    chemicals: ["كحول إيثيلي سائل C2H5OH", "إيثر ثنائي الميثيل (مسال) CH3OCH3", "قطعة صوديوم Na بحجم حبة العدس"],
-    equation: "2C2H5OH + 2Na ⟶ 2C2H5ONa + H2↑ (غاز هيدروجين يشتعل بفرقعة) vs dimethyl ether + Na ⟶ No reaction",
+    apparatus: ["أنبوبتا اختبار", "حامل أنابيب", "قطارة دقيقة", "نماذج كربون وهيدروجين"],
+    chemicals: ["البروبين C3H6 (ألكين غير مشبع)", "البروبان الحلقي C3H6 (ألكان حلقي مشبع)", "ماء البروم الأحمر Br2/H2O"],
+    equation: "CH2=CH-CH3 + Br2 ⟶ CH2Br-CHBr-CH3 (يزول اللون) vs البروبان الحلقي + Br2 ⟶ لا تفاعل في الظلام (يثبت اللون)",
     steps: [
-      { text: "ضع الكحول الإيثيلي في الكأس الأول وإيثر ثنائي الميثيل المسال في الكأس الثاني المقفل.", chemicalChange: "تحضير الأيزوميرين اللذين يشتركان في الصيغة الجزيئية C2H6O.", animationState: "prep_isomers" },
-      { text: "باستخدام الملقط، ألقِ قطعة الصوديوم الصغيرة الجافة في كأس الكحول الإيثيلي.", chemicalChange: "يتفاعل الكحول فوراً مع الصوديوم لتصاعد فقاعات غاز الهيدروجين بوضوح لوجود مجموعة الهيدروكسيل القطبية النشطة.", animationState: "sodium_ethanol" },
-      { text: "ألقِ قطعة صوديوم مماثلة في كأس الإيثر ثنائي الميثيل.", chemicalChange: "لا يحدث أي تفاعل إطلاقاً، لعدم وجود هيدروجين حمضي متصل بأكسجين، مما يؤكد اختلاف التركيب والخواص الكيميائية للأيزوميرات.", animationState: "sodium_ether" }
+      { text: "افحص الهيكل البنائي لمتماكبات البنتان الثلاثة: البنتان العادي، 2-ميثيل بيوتان، و2,2-ثنائي ميثيل بروبان.", chemicalChange: "توضيح التماكب السلسلي: نفس الصيغة الجزيئية C5H12 واختلاف هيكل السلسلة مستقيمة ومتفرعة.", animationState: "pentane_isomers_view" },
+      { text: "جهز أنبوبتين تحتويان على متماكبين للصيغة C3H6 (أنبوبة البروبين وأنبوبة البروبان الحلقي) وفق تمرين ص 68 بكتاب الوزارة.", chemicalChange: "مركبان لهما نفس الصيغة الجزيئية C3H6 أحدهما مفتوح السلسلة ذو رابطة ثنائية والآخر حلقي مشبع.", animationState: "prep_c3h6_tubes" },
+      { text: "أضف قطرات من ماء البروم الأحمر إلى أنبوبة البروبين ورج جيداً.", chemicalChange: "يتفاعل البروبين فوراً بالإضافة كاسراً الرابطة الثنائية ويزول اللون الأحمر لماء البروم كلياً.", animationState: "bromine_propene_fade" },
+      { text: "أضف قطرات من ماء البروم الأحمر إلى أنبوبة البروبان الحلقي ورج في الظلام.", chemicalChange: "البروبان الحلقي ألكان مشبع فلا يتفاعل مع ماء البروم في الظلام ويبقى اللون الأحمر ثابتاً، مما يثبت التمييز العملي بينهما.", animationState: "cyclopropane_bromine_stable" }
     ]
   },
 
@@ -540,15 +557,21 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
           setFizzleType("build_pentane");
         }
         if (stepIdx === 1) {
-          setBeakerWaterColor("bg-amber-600/20");
-          setFizzleType("build_cyclopentane");
-        }
-        if (stepIdx === 2) {
           setBeakerWaterColor("bg-orange-600/20");
           setFizzleType("iupac_naming");
         }
+        if (stepIdx === 2) {
+          setBeakerWaterColor("bg-amber-600/20");
+          setFizzleType("iupac_di_methyl");
+        }
         break;
       case "u3_l3":
+        if (stepIdx === 0) setBeakerWaterColor("bg-indigo-50/20");
+        if (stepIdx === 1) setFizzleType("single_bond");
+        if (stepIdx === 2) setFizzleType("double_bond");
+        if (stepIdx === 3) setFizzleType("cyclopropane");
+        break;
+      case "u3_l4":
         if (stepIdx === 1) setBeakerWaterColor("bg-indigo-50/20");
         if (stepIdx === 2) {
           setBubbleActive(true);
@@ -559,7 +582,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
           setBeakerWaterColor("bg-sky-200/40");
         }
         break;
-      case "u3_l4":
+      case "u3_l5":
         if (stepIdx === 1) setBeakerWaterColor("bg-amber-600/30");
         if (stepIdx === 2) setFizzleType("adding_drops");
         if (stepIdx === 3) {
@@ -567,7 +590,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
           setFizzleType("finished");
         }
         break;
-      case "u3_l5":
+      case "u3_l6":
         if (stepIdx === 1) {
           setBeakerWaterColor("bg-emerald-100/30");
           setBubbleActive(true);
@@ -577,7 +600,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
           setFizzleType("flame_heavy_smoke");
         }
         break;
-      case "u3_l6":
+      case "u3_l7":
         if (stepIdx === 1) {
           setBeakerWaterColor("bg-purple-600/50");
         }
@@ -586,14 +609,16 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
           setFizzleType("no_reaction");
         }
         break;
-      case "u3_l7":
-        if (stepIdx === 1) {
-          setBeakerWaterColor("bg-indigo-100/40");
-          setBubbleActive(true);
-        }
+      case "u3_l8":
+        if (stepIdx === 0) setBeakerWaterColor("bg-slate-100/20");
+        if (stepIdx === 1) setBeakerWaterColor("bg-amber-600/30");
         if (stepIdx === 2) {
-          setBeakerWaterColor("bg-slate-100/20");
-          setBubbleActive(false);
+          setBeakerWaterColor("bg-blue-50/10");
+          setFizzleType("propene_fade");
+        }
+        if (stepIdx === 3) {
+          setBeakerWaterColor("bg-amber-600/60");
+          setFizzleType("cyclopropane_stable");
         }
         break;
 
@@ -830,102 +855,303 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
             </motion.div>
           </div>
         );
-      case "u3_l2": // Carbon chains & IUPAC
+      case "u3_l2": // IUPAC branching & naming
         return (
           <div className="flex flex-col items-center justify-center gap-3 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تمثيل الجزيء العضوي ثلاثي الأبعاد</span>
-            {/* Draw Carbon Chain using pure CSS circles */}
+            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تطبيق قواعد IUPAC وبناء السلاسل المتفرعة</span>
             <div className="flex items-center justify-center h-28 w-full relative">
               {currentStep === 0 && (
-                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="flex items-center gap-1">
-                  {/* Pentane chain C-C-C-C-C */}
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <div key={n} className="flex items-center">
-                      <div className="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold shadow-sm">C</div>
-                      {n < 5 && <div className="w-3 h-1 bg-amber-500" />}
-                    </div>
-                  ))}
-                </motion.div>
-              )}
-              {currentStep === 1 && (
-                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 25, ease: "linear" }} className="w-24 h-24 border-2 border-dashed border-[#E67E22] rounded-full flex items-center justify-center relative">
-                  {/* Cyclopentane ring */}
-                  {[1, 2, 3, 4, 5].map((n, idx) => {
-                    const angle = (idx * 2 * Math.PI) / 5;
-                    const x = 32 * Math.cos(angle);
-                    const y = 32 * Math.sin(angle);
-                    return (
-                      <div
-                        key={n}
-                        style={{ transform: `translate(${x}px, ${y}px)` }}
-                        className="absolute w-6 h-6 rounded-full bg-slate-800 text-white flex items-center justify-center text-[9px] font-bold shadow-xs"
-                      >
-                        C
-                      </div>
-                    );
-                  })}
-                  <span className="text-[9px] text-[#E67E22] font-bold">بنتان حلقي</span>
-                </motion.div>
-              )}
-              {currentStep === 2 && (
-                <motion.div initial={{ y: 10 }} animate={{ y: 0 }} className="flex flex-col items-center">
-                  {/* 2-methylbutane branched */}
+                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="flex flex-col items-center">
                   <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4].map((n) => (
+                    {[1, 2, 3, 4, 5].map((n) => (
                       <div key={n} className="flex items-center">
-                        <div className="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold relative">
-                          C
-                          {/* methyl branch down at Carbon 2 */}
-                          {n === 2 && (
-                            <div className="absolute top-7 left-[3.5px] flex flex-col items-center">
-                              <div className="w-1 h-3 bg-amber-500" />
-                              <div className="w-6 h-6 rounded-full bg-[#E67E22] text-white flex items-center justify-center text-[8px] font-bold">CH₃</div>
-                            </div>
-                          )}
+                        <div className="flex flex-col items-center">
+                          <span className="text-[8px] text-indigo-600 font-bold mb-0.5">{n}</span>
+                          <div className="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">C</div>
                         </div>
-                        {n < 4 && <div className="w-3 h-1 bg-amber-500" />}
+                        {n < 5 && <div className="w-3 h-1 bg-amber-500 mt-2" />}
                       </div>
                     ))}
                   </div>
-                  <span className="text-[10px] text-[#2C3E50] font-bold mt-7">2-ميثيل بيوتان (أيزومر)</span>
+                  <span className="text-[10px] text-[#2C3E50] font-bold mt-2">سلسلة البنتان الأم (5 ذرات كربون)</span>
+                </motion.div>
+              )}
+              {currentStep === 1 && (
+                <motion.div initial={{ y: 5 }} animate={{ y: 0 }} className="flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <div key={n} className="flex items-center">
+                        <div className="flex flex-col items-center relative">
+                          <span className="text-[8px] text-indigo-600 font-bold mb-0.5">{n}</span>
+                          <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-[10px] font-bold shadow-xs ${n === 2 ? "bg-amber-600 ring-2 ring-amber-400" : "bg-slate-800"}`}>C</div>
+                          {n === 2 && (
+                            <div className="absolute top-10 flex flex-col items-center">
+                              <div className="w-1 h-2 bg-amber-500" />
+                              <div className="w-7 h-6 rounded bg-[#E67E22] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">CH₃</div>
+                            </div>
+                          )}
+                        </div>
+                        {n < 5 && <div className="w-3 h-1 bg-amber-500 mt-2" />}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-amber-700 font-bold mt-8">2-ميثيل بنتان (الترقيم من اليمين الأقرب للفرع)</span>
+                </motion.div>
+              )}
+              {currentStep === 2 && (
+                <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <div key={n} className="flex items-center">
+                        <div className="flex flex-col items-center relative">
+                          <span className="text-[8px] text-indigo-600 font-bold mb-0.5">{n}</span>
+                          <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-[10px] font-bold shadow-xs ${n === 2 || n === 4 ? "bg-amber-600 ring-2 ring-amber-400" : "bg-slate-800"}`}>C</div>
+                          {(n === 2 || n === 4) && (
+                            <div className="absolute top-10 flex flex-col items-center">
+                              <div className="w-1 h-2 bg-amber-500" />
+                              <div className="w-7 h-6 rounded bg-[#E67E22] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">CH₃</div>
+                            </div>
+                          )}
+                        </div>
+                        {n < 5 && <div className="w-3 h-1 bg-amber-500 mt-2" />}
+                      </div>
+                    ))}
+                  </div>
+                  <span className="text-[10px] text-amber-800 font-bold mt-8">2,4-ثنائي ميثيل بنتان (استخدام سابقة ثنائي)</span>
                 </motion.div>
               )}
             </div>
             <div className="text-center p-1.5 bg-amber-50 border border-amber-100 rounded w-full">
               <span className="text-[10px] text-[#2C3E50] font-bold block">
-                {currentStep === 0 ? "بنتان عادي مفتوح السلسلة (C₅H₁₂)" :
-                 currentStep === 1 ? "بنتان حلقي مغلق السلسلة (C₅H₁₀)" :
-                 "2-ميثيل بيوتان (أيزومر متفرع)"}
+                {currentStep === 0 ? "تحديد أطول سلسلة مستمرة = بنتان (5 ذرات كربون)" :
+                 currentStep === 1 ? "إضافة فرع ميثيل على الذرة رقم 2 والترقيم من الأقرب للفرع" :
+                 "إضافة فرع ثانٍ على الذرة 4 وتسميته 2,4-ثنائي ميثيل بنتان"}
               </span>
             </div>
           </div>
         );
-      case "u3_l4": // Bromine water test for unsaturation
+      case "u3_l3": // Classification & Homologous / Metqabila
+        return (
+          <div className="flex flex-col items-center justify-center gap-3 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
+            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">فحص أقسام الهيدروكربونات والمركبات المتقابلة</span>
+            <div className="flex items-center justify-center h-28 w-full">
+              {currentStep === 0 && (
+                <div className="flex items-center gap-2">
+                  <div className="flex flex-col items-center p-1.5 bg-blue-50 border border-blue-200 rounded text-center">
+                    <span className="text-[9px] font-bold text-blue-800">إيثان C₂H₆</span>
+                    <span className="text-[8px] text-slate-500">ألكان مشبع (أحادي)</span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-400">↔</span>
+                  <div className="flex flex-col items-center p-1.5 bg-amber-50 border border-amber-200 rounded text-center">
+                    <span className="text-[9px] font-bold text-amber-800">إيثين C₂H₄</span>
+                    <span className="text-[8px] text-slate-500">ألكين (رابطة ثنائية)</span>
+                  </div>
+                  <span className="text-xs font-bold text-slate-400">↔</span>
+                  <div className="flex flex-col items-center p-1.5 bg-purple-50 border border-purple-200 rounded text-center">
+                    <span className="text-[9px] font-bold text-purple-800">إيثاين C₂H₂</span>
+                    <span className="text-[8px] text-slate-500">ألكاين (رابطة ثلاثية)</span>
+                  </div>
+                </div>
+              )}
+              {currentStep === 1 && (
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
+                    <div className="w-6 h-1.5 bg-blue-500 rounded flex items-center justify-center"><span className="text-[7px] text-white font-bold">σ</span></div>
+                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
+                  </div>
+                  <span className="text-[10px] text-blue-700 font-bold mt-2">رابطة سيجما (σ) تساهمية أحادية قوية ومستقرة</span>
+                </div>
+              )}
+              {currentStep === 2 && (
+                <div className="flex flex-col items-center">
+                  <div className="flex items-center gap-1">
+                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
+                    <div className="flex flex-col gap-1">
+                      <div className="w-6 h-1 bg-blue-500 rounded" />
+                      <div className="w-6 h-1 bg-amber-500 rounded animate-pulse" />
+                    </div>
+                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
+                  </div>
+                  <span className="text-[10px] text-amber-700 font-bold mt-2">رابطة ثنائية (سيجما قوية + باي π ضعيفة سريعة الكسر)</span>
+                </div>
+              )}
+              {currentStep === 3 && (
+                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="w-20 h-20 border-2 border-dashed border-emerald-500 rounded-full flex items-center justify-center relative">
+                  {[0, 1, 2].map((idx) => {
+                    const angle = (idx * 2 * Math.PI) / 3 - Math.PI / 2;
+                    const x = 28 * Math.cos(angle);
+                    const y = 28 * Math.sin(angle);
+                    return (
+                      <div key={idx} style={{ transform: `translate(${x}px, ${y}px)` }} className="absolute w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[8px] font-bold">
+                        CH₂
+                      </div>
+                    );
+                  })}
+                  <span className="text-[8px] font-bold text-emerald-800">بروبان حلقي</span>
+                </motion.div>
+              )}
+            </div>
+            <div className="text-center p-1.5 bg-slate-50 border border-slate-200 rounded w-full">
+              <span className="text-[10px] text-[#2C3E50] font-bold block">
+                {currentStep === 0 ? "مركبات متقابلة: تتساوى في ذرات الكربون وتختلف في نوع الرابطة" :
+                 currentStep === 1 ? "الإيثان: ألكان مشبع برابطة سيجما قوية خاملة كيميائياً" :
+                 currentStep === 2 ? "الإيثين: ألكين غير مشبع يمتلك رابطة باي ضعيفة سهلة الكسر" :
+                 "البروبان الحلقي C₃H₆: هيدروكربون أليفاتي حلقي مشبع ذو زاوية 60° متوترة"}
+              </span>
+            </div>
+          </div>
+        );
+      case "u3_l4": // Methane dry distillation
+        return (
+          <div className="flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full relative overflow-hidden">
+            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تحضير غاز الميثان بالتقطير الجاف</span>
+            <div className="w-full flex items-center justify-around h-36 relative mt-1">
+              {/* Test Tube with CH3COONa + Soda Lime */}
+              <div className="flex flex-col items-center">
+                <span className="text-[8px] font-bold text-slate-500 mb-0.5">أنبوبة التفاعل</span>
+                <div className="w-8 h-24 border-2 border-slate-400 rounded-b-lg relative bg-slate-50 flex flex-col justify-end p-0.5 overflow-hidden">
+                  <div className="w-full h-10 bg-amber-100/80 rounded-b border-t border-amber-300 flex items-center justify-center text-[7px] text-amber-900 font-bold text-center leading-tight">
+                    خلات صوديوم + جير صودي
+                  </div>
+                  {currentStep >= 2 && (
+                    <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 0.8 }} className="absolute inset-0 bg-orange-400/20" />
+                  )}
+                </div>
+                {/* Burner Flame */}
+                {currentStep >= 2 && (
+                  <motion.div animate={{ scaleY: [1, 1.3, 1], scaleX: [1, 0.9, 1] }} transition={{ repeat: Infinity, duration: 0.4 }} className="text-sm mt-0.5">
+                    🔥
+                  </motion.div>
+                )}
+              </div>
+              {/* Delivery Tube */}
+              <div className="w-16 h-1 border-t-2 border-slate-400 relative">
+                {currentStep >= 2 && (
+                  <motion.div animate={{ x: [0, 50] }} transition={{ repeat: Infinity, duration: 1 }} className="w-2 h-1 bg-sky-400 rounded-full" />
+                )}
+              </div>
+              {/* Collection Jar inverted in Water Trough */}
+              <div className="flex flex-col items-center">
+                <span className="text-[8px] font-bold text-slate-500 mb-0.5">مخبار التجميع (إزاحة الماء)</span>
+                <div className="w-12 h-24 border-2 border-b-0 border-slate-400 rounded-t-lg relative bg-sky-100/50 flex flex-col justify-between items-center overflow-hidden">
+                  {/* Gas collecting at top */}
+                  <div className={`w-full transition-all duration-1000 flex items-center justify-center ${currentStep >= 2 ? "h-12 bg-sky-200/60" : "h-2 bg-transparent"}`}>
+                    {currentStep >= 2 && <span className="text-[8px] font-bold text-sky-800">CH₄ غاز</span>}
+                  </div>
+                  {/* Rising bubbles */}
+                  {currentStep === 2 && (
+                    <motion.div animate={{ y: [20, -10], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.7 }} className="text-xs">🫧</motion.div>
+                  )}
+                  {/* Water level */}
+                  <div className={`w-full bg-blue-300/60 transition-all duration-1000 ${currentStep >= 3 ? "h-6" : "h-14"}`} />
+                </div>
+                <div className="w-18 h-4 border-2 border-t-0 border-slate-400 rounded-b bg-blue-200/50 flex items-center justify-center">
+                  <span className="text-[7px] text-blue-800">حوض الماء</span>
+                </div>
+              </div>
+            </div>
+            <div className="text-center p-1 bg-sky-50 border border-sky-100 rounded w-full mt-1">
+              <span className="text-[9px] text-[#2C3E50] font-bold block">
+                {currentStep === 0 ? "خلط خلات الصوديوم اللامائية مع الجير الصودي (NaOH + CaO)" :
+                 currentStep === 1 ? "توصيل أنبوب التسليم بحوض الماء ومخبار التجميع المقلوب" :
+                 currentStep === 2 ? "تسخين الخليط وتصاعد فقاعات غاز الميثان بإزاحة الماء لأسفل" :
+                 "امتلاء المخبار بغاز الميثان واشتعاله بلهب أزرق باهت نظيف"}
+              </span>
+            </div>
+          </div>
+        );
+      case "u3_l5": // Bromine water test for unsaturation
         return (
           <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
             {/* Tube 1: Ethane */}
             <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">إيثان (مشبع)</span>
+              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">أنبوب 1: إيثان (مشبع)</span>
               <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
                 <div className={`absolute bottom-0 w-full transition-all duration-700 ${currentStep >= 1 ? "h-[60%] bg-orange-600/75" : "h-[10%] bg-blue-100"}`} />
               </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">{currentStep >= 1 ? "بقاء اللون الأحمر 🔴" : "قبل الكشف"}</span>
+              <span className="text-[9px] text-[#7F8C8D] mt-1">{currentStep >= 1 ? "بقاء اللون الأحمر 🔴 (لا تفاعل)" : "غاز إيثان"}</span>
             </div>
             {/* Tube 2: Ethene */}
             <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">إيثين (غير مشبع)</span>
+              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">أنبوب 2: إيثين (غير مشبع)</span>
               <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
                 <div className={`absolute bottom-0 w-full transition-all duration-1000 ${
-                  currentStep === 3 ? "h-[60%] bg-blue-50/10 border-t border-blue-200" : currentStep >= 1 ? "h-[60%] bg-orange-600/75" : "h-[10%] bg-blue-100"
+                  currentStep >= 3 ? "h-[60%] bg-blue-50/10 border-t border-blue-200" : currentStep >= 2 ? "h-[60%] bg-orange-600/75" : "h-[10%] bg-blue-100"
                 }`} />
+                {currentStep === 3 && (
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute text-[8px] font-bold text-emerald-700 text-center bottom-8 px-1">
+                    1,2-ثنائي برومو إيثان عديم اللون
+                  </motion.div>
+                )}
               </div>
               <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep === 3 ? "زوال لون البروم ⚪" : currentStep >= 1 ? "تأثر بالبروم" : "قبل الكشف"}
+                {currentStep >= 3 ? "زوال لون البروم ⚪ (تفاعل إضافة)" : currentStep >= 2 ? "إضافة ماء البروم" : "غاز إيثين"}
               </span>
             </div>
           </div>
         );
-      case "u3_l6": // Benzene vs Hexene oxidation
+      case "u3_l6": // Ethyne from CaC2
+        return (
+          <div className="flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full relative overflow-hidden">
+            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تحضير غاز الإيثاين بتنقيط الماء على كاربيد الكالسيوم</span>
+            <div className="w-full flex items-center justify-around h-36 relative mt-1">
+              {/* Conical flask with CaC2 and dropping funnel */}
+              <div className="flex flex-col items-center">
+                {/* Dropping funnel */}
+                <div className="w-4 h-8 border border-slate-400 rounded-t bg-blue-100/60 relative flex flex-col items-center">
+                  {currentStep >= 1 && (
+                    <motion.div animate={{ y: [0, 10], opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 h-1 bg-blue-500 rounded-full" />
+                  )}
+                </div>
+                <div className="w-1 h-3 bg-slate-400" />
+                {/* Flask */}
+                <div className="w-14 h-16 border-2 border-slate-400 rounded-b-xl relative bg-slate-50 flex flex-col justify-end p-1 overflow-hidden">
+                  <div className="flex gap-1 justify-center mb-1">
+                    <div className="w-3 h-2 bg-slate-600 rounded-xs" />
+                    <div className="w-3 h-2 bg-slate-700 rounded-xs" />
+                  </div>
+                  {currentStep >= 1 && (
+                    <motion.div animate={{ y: [-2, -10], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.4 }} className="absolute text-xs bottom-3 text-center w-full">🫧</motion.div>
+                  )}
+                  <span className="text-[6px] text-slate-600 text-center font-bold">CaC₂ صلب</span>
+                </div>
+              </div>
+              {/* Wash bottle with acidified CuSO4 */}
+              <div className="flex flex-col items-center">
+                <span className="text-[7px] font-bold text-blue-700">غسيل بـ CuSO₄</span>
+                <div className="w-10 h-16 border-2 border-slate-400 rounded-b relative bg-blue-100 flex flex-col justify-end overflow-hidden">
+                  <div className="w-full h-8 bg-blue-500/40 flex items-center justify-center text-[6px] text-blue-900 font-bold text-center">
+                    تنقية من PH₃ و H₂S
+                  </div>
+                </div>
+              </div>
+              {/* Flame / Collector */}
+              <div className="flex flex-col items-center">
+                <span className="text-[8px] font-bold text-amber-700">احتراق الإيثاين</span>
+                <div className="w-10 h-16 border border-slate-300 rounded flex flex-col items-center justify-center bg-slate-50">
+                  {currentStep >= 3 ? (
+                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }} className="flex flex-col items-center">
+                      <span className="text-xl">🔥</span>
+                      <span className="text-[7px] text-red-600 font-bold">لهب مدخن 3000°C</span>
+                    </motion.div>
+                  ) : (
+                    <span className="text-[8px] text-slate-400">جمع الغاز</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="text-center p-1 bg-amber-50 border border-amber-100 rounded w-full mt-1">
+              <span className="text-[9px] text-[#2C3E50] font-bold block">
+                {currentStep === 0 ? "وضع قطع كاربيد الكالسيوم الصلبة CaC₂ في الدورق" :
+                 currentStep === 1 ? "تنقيط الماء وفوران شديد وتصاعد غاز الإيثاين C₂H₂" :
+                 currentStep === 2 ? "تمرير الغاز عبر محلول كبريتات النحاس لتنقيته من الشوائب" :
+                 "احتراق الإيثاين بلهب مدخن وفي الأكسجين بلهب الأكسي-أستلين الحارق"}
+              </span>
+            </div>
+          </div>
+        );
+      case "u3_l7": // Benzene resonance vs Hexene oxidation
         return (
           <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
             {/* Tube 1: Hexene */}
@@ -937,7 +1163,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
                 }`} />
               </div>
               <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep === 1 ? "محلول بنفسجي" : currentStep >= 2 ? "زوال البنفسجي 🟤" : "قبل الكاشف"}
+                {currentStep === 1 ? "محلول بنفسجي" : currentStep >= 2 ? "زوال البنفسجي 🟤 (تأكسد)" : "قبل الكاشف"}
               </span>
             </div>
             {/* Tube 2: Benzene */}
@@ -947,38 +1173,70 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
                 <div className={`absolute bottom-0 w-full transition-all duration-700 ${currentStep >= 1 ? "h-[60%] bg-purple-600/80" : "h-[10%] bg-blue-100"}`} />
               </div>
               <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep >= 1 ? "ثبات اللون البنفسجي 🟣" : "قبل الكاشف"}
+                {currentStep >= 1 ? "ثبات اللون البنفسجي 🟣 (مقاومة الرنين)" : "قبل الكاشف"}
               </span>
             </div>
           </div>
         );
-      case "u3_l7": // Ethanol vs Dimethyl ether
+      case "u3_l8": // Chain isomerism C5H12 & C3H6 differentiation
         return (
-          <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            {/* Cup 1: Ethanol */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">إيثانول (كحول)</span>
-              <div className="w-14 h-24 border-2 border-t-0 border-slate-400 rounded-b-lg relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className="absolute bottom-0 w-full h-[50%] bg-indigo-100/40" />
-                {currentStep >= 1 && (
-                  <>
-                    <motion.div animate={{ y: [-5, -35], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.8 }} className="absolute text-sm bottom-4 left-2">🫧</motion.div>
-                    <motion.div animate={{ y: [-5, -35], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.8, delay: 0.3 }} className="absolute text-sm bottom-4 right-2">🫧</motion.div>
-                  </>
-                )}
-              </div>
-              <span className="text-[9px] text-emerald-700 font-bold mt-1">
-                {currentStep >= 1 ? "تصاعد غاز H₂ 🔥" : "سائل الإيثانول"}
-              </span>
+          <div className="flex flex-col items-center justify-center gap-2 bg-white p-3 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
+            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">التماكب السلسلي والتمييز المخبري لمتماكبات C₃H₆</span>
+            <div className="flex items-center justify-center h-28 w-full">
+              {currentStep === 0 && (
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="text-[9px] font-bold text-indigo-700">متماكبات البنتان C₅H₁₂ الثلاثة:</span>
+                  <div className="flex items-center gap-2 text-center">
+                    <div className="p-1.5 bg-slate-100 rounded border border-slate-300 text-[8px]">
+                      <strong className="block text-slate-800">بنتان عادي</strong>
+                      <span>سلسلة مستقيمة (5 ذرات)</span>
+                    </div>
+                    <div className="p-1.5 bg-amber-50 rounded border border-amber-300 text-[8px]">
+                      <strong className="block text-amber-800">2-ميثيل بيوتان</strong>
+                      <span>سلسلة من 4 + تفرع ميثيل</span>
+                    </div>
+                    <div className="p-1.5 bg-purple-50 rounded border border-purple-300 text-[8px]">
+                      <strong className="block text-purple-800">2,2-ثنائي ميثيل بروبان</strong>
+                      <span>سلسلة من 3 + تفرعان</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+              {currentStep >= 1 && (
+                <div className="flex items-center justify-center gap-6">
+                  {/* Tube 1: Propene */}
+                  <div className="flex flex-col items-center">
+                    <span className="text-[8px] font-bold text-[#2C3E50] mb-0.5">البروبين (ألكين غير مشبع)</span>
+                    <div className="w-10 h-24 border-2 border-t-0 border-slate-400 rounded-b-lg relative flex items-end justify-center overflow-hidden bg-slate-50">
+                      <div className={`absolute bottom-0 w-full transition-all duration-700 ${
+                        currentStep >= 2 ? "h-[60%] bg-blue-50/10" : "h-[60%] bg-orange-600/75"
+                      }`} />
+                    </div>
+                    <span className="text-[8px] text-emerald-700 font-bold mt-1">
+                      {currentStep >= 2 ? "زوال لون البروم ⚪" : "أحمر برومي 🔴"}
+                    </span>
+                  </div>
+                  {/* Tube 2: Cyclopropane */}
+                  <div className="flex flex-col items-center">
+                    <span className="text-[8px] font-bold text-[#2C3E50] mb-0.5">بروبان حلقي (مشبع)</span>
+                    <div className="w-10 h-24 border-2 border-t-0 border-slate-400 rounded-b-lg relative flex items-end justify-center overflow-hidden bg-slate-50">
+                      <div className={`absolute bottom-0 w-full transition-all duration-700 ${
+                        currentStep >= 1 ? "h-[60%] bg-orange-600/75" : "h-[10%] bg-blue-100"
+                      }`} />
+                    </div>
+                    <span className="text-[8px] text-amber-800 font-bold mt-1">
+                      {currentStep >= 3 ? "بقاء اللون الأحمر 🔴 (في الظلام)" : currentStep >= 1 ? "إضافة البروم" : "بروبان حلقي"}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
-            {/* Cup 2: Ether */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">ثنائي الميثيل إيثر</span>
-              <div className="w-14 h-24 border-2 border-t-0 border-slate-400 rounded-b-lg relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className="absolute bottom-0 w-full h-[50%] bg-[#E5E2DE]/30" />
-              </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep >= 2 ? "لا يوجد تفاعل 🚫" : "سائل الإيثر"}
+            <div className="text-center p-1 bg-amber-50 border border-amber-100 rounded w-full">
+              <span className="text-[9px] text-[#2C3E50] font-bold block">
+                {currentStep === 0 ? "متماكبات البنتان C₅H₁₂ تتفق في الصيغة الجزيئية وتختلف في بنية السلسلة الكربونية" :
+                 currentStep === 1 ? "تجهيز متماكبي الصيغة C₃H₆: البروبين المفتوح والبروبان الحلقي المشبع" :
+                 currentStep === 2 ? "إضافة ماء البروم الأحمر: يزول لونه فوراً مع البروبين لتفاعل الإضافة بالرابطة الثنائية" :
+                 "يبقى لون ماء البروم ثابتاً مع البروبان الحلقي المشبع في الظلام، كدليل قاطع للتمييز بينهما"}
               </span>
             </div>
           </div>
@@ -1497,19 +1755,21 @@ export const getTheoryExplanation = (id: string): string => {
     case "u2_l2":
       return "كشف الجاف أو كشف اللهب هو اختبار كيميائي نوعي مميز، يعتمد على إثارة إلكترونات التكافؤ عند تسخين أملاح الفلزات؛ حيث تمتص طاقة حرارية لتنتقل لمستوى طاقة أعلى، وعند عودتها تطلق طاقة على شكل أطياف ضوئية ملونة مميزة لكل عنصر.";
     case "u3_l1":
-      return "قبل عام 1828، كان الاعتقاد السائد هو 'نظرية القوة الحيوية' لبرزيليوس والتي تدعي استحالة تحضير المركبات العضوية في المختبر. ولكن دحض الألماني فوهلر هذه النظرية بتخليق أول مركب عضوي (اليوريا) من مواد غير عضوية.";
+      return "قبل عام 1828، كان الاعتقاد السائد هو 'نظرية القوة الحيوية' لبرزيليوس والتي تدعي استحالة تحضير المركبات العضوية في المختبر إلا داخل أجسام الكائنات الحية. دحض الألماني فوهلر هذه النظرية بتخليق أول مركب عضوي (اليوريا) بتسخين سيانات الأمونيوم غير العضوية.";
     case "u3_l2":
-      return "المركبات الهيدروكربونية تصنف إلى سلاسل كربون مستمرة (مفتوحة)، حلقية (مغلقة)، أو متفرعة. التسمية النظامية IUPAC تحدد اسم المركب حسب أطول سلسلة كربون مستمرة مع ترقيم الذرات لإعطاء الفروع أقل أرقام ممكنة.";
+      return "تعتمد تسمية الهيدروكربونات حسب نظام IUPAC المنهجي على اختيار أطول سلسلة كربونية مستمرة كسلسلة أم، وترقيم ذرات الكربون من الطرف الأقرب لأول تفرع ألكيلي، واستخدام السوابق الدالة على التكرار (ثنائي، ثلاثي) مع الترتيب الأبجدي.";
     case "u3_l3":
-      return "الميثان CH₄ هو أبسط الألكانات الهيدروكربونية المشبعة. يتم تحضيره في المختبر بطريقة التقطير الجاف لملح خلات الصوديوم اللامائية مع الجير الصودي لمنع تآكل الزجاج وخفض درجة الانصهار.";
+      return "تصنف الهيدروكربونات إلى أليفاتية (مفتوحة السلسلة كالألكانات والألكينات والألكاينات، أو حلقية مشبعة كالبروبان الحلقي) وأروماتية. 'المركبات المتقابلة' هي التي تتساوى في عدد ذرات الكربون وتختلف في نوع الروابط ودرجة الإشباع كالإيثان والإيثين والإيثاين.";
     case "u3_l4":
-      return "يستخدم التفاعل مع ماء البروم الأحمر كوسيلة كيميائية مميزة وسريعة للتفرقة بين الهيدروكربونات المشبعة (الألكانات) وغير المشبعة (الألكينات والألكاينات) التي تحتوي على روابط باي الضعيفة سهلة الكسر.";
+      return "السلسلة المتجانسة (المتشاكلة) هي مجموعة مركبات يجمعها قانون جزيئي عام وتشترك في الخواص الكيميائية وتتدرج في الفيزيائية. غاز الميثان CH₄ هو أول أفراد الألكانات، ويحضر مخبرياً بالتقطير الجاف لخلات الصوديوم اللامائية مع الجير الصودي.";
     case "u3_l5":
-      return "الإيثاين (الأستيلين) C₂H₂ هو أبسط الألكاينات غير المشبعة ذات الرابطة الثلاثية. يتم تحضيره في المعمل بطريقة تنقيط الماء على كاربيد الكالسيوم لتوليد الغاز مع إزالة شوائب الفوسفين وكبريتيد الهيدروجين.";
+      return "تحتوي الألكينات (الأوليفينات) كالإيثين C₂H₄ على رابطة تساهمية ثنائية (واحدة سيجما قوية والأخرى باي ضعيفة). يسهل كسر رابطة باي بتفاعلات الإضافة؛ لذا يزيل غاز الإيثين لون ماء البروم الأحمر فوراً، بخلاف الألكانات المشبعة.";
     case "u3_l6":
-      return "حلقة البنزين C₆H₆ تتمتع باستقرار كيميائي فائق وثبات خارق بسبب 'ظاهرة الرنين' (Resonance)؛ حيث تتحرك الإلكترونات الستة للرابطة باي بحرية تامة على كامل الحلقة، مما يحميها من التفاعلات التقليدية لعدم التشبع.";
+      return "الألكاينات (الأسيتلينات) كالإيثاين C₂H₂ تحتوي على رابطة ثلاثية (رابطة سيجما ورابطتا باي ضعيفتان). يحضر الإيثاين بتنقيط الماء على كاربيد الكالسيوم، ويتميز باحتراقه بلهب الأكسي-أسيتلين الذي تصل حرارته إلى 3000°C ويستخدم في قطع ولحام المعادن.";
     case "u3_l7":
-      return "الأيزوميرية الوظيفية تظهر عندما يشترك مركبان في الصيغة الجزيئية (مثل C₂H₆O) ولكنهما يختلفان تماماً في نوع المجموعة الوظيفية والخواص الفيزيائية والكيميائية نتيجة اختلاف ترتيب الذرات.";
+      return "يتميز البنزين العطري C₆H₆ بثبات كيميائي فائق واستقرار استثنائي ناتج عن ظاهرة الرنين وعدم تمركز إلكترونات باي الستة حول الحلقة، فلا يتأكسد ببرمنجنات البوتاسيوم. أما الحلقات الصغيرة كالبروبان الحلقي فتعاني من شد الرابطة (التوتر الزاوي) لانحراف زاويتها عن 109.5° إلى 60°.";
+    case "u3_l8":
+      return "التشكل أو التماكب السلسلي (Isomerism) هو اتفاق مركبين أو أكثر في الصيغة الجزيئية واختلافهما في الصيغة البنائية وترتيب الهيكل الكربوني، مثل متماكبات البنتان الثلاثة C₅H₁₂، والتمييز بين متماكبي الصيغة C₃H₆ (البروبين يزيل لون ماء البروم، بينما البروبان الحلقي لا يزيله في الظلام).";
     case "u4_l1":
       return "التأصل (Allotropy) هو وجود العنصر اللافلزي الواحد في عدة صور في نفس الحالة الفيزيائية، تختلف في البناء البلوري والخواص الفيزيائية والنشاط الكيميائي، مثل صور الفوسفور المتعددة (الأبيض والأحمر).";
     case "u4_l2":
@@ -1546,19 +1806,21 @@ export const getObservationExplanation = (id: string): string => {
     case "u2_l2":
       return "ظهور لهب أصفر ذهبي ناصع مع الصوديوم Na، وبنفسجي باهت مميز مع البوتاسيوم K، وقرمزي غامق مع الليثيوم Li عند تقريب الأملاح المبللة بـ HCl من لهب بنسن.";
     case "u3_l1":
-      return "تكون راسب أبيض من كلوريد الفضة AgCl، وبعد الترشيح وتبخير الرشاح السائل الأبيض المتبقي بالتسخين الهين تتشكل بلورات اليوريا البيضاء المميزة.";
+      return "تكون راسب أبيض من كلوريد الفضة AgCl، وبعد الترشيح وتبخير الرشاح بالتسخين الهين تتشكل بلورات اليوريا البيضاء العضوية في قاع الجفنة.";
     case "u3_l2":
-      return "تكون خمس ذرات كربون في سلسلة مفتوحة مستقيمة (بنتان عادي)، تحولها لشكل خماسي مغلق (بنتان حلقي)، ووجود تفرع ميثيل على ذرة الكربون الثانية (2-ميثيل بيوتان) يغير بنية الجزيء.";
+      return "تحديد سلسلة البنتان (5 ذرات C)، وعند إضافة تفرع ميثيل على الذرة رقم 2 والترقيم من اليمين يصبح 2-ميثيل بنتان، ومع إضافة فرع آخر يصبح 2,4-ثنائي ميثيل بنتان.";
     case "u3_l3":
-      return "تصاعد غاز خفيف عديم اللون يجمع بإزاحة الماء لأسفل، وعند تقريب لهب يشتعل بغاز الميثان النظيف ذي اللون الأزرق الباهت دون تصاعد دخان.";
+      return "مقارنة المركبات المتقابلة (إيثان، إيثين، إيثاين) ذات الذرتين من الكربون، وملاحظة الفرق بين الرابطة الأحادية سيجما، والرابطة الثنائية، وبناء الحلقة المثلثة للبروبان الحلقي بزاوية 60°.";
     case "u3_l4":
-      return "بقاء لون ماء البروم الأحمر ثابتاً مع الإيثان المشبع، وزوال لون البروم الأحمر فوراً ليصبح المحلول عديم اللون تماماً مع الإيثين غير المشبع.";
+      return "تصاعد فقاعات غاز الميثان عديم اللون والرائحة بإزاحة الماء لأسفل، واشتعال الغاز المتجمع بلهب أزرق باهت ونظيف دون تصاعد دخان أو سخام.";
     case "u3_l5":
-      return "فوران شديد وتصاعد غاز الإيثاين ذي الرائحة الكريهة، وعند إشعاله يحترق بلهب أصفر مدخن جداً لتشكل السخام (الكربون غير المحترق) لقلة الأكسجين.";
+      return "بقاء اللون الأحمر لماء البروم ثابتاً دون تغير مع أنبوبة الإيثان المشبع، بينما يزول اللون الأحمر لماء البروم فوراً ويصبح عديم اللون مع أنبوبة الإيثين غير المشبع.";
     case "u3_l6":
-      return "زوال اللون البنفسجي لبرمنجنات البوتاسيوم مع الهكسين وتكون راسب بني من MnO₂، بينما لا يتأثر اللون البنفسجي مطلقاً مع البنزين، مما يؤكد مقاومة البنزين للأكسدة.";
+      return "حدوث فوران شديد وتصاعد غاز الإيثاين عند تنقيط الماء على كاربيد الكالسيوم، وترسيب شوائب الفوسفين وكبريتيد الهيدروجين في محلول CuSO₄، واشتعال الغاز بلهب مدخن وفي الأكسجين بلهب شديد الإبهار.";
     case "u3_l7":
-      return "حدوث فوران شديد وتصاعد غاز الهيدروجين مع الإيثانول، بينما لا يحدث أي تفاعل أو تصاعد فقاعات مع إيثر ثنائي الميثيل عند إضافة الصوديوم.";
+      return "زوال اللون البنفسجي لبرمنجنات البوتاسيوم مع الهكسين وتكون راسب بني MnO₂ لتأكسده، بينما يظل اللون البنفسجي راسخاً تماماً مع البنزين لمقاومته للأكسدة بفعل الرنين.";
+    case "u3_l8":
+      return "ملاحظة الهياكل الثلاثة لمتماكبات C₅H₁₂، وعند فحص متماكبي C₃H₆ بماء البروم الأحمر: يزول اللون الأحمر فوراً مع البروبين، بينما يبقى اللون الأحمر ثابتاً مع البروبان الحلقي المشبع في الظلام.";
     case "u4_l1":
       return "الفوسفور الأبيض يشتعل تلقائياً بمجرد ملامسته للهواء الجاف مطلقاً وميضاً ساطعاً وأبخرة بيضاء كثيفة، بينما الفوسفور الأحمر مستقر ولا يشتعل إلا بالتسخين المباشر.";
     case "u4_l2":
@@ -1595,19 +1857,21 @@ export const getConclusionExplanation = (id: string): string => {
     case "u2_l2":
       return "يرجع تلون اللهب إلى عودة الإلكترونات المثارة من مستويات الطاقة العليا إلى مستويات طاقة أدنى مستقرة، مطلقة كمات محددة من الطاقة (الفوتونات) ذات أطوال موجية مميزة لفلزات الأقلاء.";
     case "u3_l1":
-      return "أثبتت التجربة كذب نظرية القوة الحيوية لبرزيليوس، حيث تحولت سيانات الأمونيوم غير العضوية بالحرارة إلى اليوريا العضوية نتيجة إعادة الترتيب الذري داخل الجزيء.";
+      return "أثبتت تجربة فوهلر بطلان نظرية القوة الحيوية لبرزيليوس نهائياً، حيث أمكن تحضير مركب عضوي داخل المعمل من ملحين غير عضويين (كلوريد الأمونيوم وسيانات الفضة).";
     case "u3_l2":
-      return "الأيزوميرية هي ظاهرة تشارك المركبات العضوية في صيغتها الجزيئية واختلافها في البنائية، مما يمنحها خواص فيزيائية وكيميائية وتسميات نظامية (IUPAC) مختلفة كلياً.";
+      return "قواعد IUPAC توحد لغة الكيمياء عالمياً؛ حيث يتم ترقيم السلسلة الأطول من الطرف الأقرب للتفرع لإعطاء البدائل أصغر أرقام ممكنة مع ترتيبها أبجدياً واستخدام سوابق التكرار بدقة.";
     case "u3_l3":
-      return "التقطير الجاف لخلات الصوديوم بوجود الجير الصودي (مزيج من الصودا الكاوية والجير الحي) هو أفضل طريقة معملية للحصول على غاز الميثان النقي نظراً لأن الجير الحي لا يدخل بالتفاعل بل يمتص الرطوبة ويخفض الصهر.";
+      return "المركبات المتقابلة تبرهن على أن تدرج عدم التشبع من الروابط الأحادية إلى الثنائية فالثلاثية يغير السلوك الكيميائي جذرياً، كما أن الهيدروكربونات الحلقية المشبعة تختلف في ثباتها باختلاف زوايا الروابط.";
     case "u3_l4":
-      return "الألكينات غير المشبعة (الإيثين) تحتوي على روابط باي ضعيفة تتفاعل بسهولة عن طريق الإضافة والكسر، مما يزيل لون ماء البروم، بينما الألكانات المشبعة (الإيثان) مستقرة وتقاوم الإضافة.";
+      return "التقطير الجاف لخلات الصوديوم مع الجير الصودي ينتج الميثان النقي، حيث يعمل الجير الحي CaO على خفض درجة انصهار الخليط ومنع تآكل الأنبوبة الزجاجية وامتصاص الرطوبة.";
     case "u3_l5":
-      return "التحلل المائي لكاربيد الكالسيوم ينتج غاز الإيثاين وهيدروكسيد الكالسيوم القلوي. احتراق الإيثاين بلهب مدخن يثبت النسبة العالية جداً للكربون في الجزيء مقارنة بالهيدروجين.";
+      return "تفاعل ماء البروم اختبار قاطع للكشف عن عدم التشبع في الألكينات؛ حيث تنكسر رابطة باي الضعيفة وتضاف ذرتا البروم لتكوين مركب 1,2-ثنائي برومو إيثان المشبع عديم اللون.";
     case "u3_l6":
-      return "استقرار البنزين وعدم تأثره بالعوامل المؤكسدة القوية مثل البرمنجنات يبرهن على ثبات الرنين العطري الدائري للإلكترونات، والذي يجعل الحلقة كلاً متكاملاً يقاوم التخريب بالأكسدة.";
+      return "التحلل المائي لكاربيد الكالسيوم يولد غاز الإيثاين وهيدروكسيد الكالسيوم. نسبة الكربون العالية في الإيثاين تفسر لهبه المدخن في الهواء، وحرارته الفائقة (3000°C) عند الاحتراق التام في الأكسجين النقي.";
     case "u3_l7":
-      return "الفرق السلوكي القاطع يثبت وجود الكحول الإيثيلي كمركب ذي مجموعة هيدروكسيل نشطة حمضياً مع الصوديوم، بينما الإيثر مركب غير قطبي خامل تجاه الصوديوم، رغم امتلاكهما نفس الصيغة الجزيئية.";
+      return "استقرار البنزين العطري يرجع إلى سحابة رنين إلكترونات باي اللاموضعية التي تمنع تفاعلات الإضافة والأكسدة التقليدية. والبروبان الحلقي أكثر نشاطاً من باقي الألكانات لشد الرابطة وتوتر زاويته الضيقة (60°).";
+    case "u3_l8":
+      return "التماكب السلسلي يثبت أن الخواص لا تتحدد بالصيغة الجزيئية فقط بل بالهيكل البنائي وترتيب الروابط. اختبار ماء البروم يميز تجريبياً بين متماكبي C₃H₆ (الألكين غير المشبع والألكان الحلقي المشبع) وفق المقرر الدراسي.";
     case "u4_l1":
       return "يرجع الاختلاف الشاسع في النشاط بين الفوسفور الأبيض والأحمر إلى التوتر الزاوي الشديد داخل جزيء الفوسفور الأبيض P₄ الدائري، مما يجعله ينفجر اشتعالاً تلقائياً عند 30°C.";
     case "u4_l2":

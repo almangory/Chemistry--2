@@ -250,6 +250,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FDFCFB] text-[#1A1A1A] flex flex-col font-sans antialiased overflow-x-hidden" dir="rtl">
+      {/* 🇸🇩 شريط السيو والروابط العكسية المعتمد لمنصة المناهج السودانية التفاعلية (Naqla SEO Bar) */}
+      <div style={{ background: "linear-gradient(90deg, #064E3B, #047857)", color: "#ffffff", padding: "7px 16px", fontSize: "12.5px", fontFamily: "system-ui, -apple-system, sans-serif", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 2px 8px rgba(0,0,0,0.15)", zIndex: 60 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", fontWeight: 700 }}>
+          <span>🇸🇩</span>
+          <span>ضمن منظومة المناهج السودانية التفاعلية | منصة نقلة التعليمية</span>
+        </div>
+        <a href="https://sudan-interactive-curricula.vercel.app/" target="_blank" rel="noopener noreferrer" style={{ color: "#6ee7b7", fontWeight: 800, textDecoration: "none", fontSize: "11.5px", display: "flex", alignItems: "center", gap: "4px", transition: "color 0.2s" }}>
+          <span>العودة للمنصة الرئيسية</span>
+          <span>↗</span>
+        </a>
+      </div>
+
       {/* Mobile Top Navbar */}
       <header className={`${isFocusReading ? "hidden" : "lg:hidden flex"} bg-white/95 backdrop-blur border-b border-[#E5E2DE] sticky top-0 z-40 px-4 py-3 justify-between items-center`}>
         <div className="flex items-center gap-2">
