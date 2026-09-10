@@ -521,17 +521,22 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
 
       // Unit 2
       case "u2_l1":
-        if (stepIdx === 1) setBeakerWaterColor("bg-blue-300/40");
+        if (stepIdx <= 2) {
+          setBeakerWaterColor("bg-slate-100/10");
+          setBubbleActive(false);
+          setFizzleType("idle");
+        }
         if (stepIdx === 3) {
+          setBeakerWaterColor("bg-pink-400/60");
           setBubbleActive(true);
           setFizzleType("violent_fizz");
-          setChamberStatus("اشتعال وهب وهيدروجين متصاعد!");
+          setChamberStatus("اشتعال الصوديوم وتصاعد الهيدروجين وتلون المحلول بالوردي!");
         }
         if (stepIdx === 4) {
-          setBeakerWaterColor("bg-fuchsia-300/50");
+          setBeakerWaterColor("bg-fuchsia-400/70");
           setBubbleActive(false);
           setFizzleType("finished");
-          setChamberStatus("تكون محلول NaOH قلوي");
+          setChamberStatus("تكون محلول NaOH قلوي واستقرار اللون الوردي");
         }
         break;
       case "u2_l2":
@@ -847,8 +852,13 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       setToolToast("🟣 اشتعال عنيف للبوتاسيوم بلهب بنفسجي ليلكي!");
     } else if (chemName.includes("فينول") || chemName.includes("كاشف") || chemName.includes("دليل")) {
       setIsIndicatorAdded(true);
-      setChamberStatus("إضافة قطرات دليل الفينول فثالين: تلون المحلول بالوردي الأرجواني دلالة على تكوّن الهيدروكسيد القلوي!");
-      setToolToast("🌸 تلون المحلول بالوردي الأرجواني (وسط قلوي)");
+      if (activeAlkali !== "none" || currentStep >= 3) {
+        setChamberStatus("إضافة قطرات دليل الفينول فثالين: تلون المحلول بالوردي الأرجواني دلالة على تكوّن الهيدروكسيد القلوي!");
+        setToolToast("🌸 تلون المحلول بالوردي الأرجواني (وسط قلوي)");
+      } else {
+        setChamberStatus("إضافة دليل الفينول فثالين للماء المقطر: يظل المحلول عديم اللون وشفافاً تماماً (وسط متعادل)");
+        setToolToast("💧 كاشف الفينول فثالين مضاف (عديم اللون في الوسط المتعادل)");
+      }
     } else {
       setManualBubbling(true);
       setTimeout(() => setManualBubbling(false), 3000);
@@ -886,19 +896,34 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       setActiveAlkali("na");
       setAddedChemicals(prev => prev.includes("قطعة صوديوم Na") ? prev : [...prev, "قطعة صوديوم Na"]);
       setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
-      setChamberStatus("إسقاط الصوديوم Na بالملقط: تكوّن كرة منصهرة تسبح بلهب أصفر ساطع وفرقعة!");
-      setToolToast("🟡 ملقط + قطعة الصوديوم: اشتعال بلهب أصفر ساطع");
+      if (isIndicatorAdded) {
+        setChamberStatus("إسقاط الصوديوم Na بالملقط: تكوّن كرة منصهرة تسبح بلهب أصفر ساطع وفرقعة وتلون المحلول بالوردي!");
+        setToolToast("🟡 انصهار واشتعال الصوديوم + تلون المحلول بالوردي");
+      } else {
+        setChamberStatus("إسقاط الصوديوم Na بالملقط: تكوّن كرة منصهرة تسبح بلهب أصفر ساطع وفرقعة (المحلول قلوي لكنه عديم اللون حتى إضافة الفينول فثالين)!");
+        setToolToast("🟡 انصهار واشتعال الصوديوم بلهب أصفر ساطع");
+      }
     } else if (action === "drop_potassium") {
       setActiveAlkali("k");
       setAddedChemicals(prev => prev.includes("قطعة بوتاسيوم K") ? prev : [...prev, "قطعة بوتاسيوم K"]);
       setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
-      setChamberStatus("إسقاط البوتاسيوم K بالملقط: اشتعال فوري عنيف بلهب بنفسجي ليلكي خاطف!");
-      setToolToast("🟣 ملقط + قطعة البوتاسيوم: لهب بنفسجي ليلكي خاطف");
+      if (isIndicatorAdded) {
+        setChamberStatus("إسقاط البوتاسيوم K بالملقط: اشتعال فوري عنيف بلهب بنفسجي ليلكي خاطف وتلون المحلول بالوردي البنفسجي!");
+        setToolToast("🟣 اشتعال عنيف للبوتاسيوم بلهب ليلكي + تلون وردي");
+      } else {
+        setChamberStatus("إسقاط البوتاسيوم K بالملقط: اشتعال فوري عنيف بلهب بنفسجي ليلكي خاطف وفرقعة قوية!");
+        setToolToast("🟣 ملقط + قطعة البوتاسيوم: لهب بنفسجي ليلكي خاطف");
+      }
     } else if (action === "add_indicator") {
       setIsIndicatorAdded(true);
       setAddedChemicals(prev => prev.includes("دليل الفينول فثالين") ? prev : [...prev, "دليل الفينول فثالين"]);
-      setChamberStatus("إضافة دليل الفينول فثالين: تلون المحلول باللون الوردي دلالة على تكوّن هيدروكسيد قلوي!");
-      setToolToast("🌸 إضافة دليل الفينول فثالين (ظهور اللون الوردي)");
+      if (activeAlkali !== "none" || currentStep >= 3) {
+        setChamberStatus("إضافة دليل الفينول فثالين: تلون المحلول باللون الوردي دلالة على تكوّن هيدروكسيد قلوي!");
+        setToolToast("🌸 إضافة دليل الفينول فثالين (ظهور اللون الوردي)");
+      } else {
+        setChamberStatus("إضافة دليل الفينول فثالين للماء المقطر: يظل المحلول عديم اللون وشفافاً تماماً (وسط متعادل)");
+        setToolToast("💧 كاشف الفينول فثالين مضاف (عديم اللون في الوسط المتعادل)");
+      }
     } else if (action === "clean_basin") {
       setActiveAlkali("none");
       setIsIndicatorAdded(false);
@@ -954,14 +979,15 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       // UNIT 2: Alkali & Alkaline Earth Metals
       case "u2_l1": // Alkali metals in water
         apparatusType = "glass_basin";
-        liquidColor = isIndicatorAdded || currentStep >= 4 ? "#ec4899" : "#e0f2fe";
-        isBubbling = activeAlkali !== "none" || currentStep >= 1;
-        isSmoking = activeAlkali !== "none" || currentStep >= 2;
-        isHeating = activeAlkali !== "none" || currentStep >= 1;
-        flameColor = activeAlkali === "k" ? "#a855f7" : (activeAlkali === "na" ? "#eab308" : (currentStep === 1 ? "#eab308" : "#a855f7"));
-        temperature = activeAlkali === "k" ? 115 : (activeAlkali === "na" ? 95 : (currentStep >= 1 ? 95 : 25));
-        phValue = isIndicatorAdded || currentStep >= 4 ? 13.8 : 7.0;
-        gasVolume = activeAlkali !== "none" || currentStep >= 1 ? 180 : 0;
+        const hasReacted = activeAlkali !== "none" || currentStep >= 3;
+        liquidColor = (isIndicatorAdded && hasReacted) ? (activeAlkali === "k" ? "#c084fc" : "#ec4899") : "#f0f9ff";
+        isBubbling = hasReacted;
+        isSmoking = hasReacted;
+        isHeating = hasReacted;
+        flameColor = activeAlkali === "k" ? "#a855f7" : "#eab308";
+        temperature = hasReacted ? (activeAlkali === "k" ? 115 : 92) : 25;
+        phValue = hasReacted ? (activeAlkali === "k" ? 14.0 : 13.8) : 7.0;
+        gasVolume = hasReacted ? (activeAlkali === "k" ? 220 : 180) : 0;
         break;
       case "u2_l2": // Flame tests
         apparatusType = "test_tubes";

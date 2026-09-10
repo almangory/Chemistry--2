@@ -546,17 +546,44 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       const waterHeight = hasWater !== false ? Math.max(0.4, liquidHeight * 1.1) : 0.05;
       const waterGeo = new THREE.CylinderGeometry(basinRadius * 0.94, basinRadius * 0.94, waterHeight, 48);
       waterGeo.translate(0, waterHeight / 2, 0);
-      const waterColorVal = isIndicatorAdded ? (activeAlkali === "k" ? "#c084fc" : "#ec4899") : liquidColor;
+
+      // Chemical rule: Distilled water at start of experiment is 100% colorless & crystal clear!
+      // Phenolphthalein is ALSO colorless in neutral water (pH <= 8.2).
+      // Only when alkaline reaction occurs (NaOH/KOH) AND indicator is added does it bloom into pink/purple!
+      const hasAlkaliReacted = activeAlkali !== "none" || (stepIndex >= 3 && phValue > 8.2);
+      const showAlkalinePink = isIndicatorAdded && hasAlkaliReacted;
+
+      let waterColorHex: string;
+      let waterOpacity: number;
+      let waterTransmission: number;
+
+      if (showAlkalinePink) {
+        waterColorHex = activeAlkali === "k" ? "#c084fc" : "#ec4899";
+        waterOpacity = 0.72;
+        waterTransmission = 0.65;
+      } else if (hasAlkaliReacted && !isIndicatorAdded) {
+        waterColorHex = "#f8fafc";
+        waterOpacity = 0.30;
+        waterTransmission = 0.92;
+      } else {
+        // Pure distilled water at the start: completely crystal clear & colorless!
+        waterColorHex = "#f0f9ff";
+        waterOpacity = 0.20;
+        waterTransmission = 0.96;
+      }
+
       const waterMat = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(waterColorVal),
+        color: new THREE.Color(waterColorHex),
         transparent: true,
-        opacity: 0.78,
-        roughness: 0.1,
-        transmission: 0.85,
-        ior: 1.33
+        opacity: waterOpacity,
+        roughness: 0.05,
+        metalness: 0.05,
+        transmission: waterTransmission,
+        ior: 1.333
       });
       const waterMesh = new THREE.Mesh(waterGeo, waterMat);
       waterMesh.position.set(0.6, 0.09, 0);
+      waterMesh.visible = hasWater !== false;
       basinGroup.add(waterMesh);
       liquidMeshRef.current = waterMesh;
 
@@ -779,7 +806,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       basinGroup.add(trayGroup);
 
       // 3. Floating & Darting Molten Alkali Metal Sphere
-      const effectiveAlkali = activeAlkali !== "none" ? activeAlkali : (stepIndex >= 2 ? (stepIndex === 2 ? "na" : "k") : "none");
+      const effectiveAlkali = activeAlkali !== "none" ? activeAlkali : (stepIndex >= 3 ? "na" : "none");
       if (effectiveAlkali !== "none") {
         const alkaliSphereGroup = new THREE.Group();
         alkaliSphereGroup.position.set(0.6, waterHeight + 0.12, 0);
@@ -823,7 +850,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         bubbleGeo,
         new THREE.PointsMaterial({ color: 0xffffff, size: 0.06, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending })
       );
-      bubbles.visible = isBubbling || effectiveAlkali !== "none";
+      bubbles.visible = (isBubbling || effectiveAlkali !== "none") && (stepIndex >= 3 || activeAlkali !== "none");
       bubblesGroupRef.current = bubbles;
       basinGroup.add(bubbles);
 
@@ -840,7 +867,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         smokeGeo,
         new THREE.PointsMaterial({ color: 0xe2e8f0, size: 0.2, transparent: true, opacity: 0.4 })
       );
-      smoke.visible = isSmoking || effectiveAlkali !== "none";
+      smoke.visible = (isSmoking || effectiveAlkali !== "none") && (stepIndex >= 3 || activeAlkali !== "none");
       smokeGroupRef.current = smoke;
       basinGroup.add(smoke);
 
@@ -939,13 +966,15 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       const realLiquidHeight = Math.max(0.1, liquidHeight * 1.5);
       const liquidGeo = new THREE.CylinderGeometry(beakerRadius * 0.93, beakerRadius * 0.93, realLiquidHeight, 32);
       liquidGeo.translate(0, realLiquidHeight / 2, 0);
+      const isClearWater = !liquidColor || liquidColor === "#f0f9ff" || liquidColor === "#e0f2fe" || liquidColor === "#f8fafc";
       const liquidMat = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(liquidColor),
         transparent: true,
-        opacity: 0.8,
-        roughness: 0.1,
-        transmission: 0.75,
-        ior: 1.33
+        opacity: isClearWater ? 0.22 : 0.75,
+        roughness: isClearWater ? 0.05 : 0.1,
+        metalness: isClearWater ? 0.05 : 0.1,
+        transmission: isClearWater ? 0.95 : 0.72,
+        ior: 1.333
       });
       const liquidMesh = new THREE.Mesh(liquidGeo, liquidMat);
       liquidMesh.position.set(0, 1.54, 0);
@@ -999,7 +1028,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
         const troughWater = new THREE.Mesh(
           new THREE.BoxGeometry(2.1, 0.5, 1.3),
-          new THREE.MeshPhysicalMaterial({ color: 0x0284c7, transparent: true, opacity: 0.65, transmission: 0.8 })
+          new THREE.MeshPhysicalMaterial({ color: 0xf0f9ff, transparent: true, opacity: 0.28, transmission: 0.94, roughness: 0.05, ior: 1.333 })
         );
         troughWater.position.set(0, 0.28, 0);
         troughGroup.add(troughWater);
@@ -1127,7 +1156,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
       // Glass Basin: Molten Alkali Metal Sphere darting on water surface
       if (apparatusType === "glass_basin" && alkaliBallRef.current) {
-        const effectiveAlkali = activeAlkali !== "none" ? activeAlkali : (stepIndex >= 2 ? (stepIndex === 2 ? "na" : "k") : "none");
+        const effectiveAlkali = activeAlkali !== "none" ? activeAlkali : (stepIndex >= 3 ? "na" : "none");
         const speed = effectiveAlkali === "k" ? 4.8 : 3.2;
         const radiusVal = 1.15 + Math.sin(elapsedTime * 3) * 0.35;
         const angle = elapsedTime * speed;
@@ -1535,13 +1564,13 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
             <div className="flex items-center justify-between">
               <span className="text-slate-400">الفلز النشط:</span>
               <span className="font-bold text-amber-300">
-                {activeAlkali === "na" ? "صوديوم Na 🟡" : activeAlkali === "k" ? "بوتاسيوم K 🟣" : "في الانتظار"}
+                {activeAlkali === "na" ? "صوديوم Na 🟡" : activeAlkali === "k" ? "بوتاسيوم K 🟣" : (stepIndex >= 3 ? "صوديوم Na 🟡" : "في الانتظار")}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-slate-400">دليل الفينول:</span>
-              <span className={"font-bold px-1 rounded " + (isIndicatorAdded ? "text-pink-400 bg-pink-950" : "text-slate-400")}>
-                {isIndicatorAdded ? "مُضاف (وردي) 🌸" : "غير مضاف"}
+              <span className={"font-bold px-1 rounded " + (isIndicatorAdded ? (activeAlkali !== "none" || phValue > 8.2 || stepIndex >= 3 ? "text-pink-400 bg-pink-950" : "text-sky-300 bg-sky-950") : "text-slate-400")}>
+                {isIndicatorAdded ? (activeAlkali !== "none" || phValue > 8.2 || stepIndex >= 3 ? "مُضاف (وردي) 🌸" : "مُضاف (عديم اللون - متعادل) 💧") : "غير مضاف"}
               </span>
             </div>
           </div>
