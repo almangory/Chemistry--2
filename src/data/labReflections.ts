@@ -35,7 +35,7 @@ export interface CumulativeResultItem {
 
 export interface ExperimentReflection {
   id: string;
-  apparatusType: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" | "magnetic_balance";
+  apparatusType: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" | "magnetic_balance" | "glass_basin";
   steps: StepReflectionItem[];
   cumulativeTable: CumulativeResultItem[];
   overallConclusion: string;
@@ -181,7 +181,7 @@ export const LAB_REFLECTIONS: Record<string, ExperimentReflection> = {
   // === UNIT 2: Alkali & Alkaline Earth Metals ===
   u2_l1: {
     id: "u2_l1",
-    apparatusType: "beaker",
+    apparatusType: "glass_basin",
     overallConclusion: "فلزات الأقلاء تزداد شدة نشاطها وتفاعلها مع الماء طرداً بالنزول لأسفل المجموعة من Li إلى Na ثم K، نتيجة لزيادة نصف القطر وسهولة فقد إلكترون التكافؤ الوحيد.",
     cumulativeTable: [
       { sampleName: "الليثيوم (Li)", condition: "تفاعل مع الماء", result: "فوران هادئ دون اشتعال", scientificMeaning: "أقل الأقلاء نشاطاً لصغر حجمه", status: "neutral" },

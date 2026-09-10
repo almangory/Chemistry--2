@@ -20,7 +20,12 @@ import {
   Magnet,
   Eye,
   HelpCircle,
-  CheckCircle2
+  CheckCircle2,
+  Scissors,
+  FileText,
+  Pipette,
+  FlaskConical,
+  Utensils
 } from "lucide-react";
 import { PeriodicTableTool } from "./PeriodicTableTool";
 import { MolecularSimulator } from "./MolecularSimulator";
@@ -725,6 +730,13 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
     setCurrentStep(0);
     setIsCompleted(false);
     resetSimulationStates(selectedExp.id);
+    setUsedTools([]);
+    setAddedChemicals([]);
+    setActiveAlkali("none");
+    setHasWater(true);
+    setIsIndicatorAdded(false);
+    setIsCutAndDried(false);
+    setToolToast(null);
   };
 
   // Unit categories for layout filters
@@ -746,6 +758,105 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
   const [manualBubbling, setManualBubbling] = useState<boolean>(false);
   const [manualMagnet, setManualMagnet] = useState<boolean>(false);
 
+  // Interactive Workbench State
+  const [usedTools, setUsedTools] = useState<string[]>([]);
+  const [addedChemicals, setAddedChemicals] = useState<string[]>([]);
+  const [activeAlkali, setActiveAlkali] = useState<"none" | "na" | "k">("none");
+  const [hasWater, setHasWater] = useState<boolean>(true);
+  const [isIndicatorAdded, setIsIndicatorAdded] = useState<boolean>(false);
+  const [isCutAndDried, setIsCutAndDried] = useState<boolean>(false);
+  const [toolToast, setToolToast] = useState<string | null>(null);
+
+  // Helper icons for tools
+  const getToolIcon = (toolName: string) => {
+    if (toolName.includes("سكين") || toolName.includes("مشرط")) return <Scissors className="w-3.5 h-3.5 text-amber-500" />;
+    if (toolName.includes("ورق")) return <FileText className="w-3.5 h-3.5 text-slate-500" />;
+    if (toolName.includes("ملقط")) return <Utensils className="w-3.5 h-3.5 text-indigo-500" />;
+    if (toolName.includes("حوض") || toolName.includes("كأس") || toolName.includes("أنبوب")) return <FlaskConical className="w-3.5 h-3.5 text-sky-500" />;
+    if (toolName.includes("قطارة")) return <Pipette className="w-3.5 h-3.5 text-pink-500" />;
+    if (toolName.includes("ميزان")) return <Scale className="w-3.5 h-3.5 text-emerald-500" />;
+    if (toolName.includes("موقد") || toolName.includes("لهب")) return <Flame className="w-3.5 h-3.5 text-rose-500" />;
+    return <Layers className="w-3.5 h-3.5 text-indigo-500" />;
+  };
+
+  // Helper icons for chemicals
+  const getChemIcon = (chemName: string) => {
+    if (chemName.includes("ماء")) return <Droplet className="w-3.5 h-3.5 text-sky-500" />;
+    if (chemName.includes("صوديوم") || chemName.includes("Na")) return <Sparkles className="w-3.5 h-3.5 text-amber-500" />;
+    if (chemName.includes("بوتاسيوم") || chemName.includes("K")) return <Sparkles className="w-3.5 h-3.5 text-purple-500" />;
+    if (chemName.includes("فينول") || chemName.includes("كاشف") || chemName.includes("دليل")) return <Pipette className="w-3.5 h-3.5 text-pink-500" />;
+    if (chemName.includes("حمض") || chemName.includes("غاز")) return <Flame className="w-3.5 h-3.5 text-rose-500" />;
+    return <FlaskConical className="w-3.5 h-3.5 text-emerald-500" />;
+  };
+
+  const handleToolClick = (toolName: string) => {
+    setUsedTools(prev => prev.includes(toolName) ? prev : [...prev, toolName]);
+    
+    if (toolName.includes("حوض زجاجي")) {
+      setChamberStatus("تم تجهيز وتثبيت الحوض الزجاجي الكبير على طاولة المعمل");
+      setToolToast("🥣 تم تجهيز الحوض الزجاجي الكبير على طاولة المعمل");
+    } else if (toolName.includes("سكين") || toolName.includes("ورق ترشيح")) {
+      setIsCutAndDried(true);
+      setChamberStatus("تم استخراج فلز الصوديوم وقطعه بالسكين الحاد وتجفيفه بورق الترشيح لإزالة الكيروسين وإظهار بريقه الفضي");
+      setToolToast("🔪 تم قطع الفلز بحجم حبة العدس وتجفيفه بالسكين والورق");
+    } else if (toolName.includes("ملقط")) {
+      if (selectedExp.id === "u2_l1") {
+        if (activeAlkali === "none") {
+          setActiveAlkali("na");
+          setAddedChemicals(prev => prev.includes("قطعة صوديوم Na") ? prev : [...prev, "قطعة صوديوم Na"]);
+          setChamberStatus("التقاط قطعة الصوديوم Na بالملقط وإسقاطها في الحوض - انصهار فوري واشتعال بلهب أصفر ساطع وفرقعات حادة!");
+          setToolToast("🥢 تم التقاط قطعة الصوديوم بالملقط وإسقاطها في الحوض");
+        } else if (activeAlkali === "na") {
+          setActiveAlkali("k");
+          setAddedChemicals(prev => prev.includes("قطعة بوتاسيوم K") ? prev : [...prev, "قطعة بوتاسيوم K"]);
+          setChamberStatus("التقاط قطعة البوتاسيوم K بالملقط وإسقاطها - اشتعال فوري عنيف بلهب بنفسجي ليلكي رائع وفرقعة!");
+          setToolToast("🥢 تم التقاط قطعة البوتاسيوم بالملقط وإسقاطها في الحوض");
+        }
+      } else {
+        setChamberStatus(`استخدام ${toolName} لتثبيت وتحريك مكونات التجربة بأمان`);
+        setToolToast(`🥢 تم استخدام ${toolName} بأمان`);
+      }
+    } else if (toolName.includes("موقد") || toolName.includes("بنزين")) {
+      setManualHeating(prev => !prev);
+      setChamberStatus("تشغيل موقد بنزن لتسخين المتفاعلات");
+      setToolToast("🔥 تم تفعيل موقد التسخين");
+    } else {
+      setChamberStatus(`تم تجهيز واستخدام ${toolName} في التجربة`);
+      setToolToast(`⚡ تم استخدام ${toolName}`);
+    }
+  };
+
+  const handleChemicalClick = (chemName: string) => {
+    setAddedChemicals(prev => prev.includes(chemName) ? prev : [...prev, chemName]);
+
+    if (chemName.includes("ماء مقطر")) {
+      setHasWater(true);
+      setChamberStatus("تم ملء الحوض بالماء المقطر النقي كوسط للتفاعل");
+      setToolToast("💧 تم صب الماء المقطر في وعاء التفاعل");
+    } else if (chemName.includes("صوديوم") || chemName.includes("Na")) {
+      setActiveAlkali("na");
+      setManualBubbling(true);
+      setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
+      setChamberStatus("إضافة قطعة الصوديوم Na: انصهار إلى كرة فضية تسبح بسرعة فوق سطح الماء مع اشتعال لهب أصفر ساطع وفرقعات!");
+      setToolToast("🟡 انصهار الصوديوم واشتعاله بلهب أصفر ساطع!");
+    } else if (chemName.includes("بوتاسيوم") || chemName.includes("K")) {
+      setActiveAlkali("k");
+      setManualBubbling(true);
+      setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
+      setChamberStatus("إضافة قطعة البوتاسيوم K: اشتعال فوري عنيف بلهب بنفسجي ليلكي رائع وفرقعات قوية!");
+      setToolToast("🟣 اشتعال عنيف للبوتاسيوم بلهب بنفسجي ليلكي!");
+    } else if (chemName.includes("فينول") || chemName.includes("كاشف") || chemName.includes("دليل")) {
+      setIsIndicatorAdded(true);
+      setChamberStatus("إضافة قطرات دليل الفينول فثالين: تلون المحلول بالوردي الأرجواني دلالة على تكوّن الهيدروكسيد القلوي!");
+      setToolToast("🌸 تلون المحلول بالوردي الأرجواني (وسط قلوي)");
+    } else {
+      setManualBubbling(true);
+      setTimeout(() => setManualBubbling(false), 3000);
+      setChamberStatus(`تمت إضافة ${chemName} إلى وسط التفاعل وملاحظة التغير`);
+      setToolToast(`🧪 تمت إضافة ${chemName}`);
+    }
+  };
+
   const handleActionTrigger = (action: string) => {
     if (action === "toggle_heat") {
       setManualHeating(prev => !prev);
@@ -756,12 +867,53 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       setTimeout(() => setManualBubbling(false), 4000);
     } else if (action === "stir") {
       setChamberStatus("تم رج وتقليب المحلول وتجانس المتفاعلات");
+    } else if (action === "pour_water") {
+      setHasWater(true);
+      setAddedChemicals(prev => prev.includes("ماء مقطر") ? prev : [...prev, "ماء مقطر"]);
+      setChamberStatus("تم صب الماء المقطر في الحوض الزجاجي");
+      setToolToast("💧 تم صب الماء المقطر في الحوض");
+    } else if (action === "cut_metal") {
+      setIsCutAndDried(true);
+      setUsedTools(prev => {
+        const next = [...prev];
+        if (!next.includes("سكين حاد")) next.push("سكين حاد");
+        if (!next.includes("ورق ترشيح")) next.push("ورق ترشيح");
+        return next;
+      });
+      setChamberStatus("تم قطع وتجفيف فلز الصوديوم بالسكين على ورق الترشيح لإزالة الكيروسين");
+      setToolToast("🔪 تم قطع وتجفيف الفلز بالسكين والورق");
+    } else if (action === "drop_sodium") {
+      setActiveAlkali("na");
+      setAddedChemicals(prev => prev.includes("قطعة صوديوم Na") ? prev : [...prev, "قطعة صوديوم Na"]);
+      setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
+      setChamberStatus("إسقاط الصوديوم Na بالملقط: تكوّن كرة منصهرة تسبح بلهب أصفر ساطع وفرقعة!");
+      setToolToast("🟡 ملقط + قطعة الصوديوم: اشتعال بلهب أصفر ساطع");
+    } else if (action === "drop_potassium") {
+      setActiveAlkali("k");
+      setAddedChemicals(prev => prev.includes("قطعة بوتاسيوم K") ? prev : [...prev, "قطعة بوتاسيوم K"]);
+      setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
+      setChamberStatus("إسقاط البوتاسيوم K بالملقط: اشتعال فوري عنيف بلهب بنفسجي ليلكي خاطف!");
+      setToolToast("🟣 ملقط + قطعة البوتاسيوم: لهب بنفسجي ليلكي خاطف");
+    } else if (action === "add_indicator") {
+      setIsIndicatorAdded(true);
+      setAddedChemicals(prev => prev.includes("دليل الفينول فثالين") ? prev : [...prev, "دليل الفينول فثالين"]);
+      setChamberStatus("إضافة دليل الفينول فثالين: تلون المحلول باللون الوردي دلالة على تكوّن هيدروكسيد قلوي!");
+      setToolToast("🌸 إضافة دليل الفينول فثالين (ظهور اللون الوردي)");
+    } else if (action === "clean_basin") {
+      setActiveAlkali("none");
+      setIsIndicatorAdded(false);
+      setHasWater(true);
+      setIsCutAndDried(false);
+      setUsedTools([]);
+      setAddedChemicals([]);
+      setChamberStatus("تم تفريغ الحوض وغسيله وتعبئته بماء مقطر نقي جديد");
+      setToolToast("🔄 تم غسيل وتفريغ الحوض");
     }
   };
 
   // 🧪 High-precision 3D Laboratory State calculation for all 21 lessons
   const get3DLabState = () => {
-    let apparatusType: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" | "magnetic_balance" = "beaker";
+    let apparatusType: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" | "magnetic_balance" | "glass_basin" = "beaker";
     let liquidColor = "#38bdf8";
     let liquidHeight = 0.45;
     let isHeating = false;
@@ -801,15 +953,15 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
 
       // UNIT 2: Alkali & Alkaline Earth Metals
       case "u2_l1": // Alkali metals in water
-        apparatusType = "beaker";
-        liquidColor = currentStep >= 1 ? "#ec4899" : "#e0f2fe";
-        isBubbling = currentStep >= 1;
-        isSmoking = currentStep >= 2;
-        isHeating = currentStep >= 1;
-        flameColor = currentStep === 1 ? "#eab308" : "#a855f7";
-        temperature = currentStep >= 1 ? 95 : 25;
-        phValue = currentStep >= 1 ? 13.8 : 7.0;
-        gasVolume = currentStep >= 1 ? 180 : 0;
+        apparatusType = "glass_basin";
+        liquidColor = isIndicatorAdded || currentStep >= 4 ? "#ec4899" : "#e0f2fe";
+        isBubbling = activeAlkali !== "none" || currentStep >= 1;
+        isSmoking = activeAlkali !== "none" || currentStep >= 2;
+        isHeating = activeAlkali !== "none" || currentStep >= 1;
+        flameColor = activeAlkali === "k" ? "#a855f7" : (activeAlkali === "na" ? "#eab308" : (currentStep === 1 ? "#eab308" : "#a855f7"));
+        temperature = activeAlkali === "k" ? 115 : (activeAlkali === "na" ? 95 : (currentStep >= 1 ? 95 : 25));
+        phValue = isIndicatorAdded || currentStep >= 4 ? 13.8 : 7.0;
+        gasVolume = activeAlkali !== "none" || currentStep >= 1 ? 180 : 0;
         break;
       case "u2_l2": // Flame tests
         apparatusType = "test_tubes";
@@ -1091,27 +1243,98 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
             </div>
           </div>
 
-          <div>
-            <span className="text-[10px] font-bold text-[#7F8C8D] block border-b border-[#E5E2DE] pb-2 mb-3 text-right font-sans uppercase tracking-wider">الأدوات المخبرية اللازمة</span>
-            <div className="flex flex-wrap gap-1 justify-end">
-              {selectedExp.apparatus.map((app, idx) => (
-                <span key={idx} className="px-2.5 py-1 bg-white rounded border border-[#E5E2DE] text-[10px] text-[#2C3E50] font-medium shadow-xs">
-                  {app}
-                </span>
-              ))}
+          {/* Interactive Tools & Apparatus Inventory */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b border-[#E5E2DE] pb-1.5 mb-1">
+              <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-200">
+                تفاعلي - انقر للاستخدام ⚡
+              </span>
+              <span className="text-[10px] font-bold text-[#7F8C8D] font-sans uppercase tracking-wider">
+                الأدوات والمعدات
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {selectedExp.apparatus.map((app, idx) => {
+                const isUsed = usedTools.includes(app);
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleToolClick(app)}
+                    className={`w-full flex items-center justify-between p-2 rounded-lg border text-right transition-all cursor-pointer group text-xs ${
+                      isUsed
+                        ? "bg-emerald-50/80 border-emerald-300 text-emerald-900 font-bold shadow-2xs"
+                        : "bg-white border-[#E5E2DE] hover:border-indigo-300 hover:bg-indigo-50/40 text-[#2C3E50]"
+                    }`}
+                  >
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold border transition-colors ${
+                      isUsed
+                        ? "bg-emerald-100 text-emerald-800 border-emerald-300"
+                        : "bg-[#F5F4F0] text-[#7F8C8D] border-[#E5E2DE] group-hover:border-indigo-300 group-hover:text-indigo-700"
+                    }`}>
+                      {isUsed ? "مُفعّل ✓" : "استخدام ⚡"}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[11px]">{app}</span>
+                      {getToolIcon(app)}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div>
-            <span className="text-[10px] font-bold text-[#7F8C8D] block border-b border-[#E5E2DE] pb-2 mb-3 text-right font-sans uppercase tracking-wider">المواد المتفاعلة والكواشف</span>
-            <div className="flex flex-wrap gap-1 justify-end">
-              {selectedExp.chemicals.map((chem, idx) => (
-                <span key={idx} className="px-2.5 py-1 bg-white rounded border border-[#E5E2DE] text-[10px] text-[#E67E22] font-semibold shadow-xs">
-                  {chem}
-                </span>
-              ))}
+          {/* Interactive Chemicals & Reagents Inventory */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between border-b border-[#E5E2DE] pb-1.5 mb-1">
+              <span className="text-[10px] text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded font-bold border border-indigo-200">
+                انقر للإضافة والتفاعل 🧪
+              </span>
+              <span className="text-[10px] font-bold text-[#7F8C8D] font-sans uppercase tracking-wider">
+                المواد والكواشف
+              </span>
+            </div>
+            <div className="space-y-1.5">
+              {selectedExp.chemicals.map((chem, idx) => {
+                const isAdded = addedChemicals.includes(chem);
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => handleChemicalClick(chem)}
+                    className={`w-full flex items-center justify-between p-2 rounded-lg border text-right transition-all cursor-pointer group text-xs ${
+                      isAdded
+                        ? "bg-amber-50/80 border-amber-300 text-amber-900 font-bold shadow-2xs"
+                        : "bg-white border-[#E5E2DE] hover:border-amber-300 hover:bg-amber-50/40 text-[#2C3E50]"
+                    }`}
+                  >
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold border transition-colors ${
+                      isAdded
+                        ? "bg-amber-100 text-amber-800 border-amber-300"
+                        : "bg-[#F5F4F0] text-[#7F8C8D] border-[#E5E2DE] group-hover:border-amber-300 group-hover:text-amber-700"
+                    }`}>
+                      {isAdded ? "تمت الإضافة ✓" : "إضافة 🧪"}
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-semibold text-[11px] text-[#E67E22]">{chem}</span>
+                      {getChemIcon(chem)}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
+
+          {/* Live Action Toast Banner */}
+          {toolToast && (
+            <motion.div
+              initial={{ opacity: 0, y: -5 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold text-center shadow-xs"
+            >
+              {toolToast}
+            </motion.div>
+          )}
 
           {/* Equation Box */}
           <div className="bg-[#2C3E50]/5 p-3 rounded border border-[#2C3E50]/15 text-center font-mono text-[10px] text-[#2C3E50] font-bold leading-relaxed overflow-x-auto select-all" dir="ltr">
@@ -1158,6 +1381,10 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
                   apparentWeight={currentStepReflection?.telemetry.weight !== undefined ? currentStepReflection.telemetry.weight : lab3D.apparentWeight}
                   magneticFieldOn={currentStepReflection?.telemetry.magneticFieldOn !== undefined ? currentStepReflection.telemetry.magneticFieldOn : lab3D.magneticFieldOn}
                   activeSubstance={currentStepReflection?.telemetry.activeSubstance || lab3D.activeSubstance}
+                  activeAlkali={activeAlkali}
+                  hasWater={hasWater}
+                  isIndicatorAdded={isIndicatorAdded}
+                  isCutAndDried={isCutAndDried}
                   chemicalNote={currentStepReflection?.observation || selectedExp.steps[currentStep]?.chemicalChange}
                   scientificObservation={currentStepReflection?.observation}
                   scientificReason={currentStepReflection?.scientificReason}

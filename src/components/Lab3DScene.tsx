@@ -16,13 +16,18 @@ import {
   ChevronRight,
   ChevronLeft,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Scissors,
+  FileText,
+  Pipette,
+  FlaskConical,
+  Layers
 } from "lucide-react";
 
 export interface Lab3DProps {
   experimentId: string;
   stepIndex: number;
-  apparatusType?: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" | "magnetic_balance";
+  apparatusType?: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" | "magnetic_balance" | "glass_basin";
   liquidColor?: string;
   liquidHeight?: number; // 0.1 to 0.8
   isHeating?: boolean;
@@ -36,6 +41,10 @@ export interface Lab3DProps {
   apparentWeight?: number; // g
   magneticFieldOn?: boolean;
   activeSubstance?: string;
+  activeAlkali?: "none" | "na" | "k";
+  hasWater?: boolean;
+  isIndicatorAdded?: boolean;
+  isCutAndDried?: boolean;
   chemicalNote?: string;
   scientificObservation?: string;
   scientificReason?: string;
@@ -60,11 +69,15 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   isSmoking = false,
   flameColor = "#3b82f6",
   temperature = 25,
-  phValue = 7,
+  phValue = 7.0,
   gasVolume = 0,
   apparentWeight,
   magneticFieldOn = false,
   activeSubstance,
+  activeAlkali = "none",
+  hasWater = true,
+  isIndicatorAdded = false,
+  isCutAndDried = false,
   chemicalNote,
   scientificObservation,
   scientificReason,
@@ -98,6 +111,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   const magneticFieldGroupRef = useRef<THREE.Group | null>(null);
   const sampleTubeGroupRef = useRef<THREE.Group | null>(null);
   const balanceBeamRef = useRef<THREE.Mesh | null>(null);
+  const alkaliBallRef = useRef<THREE.Group | null>(null);
 
   // Orbit rotation controls
   const isDraggingRef = useRef<boolean>(false);
@@ -119,14 +133,13 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     setCurrentPh(phValue);
     setCurrentGas(gasVolume);
     setCurrentWeight(apparentWeight);
-  }, [temperature, phValue, gasVolume, apparentWeight, stepIndex]);
+  }, [temperature, phValue, gasVolume, apparentWeight]);
 
-  // Fullscreen Toggle
+  // Handle Fullscreen Toggle
   const toggleFullscreen = useCallback(async () => {
-    if (!containerRef.current) return;
     try {
-      if (!document.fullscreenElement) {
-        if (containerRef.current.requestFullscreen) {
+      if (!isFullscreen && !isModalFullscreen) {
+        if (containerRef.current?.requestFullscreen) {
           await containerRef.current.requestFullscreen();
           setIsFullscreen(true);
         } else {
@@ -142,7 +155,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     } catch {
       setIsModalFullscreen(prev => !prev);
     }
-  }, []);
+  }, [isFullscreen, isModalFullscreen]);
 
   // Listen to fullscreen changes
   useEffect(() => {
@@ -239,32 +252,36 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     rimLight.position.set(-5, 4, -5);
     scene.add(rimLight);
 
-    // Bench Surface
-    const benchGeo = new THREE.BoxGeometry(14, 0.4, 9);
-    const benchMat = new THREE.MeshStandardMaterial({
-      color: 0x1e293b,
-      roughness: 0.35,
-      metalness: 0.15
+    const benchGlow = new THREE.PointLight(0x10b981, 0.35, 12);
+    benchGlow.position.set(0, -0.5, 2);
+    scene.add(benchGlow);
+
+    // Laboratory Table / Benchtop
+    const tableGeo = new THREE.CylinderGeometry(8, 8, 0.4, 64);
+    const tableMat = new THREE.MeshStandardMaterial({
+      color: 0x0f172a,
+      roughness: 0.25,
+      metalness: 0.2
     });
-    const bench = new THREE.Mesh(benchGeo, benchMat);
-    bench.position.set(0, -0.2, 0);
-    bench.receiveShadow = true;
-    scene.add(bench);
+    const table = new THREE.Mesh(tableGeo, tableMat);
+    table.position.set(0, -0.2, 0);
+    table.receiveShadow = true;
+    scene.add(table);
 
-    // Bench Grid Reflection Tile Lines
-    const gridHelper = new THREE.GridHelper(12, 12, 0x334155, 0x1e293b);
-    gridHelper.position.set(0, 0.01, 0);
-    scene.add(gridHelper);
+    // Sleek Lab Safety Grid Pattern on Table
+    const grid = new THREE.GridHelper(12, 24, 0x1e293b, 0x0f172a);
+    grid.position.set(0, 0.005, 0);
+    scene.add(grid);
 
-    // Handle Resize with ResizeObserver
+    // Window / Container Resize Observer
     const handleResize = () => {
       if (!mountRef.current || !rendererRef.current || !cameraRef.current) return;
-      const w = mountRef.current.clientWidth;
-      const h = mountRef.current.clientHeight;
-      if (w === 0 || h === 0) return;
-      cameraRef.current.aspect = w / h;
+      const newWidth = mountRef.current.clientWidth;
+      const newHeight = mountRef.current.clientHeight;
+      if (newWidth === 0 || newHeight === 0) return;
+      cameraRef.current.aspect = newWidth / newHeight;
       cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(w, h);
+      rendererRef.current.setSize(newWidth, newHeight);
     };
 
     const resizeObserver = new ResizeObserver(() => {
@@ -273,11 +290,9 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     resizeObserver.observe(mountRef.current);
     window.addEventListener("resize", handleResize);
 
-    // Cleanup on unmount
     return () => {
       resizeObserver.disconnect();
       window.removeEventListener("resize", handleResize);
-      if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
       if (rendererRef.current && rendererRef.current.domElement && mountRef.current) {
         mountRef.current.removeChild(rendererRef.current.domElement);
         rendererRef.current.dispose();
@@ -365,141 +380,381 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       rightCoil.position.set(1.4, 1.35, 0);
       magnetBalanceGroup.add(rightCoil);
 
-      // Tapered Pole Shoes facing each other
-      const poleGeo = new THREE.BoxGeometry(0.7, 0.8, 0.8);
-      const leftPole = new THREE.Mesh(poleGeo, darkIronMat);
-      leftPole.position.set(-0.85, 2.1, 0);
+      // Tapered Pole Shoes (الأقطاب المغناطيسية المدببة)
+      const leftPole = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.48, 0.65, 32), darkIronMat);
+      leftPole.rotation.z = -Math.PI / 2;
+      leftPole.position.set(-0.6, 2.0, 0);
       magnetBalanceGroup.add(leftPole);
 
-      // Pole Markers: North (Red) & South (Blue)
-      const nMarker = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.7, 0.7), new THREE.MeshStandardMaterial({ color: 0xef4444 }));
-      nMarker.position.set(-0.5, 2.1, 0);
-      magnetBalanceGroup.add(nMarker);
-
-      const rightPole = new THREE.Mesh(poleGeo, darkIronMat);
-      rightPole.position.set(0.85, 2.1, 0);
+      const rightPole = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.48, 0.65, 32), darkIronMat);
+      rightPole.rotation.z = Math.PI / 2;
+      rightPole.position.set(0.6, 2.0, 0);
       magnetBalanceGroup.add(rightPole);
 
-      const sMarker = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.7, 0.7), new THREE.MeshStandardMaterial({ color: 0x3b82f6 }));
-      sMarker.position.set(0.5, 2.1, 0);
-      magnetBalanceGroup.add(sMarker);
+      // Pole labels (N & S)
+      const poleN = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.25), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+      poleN.position.set(-0.65, 2.35, 0);
+      magnetBalanceGroup.add(poleN);
 
-      // Glowing Magnetic Flux Field Lines (Between poles)
-      const fieldGroup = new THREE.Group();
-      fieldGroup.position.set(0, 2.1, 0);
-      for (let f = 0; f < 5; f++) {
-        const ringGeo = new THREE.TorusGeometry(0.35 + f * 0.05, 0.015, 12, 32);
+      const poleS = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.25), new THREE.MeshBasicMaterial({ color: 0x3b82f6 }));
+      poleS.position.set(0.65, 2.35, 0);
+      magnetBalanceGroup.add(poleS);
+
+      // 2. Animated Magnetic Field Flux (خطوط المجال المغناطيسي المتوهجة بين القطبين)
+      const magFieldGroup = new THREE.Group();
+      magFieldGroup.position.set(0, 2.0, 0);
+
+      const fieldRings = 7;
+      for (let f = 0; f < fieldRings; f++) {
+        const ringRadius = 0.15 + f * 0.06;
+        const ringGeo = new THREE.TorusGeometry(ringRadius, 0.015, 16, 32);
         const ringMat = new THREE.MeshBasicMaterial({
           color: 0x38bdf8,
           transparent: true,
           opacity: 0.6,
           blending: THREE.AdditiveBlending
         });
-        const ring = new THREE.Mesh(ringGeo, ringMat);
-        ring.rotation.y = Math.PI / 2;
-        ring.position.set(0, (f - 2) * 0.1, 0);
-        fieldGroup.add(ring);
+        const ringMesh = new THREE.Mesh(ringGeo, ringMat);
+        ringMesh.rotation.y = Math.PI / 2;
+        ringMesh.position.set((Math.random() - 0.5) * 0.3, 0, 0);
+        magFieldGroup.add(ringMesh);
       }
-      fieldGroup.visible = !!magneticFieldOn;
-      magneticFieldGroupRef.current = fieldGroup;
-      magnetBalanceGroup.add(fieldGroup);
+      magFieldGroup.visible = !!magneticFieldOn;
+      magneticFieldGroupRef.current = magFieldGroup;
+      magnetBalanceGroup.add(magFieldGroup);
 
-      // 2. Overhead Gouy Analytical Balance
-      // Vertical Tower Pillar
-      const towerPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 4.4, 16), metalMat);
-      towerPillar.position.set(-2.2, 2.4, -0.6);
-      magnetBalanceGroup.add(towerPillar);
+      // 3. Overhead Analytical Balance (ميزان غوي الحساس فوق المغناطيس)
+      const balanceStand = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 2.6, 24), metalMat);
+      balanceStand.position.set(0, 3.7, -0.6);
+      magnetBalanceGroup.add(balanceStand);
 
-      // Top Crossbar
-      const crossbar = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 0.08), metalMat);
-      crossbar.position.set(-1.1, 4.6, -0.3);
-      crossbar.rotation.y = -Math.PI / 8;
-      magnetBalanceGroup.add(crossbar);
+      const balanceFulcrum = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.25, 16), metalMat);
+      balanceFulcrum.position.set(0, 4.85, 0);
+      balanceFulcrum.rotation.x = Math.PI;
+      magnetBalanceGroup.add(balanceFulcrum);
 
-      // Central Balance Knife-Edge Fulcrum
-      const fulcrum = new THREE.Mesh(new THREE.ConeGeometry(0.12, 0.2, 16), metalMat);
-      fulcrum.position.set(-0.6, 4.5, 0);
-      magnetBalanceGroup.add(fulcrum);
+      // Balance Beam (عارضة الميزان الأفقية المتأرجحة)
+      const beamGeo = new THREE.BoxGeometry(3.6, 0.08, 0.08);
+      const beamMesh = new THREE.Mesh(beamGeo, copperMat);
+      beamMesh.position.set(0, 4.95, 0);
+      balanceBeamRef.current = beamMesh;
+      magnetBalanceGroup.add(beamMesh);
 
-      // Balance Beam (Lever)
-      const beam = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.06, 0.06), metalMat);
-      beam.position.set(-0.6, 4.6, 0);
-      balanceBeamRef.current = beam;
-      magnetBalanceGroup.add(beam);
+      // Center pointer & scale dial
+      const pointer = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.7, 12), metalMat);
+      pointer.position.set(0, 4.6, 0.05);
+      magnetBalanceGroup.add(pointer);
 
-      // Left Counterweight Pan
+      const scalePlate = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.35, 0.02), darkIronMat);
+      scalePlate.position.set(0, 4.3, 0.06);
+      magnetBalanceGroup.add(scalePlate);
+
+      // Left Tare Pan (كفة الميزان اليسرى لمعايرة الوزن)
       const leftWire = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.8, 8), metalMat);
-      leftWire.position.set(-1.9, 3.7, 0);
+      leftWire.position.set(-1.7, 4.0, 0);
       magnetBalanceGroup.add(leftWire);
 
-      const leftPan = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.35, 0.05, 24), metalMat);
-      leftPan.position.set(-1.9, 2.8, 0);
+      const leftPan = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.45, 0.05, 32), copperMat);
+      leftPan.position.set(-1.7, 3.1, 0);
       magnetBalanceGroup.add(leftPan);
 
-      // Small reference brass weights on pan
-      const weight1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.2, 16), copperMat);
-      weight1.position.set(-1.9, 2.92, 0);
+      // Standard weights on left pan
+      const weight1 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.25, 16), darkIronMat);
+      weight1.position.set(-1.7, 3.25, 0);
       magnetBalanceGroup.add(weight1);
 
-      // 3. Right Suspended Sample Tube (Hanging right into magnetic gap!)
-      const sampleGroup = new THREE.Group();
-      sampleGroup.position.set(0, 0, 0);
-      sampleTubeGroupRef.current = sampleGroup;
+      // Right Suspension Wire & Gouy Sample Tube (أنبوبة العينة المعلقة بدقة بين القطبين)
+      const tubeGroup = new THREE.Group();
+      tubeGroup.position.set(1.7, 0, 0);
 
-      // Suspension wire from beam right tip (x = 0.7) down into magnetic gap
-      const rightWire = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 2.5, 8), metalMat);
-      rightWire.position.set(0.7, 3.35, 0);
-      sampleGroup.add(rightWire);
+      const rightWire = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 2.4, 8), metalMat);
+      rightWire.position.set(0, 3.7, 0);
+      tubeGroup.add(rightWire);
 
-      // Hook connecting to sample tube
-      const hook = new THREE.Mesh(new THREE.TorusGeometry(0.06, 0.015, 8, 16), metalMat);
-      hook.position.set(0.7, 2.7, 0);
-      sampleGroup.add(hook);
+      // Gouy Sample Tube (أنبوبة زجاجية أسطوانية ضيقة طويلة ممتلئة بالملح)
+      const sampleTube = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.6, 24), glassMaterial);
+      sampleTube.position.set(0, 2.0, 0);
+      tubeGroup.add(sampleTube);
 
-      // Glass Sample Tube
-      const tubeHeight = 1.3;
-      const tubeRadius = 0.14;
-      const sampleTube = new THREE.Mesh(new THREE.CylinderGeometry(tubeRadius, tubeRadius, tubeHeight, 24, 1, true), glassMaterial);
-      sampleTube.position.set(0.7, 2.05, 0);
-      sampleGroup.add(sampleTube);
+      // Powder/Crystal Sample Inside the Tube
+      let sampleColor = 0x86efac; // FeSO4 pale green default
+      if (activeSubstance === "CuSO4") sampleColor = 0x38bdf8; // Blue
+      if (activeSubstance === "ZnCl2") sampleColor = 0xf8fafc; // White
 
-      const tubeBottom = new THREE.Mesh(new THREE.SphereGeometry(tubeRadius, 24, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), glassMaterial);
-      tubeBottom.position.set(0.7, 2.05 - tubeHeight / 2, 0);
-      sampleGroup.add(tubeBottom);
-
-      // Sample substance filling inside tube
-      const sampleColorHex = activeSubstance === "FeSO4" ? 0x10b981 : activeSubstance === "CuSO4" ? 0x0284c7 : 0xf8fafc;
-      const sampleMat = new THREE.MeshStandardMaterial({
-        color: sampleColorHex,
-        roughness: 0.5,
+      const powderGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 24);
+      const powderMat = new THREE.MeshStandardMaterial({
+        color: sampleColor,
+        roughness: 0.8,
         metalness: 0.1
       });
-      const sampleFilling = new THREE.Mesh(new THREE.CylinderGeometry(tubeRadius * 0.88, tubeRadius * 0.88, tubeHeight * 0.8, 24), sampleMat);
-      sampleFilling.position.set(0.7, 2.0, 0);
-      sampleGroup.add(sampleFilling);
+      const powderMesh = new THREE.Mesh(powderGeo, powderMat);
+      powderMesh.position.set(0, 1.9, 0);
+      tubeGroup.add(powderMesh);
 
-      magnetBalanceGroup.add(sampleGroup);
-
-      // Digital Balance Display Box on the bench
-      const displayBox = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.6, 1.0), darkIronMat);
-      displayBox.position.set(-2.2, 0.3, 1.2);
-      magnetBalanceGroup.add(displayBox);
-
-      const screenMesh = new THREE.Mesh(
-        new THREE.PlaneGeometry(1.2, 0.35),
-        new THREE.MeshBasicMaterial({ color: 0x0f172a })
-      );
-      screenMesh.position.set(-2.2, 0.35, 1.71);
-      screenMesh.rotation.x = -Math.PI / 12;
-      magnetBalanceGroup.add(screenMesh);
+      tubeGroup.position.set(0, 0, 0);
+      sampleTubeGroupRef.current = tubeGroup;
+      magnetBalanceGroup.add(tubeGroup);
 
       appGroup.add(magnetBalanceGroup);
+    }
 
-    } else {
-      // ==============================================================
-      // 🧪 STANDARD BEAKER / BURNER / RACK / GAS PREP APPARATUS
-      // ==============================================================
+    // ==============================================================
+    // 🥣 CASE B: LARGE GLASS BASIN & WORKBENCH TRAY (حوض زجاجي كبير وصينية الأدوات)
+    // ==============================================================
+    else if (apparatusType === "glass_basin") {
+      const basinGroup = new THREE.Group();
 
+      // 1. Large Borosilicate Glass Pneumatic Trough / Basin
+      // Outer Cylindrical Glass Walls (thick glass, flat base, wide opening)
+      const basinRadius = 1.9;
+      const basinHeight = 1.35;
+      const basinWallGeo = new THREE.CylinderGeometry(basinRadius, basinRadius * 0.96, basinHeight, 48, 1, true);
+      const basinWall = new THREE.Mesh(basinWallGeo, glassMaterial);
+      basinWall.position.set(0.6, basinHeight / 2 + 0.05, 0);
+      basinWall.castShadow = true;
+      basinGroup.add(basinWall);
+
+      // Basin Flat Glass Bottom Plate
+      const basinBottom = new THREE.Mesh(new THREE.CylinderGeometry(basinRadius * 0.96, basinRadius * 0.96, 0.08, 48), glassMaterial);
+      basinBottom.position.set(0.6, 0.08, 0);
+      basinGroup.add(basinBottom);
+
+      // Heavy Rounded Safety Rim around the mouth of the basin
+      const basinRim = new THREE.Mesh(new THREE.TorusGeometry(basinRadius, 0.05, 16, 48), glassMaterial);
+      basinRim.rotation.x = Math.PI / 2;
+      basinRim.position.set(0.6, basinHeight + 0.05, 0);
+      basinGroup.add(basinRim);
+
+      // Water Liquid inside the basin
+      const waterHeight = hasWater !== false ? Math.max(0.4, liquidHeight * 1.1) : 0.05;
+      const waterGeo = new THREE.CylinderGeometry(basinRadius * 0.94, basinRadius * 0.94, waterHeight, 48);
+      waterGeo.translate(0, waterHeight / 2, 0);
+      const waterColorVal = isIndicatorAdded ? (activeAlkali === "k" ? "#c084fc" : "#ec4899") : liquidColor;
+      const waterMat = new THREE.MeshPhysicalMaterial({
+        color: new THREE.Color(waterColorVal),
+        transparent: true,
+        opacity: 0.78,
+        roughness: 0.1,
+        transmission: 0.85,
+        ior: 1.33
+      });
+      const waterMesh = new THREE.Mesh(waterGeo, waterMat);
+      waterMesh.position.set(0.6, 0.09, 0);
+      basinGroup.add(waterMesh);
+      liquidMeshRef.current = waterMesh;
+
+      // 2. Side Laboratory Workbench Tray (صينية الأدوات والمواد على طاولة المعمل)
+      const trayGroup = new THREE.Group();
+      trayGroup.position.set(-2.5, 0, 0);
+
+      // Polished dark slate / wooden laboratory tray base
+      const trayBase = new THREE.Mesh(
+        new THREE.BoxGeometry(2.4, 0.08, 3.4),
+        new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4, metalness: 0.2 })
+      );
+      trayBase.position.set(0, 0.04, 0);
+      trayBase.castShadow = true;
+      trayGroup.add(trayBase);
+
+      // Raised tray borders
+      const rimMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 });
+      const rimFront = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.14, 0.06), rimMat);
+      rimFront.position.set(0, 0.09, 1.67);
+      trayGroup.add(rimFront);
+      const rimBack = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.14, 0.06), rimMat);
+      rimBack.position.set(0, 0.09, -1.67);
+      trayGroup.add(rimBack);
+      const rimLeft = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 3.4), rimMat);
+      rimLeft.position.set(-1.17, 0.09, 0);
+      trayGroup.add(rimLeft);
+      const rimRight = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 3.4), rimMat);
+      rimRight.position.set(1.17, 0.09, 0);
+      trayGroup.add(rimRight);
+
+      // A. Watch Glass / Ceramic Tile for Cutting (بلاطة تقطيع وساعة زجاجية)
+      const tile = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.7, 0.72, 0.05, 32),
+        new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.2 })
+      );
+      tile.position.set(-0.2, 0.1, 0.6);
+      trayGroup.add(tile);
+
+      // B. Filter Paper Disc (ورق ترشيح دائري أبيض)
+      const filterPaper = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.55, 0.55, 0.015, 32),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
+      );
+      filterPaper.position.set(-0.2, 0.13, 0.6);
+      trayGroup.add(filterPaper);
+
+      // Small cut shiny sodium piece on the filter paper if cut/dried
+      if (isCutAndDried || stepIndex >= 2) {
+        const cutPiece = new THREE.Mesh(
+          new THREE.BoxGeometry(0.12, 0.08, 0.12),
+          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.95, roughness: 0.1 })
+        );
+        cutPiece.position.set(-0.2, 0.18, 0.6);
+        trayGroup.add(cutPiece);
+      }
+
+      // C. Sharp Scalpel / Knife (سكين حاد / مشرط جراحي)
+      const knifeGroup = new THREE.Group();
+      knifeGroup.position.set(0.6, 0.12, 0.6);
+      knifeGroup.rotation.y = -0.3;
+
+      // Stainless Steel Blade
+      const blade = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, 0.12, 0.7),
+        new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.08 })
+      );
+      blade.position.set(0, 0.06, -0.35);
+      knifeGroup.add(blade);
+
+      // Knife handle
+      const knifeHandle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.045, 0.045, 0.7, 16),
+        new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.5 })
+      );
+      knifeHandle.rotation.x = Math.PI / 2;
+      knifeHandle.position.set(0, 0.06, 0.35);
+      knifeGroup.add(knifeHandle);
+      trayGroup.add(knifeGroup);
+
+      // D. Metallic Forceps / Tweezers (ملقط معدني دقيق)
+      const forcepsGroup = new THREE.Group();
+      forcepsGroup.position.set(-0.6, 0.12, -0.7);
+      forcepsGroup.rotation.y = 0.4;
+
+      const prongMat = new THREE.MeshStandardMaterial({ color: 0xcfd8dc, metalness: 0.92, roughness: 0.15 });
+      const leftProng = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 1.1), prongMat);
+      leftProng.position.set(-0.03, 0.02, 0);
+      leftProng.rotation.y = 0.05;
+      forcepsGroup.add(leftProng);
+
+      const rightProng = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 1.1), prongMat);
+      rightProng.position.set(0.03, 0.02, 0);
+      rightProng.rotation.y = -0.05;
+      forcepsGroup.add(rightProng);
+
+      const forcepsJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 16), prongMat);
+      forcepsJoint.position.set(0, 0.02, -0.55);
+      forcepsGroup.add(forcepsJoint);
+      trayGroup.add(forcepsGroup);
+
+      // E. Dropper Bottle with Indicator (قطارة دليل الفينول فثالين)
+      const dropperGroup = new THREE.Group();
+      dropperGroup.position.set(0.5, 0.08, -0.8);
+
+      const bottleBody = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.24, 0.24, 0.7, 24),
+        new THREE.MeshPhysicalMaterial({ color: 0x78350f, transparent: true, opacity: 0.8, roughness: 0.2 })
+      );
+      bottleBody.position.set(0, 0.35, 0);
+      dropperGroup.add(bottleBody);
+
+      // Bottle Cap & Rubber Teat
+      const bottleCap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.15, 24), darkIronMat);
+      bottleCap.position.set(0, 0.75, 0);
+      dropperGroup.add(bottleCap);
+
+      const rubberTeat = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.7 })
+      );
+      rubberTeat.position.set(0, 0.88, 0);
+      dropperGroup.add(rubberTeat);
+      trayGroup.add(dropperGroup);
+
+      // F. Reagent Jars for Sodium and Potassium (أوعية كيروسين لحفظ الصوديوم Na والبوتاسيوم K)
+      const naJar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.25, 0.6, 24),
+        new THREE.MeshPhysicalMaterial({ color: 0xfef08a, transparent: true, opacity: 0.75 })
+      );
+      naJar.position.set(-0.2, 0.38, -0.8);
+      trayGroup.add(naJar);
+
+      const naCap = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.1, 24), darkIronMat);
+      naCap.position.set(-0.2, 0.73, -0.8);
+      trayGroup.add(naCap);
+
+      basinGroup.add(trayGroup);
+
+      // 3. Floating & Darting Molten Alkali Metal Sphere (كرة الفلز المنصهرة السابحة في الماء)
+      const effectiveAlkali = activeAlkali !== "none" ? activeAlkali : (stepIndex >= 2 ? (stepIndex === 2 ? "na" : "k") : "none");
+      if (effectiveAlkali !== "none") {
+        const alkaliSphereGroup = new THREE.Group();
+        alkaliSphereGroup.position.set(0.6, waterHeight + 0.12, 0);
+
+        // Shiny molten metallic sphere
+        const metalBall = new THREE.Mesh(
+          new THREE.SphereGeometry(0.14, 24, 24),
+          new THREE.MeshStandardMaterial({ color: 0xf1f5f9, metalness: 0.98, roughness: 0.05 })
+        );
+        alkaliSphereGroup.add(metalBall);
+
+        // Flame and glow directly on the ball
+        const alkaliFlameColor = effectiveAlkali === "k" ? 0xa855f7 : 0xfbbf24;
+        const ballFlame = new THREE.Mesh(
+          new THREE.ConeGeometry(0.16, 0.65, 16),
+          new THREE.MeshBasicMaterial({ color: alkaliFlameColor, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending })
+        );
+        ballFlame.geometry.translate(0, 0.32, 0);
+        alkaliSphereGroup.add(ballFlame);
+
+        const ballLight = new THREE.PointLight(alkaliFlameColor, effectiveAlkali === "k" ? 4.5 : 3.0, 3.5);
+        ballLight.position.set(0, 0.2, 0);
+        alkaliSphereGroup.add(ballLight);
+
+        basinGroup.add(alkaliSphereGroup);
+        alkaliBallRef.current = alkaliSphereGroup;
+      }
+
+      // Bubbles & Smoke in the basin
+      const bubbleGeo = new THREE.BufferGeometry();
+      const bubbleCount = 40;
+      const bubblePos = new Float32Array(bubbleCount * 3);
+      const bubbleSpeeds = new Float32Array(bubbleCount);
+      for (let b = 0; b < bubbleCount; b++) {
+        bubblePos[b * 3] = 0.6 + (Math.random() - 0.5) * 1.5;
+        bubblePos[b * 3 + 1] = 0.1 + Math.random() * waterHeight;
+        bubblePos[b * 3 + 2] = (Math.random() - 0.5) * 1.5;
+        bubbleSpeeds[b] = 0.015 + Math.random() * 0.025;
+      }
+      bubbleGeo.setAttribute("position", new THREE.BufferAttribute(bubblePos, 3));
+      bubbleGeo.setAttribute("speed", new THREE.BufferAttribute(bubbleSpeeds, 1));
+      const bubbles = new THREE.Points(
+        bubbleGeo,
+        new THREE.PointsMaterial({ color: 0xffffff, size: 0.06, transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending })
+      );
+      bubbles.visible = isBubbling || effectiveAlkali !== "none";
+      bubblesGroupRef.current = bubbles;
+      basinGroup.add(bubbles);
+
+      // Smoke particles over the basin
+      const smokeCount = 50;
+      const smokeGeo = new THREE.BufferGeometry();
+      const smokePos = new Float32Array(smokeCount * 3);
+      for (let s = 0; s < smokeCount; s++) {
+        smokePos[s * 3] = 0.6 + (Math.random() - 0.5) * 1.2;
+        smokePos[s * 3 + 1] = waterHeight + Math.random() * 2.0;
+        smokePos[s * 3 + 2] = (Math.random() - 0.5) * 1.2;
+      }
+      smokeGeo.setAttribute("position", new THREE.BufferAttribute(smokePos, 3));
+      const smoke = new THREE.Points(
+        smokeGeo,
+        new THREE.PointsMaterial({ color: 0xe2e8f0, size: 0.2, transparent: true, opacity: 0.4 })
+      );
+      smoke.visible = isSmoking || effectiveAlkali !== "none";
+      smokeGroupRef.current = smoke;
+      basinGroup.add(smoke);
+
+      appGroup.add(basinGroup);
+    }
+
+    // ==============================================================
+    // 🧪 CASE C: STANDARD BEAKER / BURNER / RACK / GAS PREP APPARATUS
+    // ==============================================================
+    else {
       // Retort stand
       const standBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.1, 1.4), metalMat);
       standBase.position.set(-1.8, 0.05, 0);
@@ -568,74 +823,69 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       gauze.position.set(0, 1.51, 0);
       appGroup.add(gauze);
 
-      for (let i = 0; i < 3; i++) {
-        const legAngle = (i * 2 * Math.PI) / 3;
-        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 1.55, 12), metalMat);
-        leg.position.set(Math.cos(legAngle) * 0.85, 0.77, Math.sin(legAngle) * 0.85);
-        leg.rotation.z = -Math.cos(legAngle) * 0.12;
-        leg.rotation.x = Math.sin(legAngle) * 0.12;
-        appGroup.add(leg);
+      for (let leg = 0; leg < 3; leg++) {
+        const angle = (leg * Math.PI * 2) / 3;
+        const tripodLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 1.6, 16), metalMat);
+        tripodLeg.position.set(Math.cos(angle) * 0.85, 0.75, Math.sin(angle) * 0.85);
+        tripodLeg.rotation.z = Math.cos(angle) * -0.15;
+        tripodLeg.rotation.x = Math.sin(angle) * 0.15;
+        appGroup.add(tripodLeg);
       }
 
-      // Beaker Glassware
-      const beakerHeight = 1.8;
+      // Reaction Beaker (الكأس الزجاجي)
       const beakerRadius = 0.8;
-      const beakerMesh = new THREE.Mesh(new THREE.CylinderGeometry(beakerRadius, beakerRadius * 0.95, beakerHeight, 32, 1, true), glassMaterial);
-      beakerMesh.position.set(0, 1.52 + beakerHeight / 2, 0);
-      appGroup.add(beakerMesh);
+      const beakerHeight = 1.8;
+      const beakerGeo = new THREE.CylinderGeometry(beakerRadius, beakerRadius * 0.95, beakerHeight, 32, 1, true);
+      const beaker = new THREE.Mesh(beakerGeo, glassMaterial);
+      beaker.position.set(0, 1.52 + beakerHeight / 2, 0);
+      beaker.castShadow = true;
+      appGroup.add(beaker);
 
-      const beakerBottom = new THREE.Mesh(new THREE.CircleGeometry(beakerRadius * 0.95, 32), glassMaterial);
-      beakerBottom.rotation.x = Math.PI / 2;
-      beakerBottom.position.set(0, 1.52, 0);
+      // Beaker Bottom
+      const beakerBottom = new THREE.Mesh(new THREE.CylinderGeometry(beakerRadius * 0.95, beakerRadius * 0.95, 0.04, 32), glassMaterial);
+      beakerBottom.position.set(0, 1.53, 0);
       appGroup.add(beakerBottom);
 
-      const beakerRim = new THREE.Mesh(new THREE.TorusGeometry(beakerRadius, 0.025, 16, 32), glassMaterial);
-      beakerRim.rotation.x = Math.PI / 2;
-      beakerRim.position.set(0, 1.52 + beakerHeight, 0);
-      appGroup.add(beakerRim);
-
-      // Measurement lines
-      for (let m = 1; m <= 4; m++) {
-        const lineMesh = new THREE.Mesh(
-          new THREE.RingGeometry(beakerRadius - 0.005, beakerRadius + 0.005, 32, 1, 0, Math.PI / 3),
-          new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, opacity: 0.6, transparent: true })
-        );
-        lineMesh.rotation.x = Math.PI / 2;
-        lineMesh.position.set(0, 1.52 + (beakerHeight * m) / 5, 0);
-        appGroup.add(lineMesh);
-      }
-
-      // Liquid Volume
-      const effectiveHeight = Math.max(0.1, Math.min(0.85, liquidHeight)) * beakerHeight;
-      const liquidGeo = new THREE.CylinderGeometry(beakerRadius * 0.92, beakerRadius * 0.92, effectiveHeight, 32);
-      liquidGeo.translate(0, effectiveHeight / 2, 0);
+      // Liquid Mesh inside Beaker
+      const realLiquidHeight = Math.max(0.1, liquidHeight * 1.5);
+      const liquidGeo = new THREE.CylinderGeometry(beakerRadius * 0.93, beakerRadius * 0.93, realLiquidHeight, 32);
+      liquidGeo.translate(0, realLiquidHeight / 2, 0);
       const liquidMat = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(liquidColor),
         transparent: true,
-        opacity: 0.85,
+        opacity: 0.8,
         roughness: 0.1,
-        transmission: 0.5,
+        transmission: 0.75,
         ior: 1.33
       });
       const liquidMesh = new THREE.Mesh(liquidGeo, liquidMat);
-      liquidMesh.position.set(0, 1.53, 0);
+      liquidMesh.position.set(0, 1.54, 0);
       liquidMeshRef.current = liquidMesh;
       appGroup.add(liquidMesh);
 
+      // Beaker Graduations / Lines
+      for (let g = 1; g <= 4; g++) {
+        const ringLine = new THREE.Mesh(
+          new THREE.TorusGeometry(beakerRadius * 0.98, 0.008, 8, 32),
+          new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 })
+        );
+        ringLine.rotation.x = Math.PI / 2;
+        ringLine.position.set(0, 1.52 + g * 0.35, 0);
+        appGroup.add(ringLine);
+      }
+
       // Bubbles Particle System
-      const bubbleCount = 70;
       const bubbleGeo = new THREE.BufferGeometry();
-      const bubblePositions = new Float32Array(bubbleCount * 3);
+      const bubbleCount = 35;
+      const bubblePos = new Float32Array(bubbleCount * 3);
       const bubbleSpeeds = new Float32Array(bubbleCount);
       for (let b = 0; b < bubbleCount; b++) {
-        const angle = Math.random() * Math.PI * 2;
-        const r = Math.random() * (beakerRadius * 0.7);
-        bubblePositions[b * 3] = Math.cos(angle) * r;
-        bubblePositions[b * 3 + 1] = 1.54 + Math.random() * effectiveHeight;
-        bubblePositions[b * 3 + 2] = Math.sin(angle) * r;
-        bubbleSpeeds[b] = 0.015 + Math.random() * 0.025;
+        bubblePos[b * 3] = (Math.random() - 0.5) * (beakerRadius * 1.5);
+        bubblePos[b * 3 + 1] = 1.54 + Math.random() * realLiquidHeight;
+        bubblePos[b * 3 + 2] = (Math.random() - 0.5) * (beakerRadius * 1.5);
+        bubbleSpeeds[b] = 0.01 + Math.random() * 0.02;
       }
-      bubbleGeo.setAttribute("position", new THREE.BufferAttribute(bubblePositions, 3));
+      bubbleGeo.setAttribute("position", new THREE.BufferAttribute(bubblePos, 3));
       bubbleGeo.setAttribute("speed", new THREE.BufferAttribute(bubbleSpeeds, 1));
       const bubbles = new THREE.Points(
         bubbleGeo,
@@ -741,7 +991,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     }
 
     scene.add(appGroup);
-  }, [apparatusType, liquidColor, liquidHeight, flameColor, isHeating, isBubbling, isSmoking, magneticFieldOn, activeSubstance]);
+  }, [apparatusType, liquidColor, liquidHeight, flameColor, isHeating, isBubbling, isSmoking, magneticFieldOn, activeSubstance, activeAlkali, hasWater, isIndicatorAdded, isCutAndDried, stepIndex]);
 
   // 3. Dynamic Animation Loop
   useEffect(() => {
@@ -751,7 +1001,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       animFrameIdRef.current = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
 
-      // Flame flicker
+      // Flame flicker for Bunsen burner
       if (flameMeshRef.current) {
         if (isHeating) {
           flameMeshRef.current.visible = true;
@@ -786,24 +1036,33 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
           if (magneticFieldOn) {
             if (activeSubstance === "FeSO4") {
-              // Strong paramagnetism (4 unpaired electrons): Pulls down hard!
               targetDeflection = -0.22;
               beamTilt = -0.06;
             } else if (activeSubstance === "CuSO4") {
-              // Moderate paramagnetism (1 unpaired electron): Pulls down slightly
               targetDeflection = -0.10;
               beamTilt = -0.03;
             } else if (activeSubstance === "ZnCl2") {
-              // Diamagnetism (0 unpaired electrons): Repels upwards slightly!
               targetDeflection = 0.07;
               beamTilt = 0.02;
             }
           }
 
-          // Smooth interpolation
           sampleTubeGroupRef.current.position.y += (targetDeflection - sampleTubeGroupRef.current.position.y) * 0.1;
           balanceBeamRef.current.rotation.z += (beamTilt - balanceBeamRef.current.rotation.z) * 0.1;
         }
+      }
+
+      // Glass Basin: Molten Alkali Metal Sphere darting on water surface
+      if (apparatusType === "glass_basin" && alkaliBallRef.current) {
+        const effectiveAlkali = activeAlkali !== "none" ? activeAlkali : (stepIndex >= 2 ? (stepIndex === 2 ? "na" : "k") : "none");
+        const speed = effectiveAlkali === "k" ? 4.8 : 3.2;
+        const radiusVal = 1.15 + Math.sin(elapsedTime * 3) * 0.35;
+        const angle = elapsedTime * speed;
+        
+        alkaliBallRef.current.position.x = 0.6 + Math.cos(angle) * radiusVal;
+        alkaliBallRef.current.position.z = Math.sin(angle) * radiusVal;
+        const waterTop = (hasWater !== false ? Math.max(0.4, liquidHeight * 1.1) : 0.05) + 0.12;
+        alkaliBallRef.current.position.y = waterTop + Math.sin(elapsedTime * 14) * 0.02;
       }
 
       // Bubbles animation
@@ -815,8 +1074,9 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         for (let i = 0; i < count; i++) {
           positions[i * 3 + 1] += speeds[i];
           positions[i * 3] += Math.sin(elapsedTime * 5 + i) * 0.003;
-          if (positions[i * 3 + 1] > 1.54 + liquidHeight * 1.8) {
-            positions[i * 3 + 1] = 1.55;
+          const topLimit = apparatusType === "glass_basin" ? (liquidHeight * 1.1 + 0.1) : (1.54 + liquidHeight * 1.8);
+          if (positions[i * 3 + 1] > topLimit) {
+            positions[i * 3 + 1] = apparatusType === "glass_basin" ? 0.12 : 1.55;
           }
         }
         bubblesGroupRef.current.geometry.attributes.position.needsUpdate = true;
@@ -830,8 +1090,8 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           sPos[s * 3 + 1] += 0.015;
           sPos[s * 3] += Math.sin(elapsedTime * 2 + s) * 0.005;
           if (sPos[s * 3 + 1] > 4.5) {
-            sPos[s * 3 + 1] = 3.32;
-            sPos[s * 3] = (Math.random() - 0.5) * 0.4;
+            sPos[s * 3 + 1] = apparatusType === "glass_basin" ? (liquidHeight * 1.1 + 0.2) : 3.32;
+            sPos[s * 3] = (apparatusType === "glass_basin" ? 0.6 : 0) + (Math.random() - 0.5) * 0.5;
           }
         }
         smokeGroupRef.current.geometry.attributes.position.needsUpdate = true;
@@ -848,7 +1108,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     return () => {
       if (animFrameIdRef.current) cancelAnimationFrame(animFrameIdRef.current);
     };
-  }, [isHeating, liquidHeight, magneticFieldOn, activeSubstance, apparatusType]);
+  }, [isHeating, liquidHeight, magneticFieldOn, activeSubstance, apparatusType, activeAlkali, hasWater, stepIndex]);
 
   // 4. Mouse Orbit Interaction
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -863,7 +1123,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     prevMousePosRef.current = { x: e.clientX, y: e.clientY };
 
     cameraAngleRef.current.theta -= deltaX * 0.008;
-    cameraAngleRef.current.phi = Math.max(0.2, Math.min(Math.PI / 2.05, cameraAngleRef.current.phi - deltaY * 0.008));
+    cameraAngleRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, cameraAngleRef.current.phi - deltaY * 0.008));
     updateCameraPos();
   };
 
@@ -873,10 +1133,11 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
-    cameraAngleRef.current.radius = Math.max(3.5, Math.min(12, cameraAngleRef.current.radius + e.deltaY * 0.005));
+    cameraAngleRef.current.radius = Math.max(3.0, Math.min(13.0, cameraAngleRef.current.radius + e.deltaY * 0.005));
     updateCameraPos();
   };
 
+  // Determine fullscreen container styling
   const isFullView = isFullscreen || isModalFullscreen;
 
   return (
@@ -884,64 +1145,14 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       ref={containerRef}
       className={
         isFullView
-          ? "fixed inset-0 z-50 w-screen h-screen bg-slate-950 flex flex-col select-none overflow-hidden"
-          : "relative w-full h-[470px] sm:h-[500px] rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-2xl select-none"
+          ? "fixed inset-0 z-50 w-screen h-screen bg-[#0B1329] flex flex-col justify-between overflow-hidden select-none"
+          : "relative w-full h-[450px] sm:h-[490px] rounded-xl overflow-hidden shadow-inner border border-slate-800 bg-[#0B1329] select-none"
       }
     >
-      {/* 🌟 Top Navigation Bar in Fullscreen Mode */}
-      {isFullView && (
-        <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900/95 border-b border-slate-800 text-slate-100 z-30 shadow-md">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={toggleFullscreen}
-              className="px-3 py-1.5 bg-rose-600/90 hover:bg-rose-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
-              title="خروج من وضع ملء الشاشة (Esc)"
-            >
-              <Minimize2 className="w-3.5 h-3.5" />
-              <span>خروج من ملء الشاشة</span>
-            </button>
-
-            {onReset && (
-              <button
-                onClick={onReset}
-                className="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <RotateCcw className="w-3 h-3" />
-                <span>إعادة البدء</span>
-              </button>
-            )}
-          </div>
-
-          <div className="text-center">
-            <h2 className="text-sm sm:text-base font-bold text-slate-100 flex items-center gap-2">
-              <span>{experimentTitle || "المختبر الافتراضي ثلاثي الأبعاد 3D"}</span>
-              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800/80">
-                الخطوة {stepIndex + 1} من {totalSteps}
-              </span>
-            </h2>
-            {unitName && <p className="text-[11px] text-amber-400 font-medium">{unitName}</p>}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowReflectionDrawer(prev => !prev)}
-              className={
-                showReflectionDrawer
-                  ? "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border bg-indigo-600 text-white border-indigo-500"
-                  : "px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer border bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
-              }
-            >
-              <Info className="w-3.5 h-3.5" />
-              <span>{showReflectionDrawer ? "إخفاء لوحة الانعكاس" : "إظهار لوحة الانعكاس"}</span>
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 3D WebGL Canvas Mount */}
+      {/* 3D Canvas Mount Point */}
       <div
         ref={mountRef}
-        className="w-full flex-1 cursor-grab active:cursor-grabbing relative"
+        className="w-full h-full cursor-grab active:cursor-grabbing"
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
@@ -949,94 +1160,140 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         onWheel={handleWheel}
       />
 
-      {/* 🎮 3D Camera Controls & Presets (Top Left) */}
-      <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 bg-slate-900/85 backdrop-blur-md p-1.5 rounded-xl border border-slate-700/80 shadow-lg text-[10px] text-slate-200">
-        <span className="text-[9px] text-slate-400 font-bold px-1 flex items-center gap-1">
-          <Rotate3D className="w-3 h-3 text-emerald-400" />
-          <span>زوايا الكاميرا 3D:</span>
-        </span>
-        <div className="grid grid-cols-2 gap-1">
+      {/* Top Floating Control Bar */}
+      <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
+        {/* Left: Quick Actions & Camera Presets */}
+        <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/80 shadow-lg">
           <button
             onClick={() => setCameraPreset("front")}
-            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 font-bold transition-colors cursor-pointer"
+            title="منظور أمامي"
+            className="px-2 py-1 text-[11px] font-bold text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
             أمامي
           </button>
           <button
             onClick={() => setCameraPreset("close")}
-            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 font-bold transition-colors cursor-pointer"
+            title="تقريب للكأس"
+            className="px-2 py-1 text-[11px] font-bold text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
             مقرب
           </button>
           <button
             onClick={() => setCameraPreset("top")}
-            className="px-2 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-200 font-bold transition-colors cursor-pointer"
+            title="منظور علوي"
+            className="px-2 py-1 text-[11px] font-bold text-slate-300 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
             علوي
           </button>
           <button
             onClick={() => setCameraPreset("reset")}
-            className="px-2 py-1 bg-emerald-800/80 hover:bg-emerald-700 rounded text-emerald-100 font-bold transition-colors cursor-pointer flex items-center justify-center gap-0.5"
+            title="إعادة التوجيه الافتراضي"
+            className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
           >
-            <RotateCcw className="w-2.5 h-2.5" />
-            <span>افتراضي</span>
+            <RotateCcw className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {/* Center: Experiment Title in Fullscreen */}
+        {isFullView && (
+          <div className="hidden md:flex flex-col items-center pointer-events-auto bg-slate-900/85 backdrop-blur-md px-4 py-1.5 rounded-xl border border-slate-700/80 shadow-lg text-center">
+            <span className="text-xs font-bold text-white font-serif">{experimentTitle}</span>
+            <span className="text-[10px] text-emerald-400">{unitName}</span>
+          </div>
+        )}
+
+        {/* Right: Fullscreen Toggle & Reflection Drawer Toggle */}
+        <div className="flex items-center gap-1.5 pointer-events-auto">
+          {isFullView && (
+            <button
+              onClick={() => setShowReflectionDrawer(prev => !prev)}
+              className="bg-indigo-600/90 hover:bg-indigo-500 text-white text-xs font-bold px-3 py-1.5 rounded-xl border border-indigo-400/50 shadow-lg flex items-center gap-1 transition-all cursor-pointer"
+            >
+              <Info className="w-3.5 h-3.5" />
+              <span>{showReflectionDrawer ? "إخفاء لوحة الانعكاس" : "عرض لوحة الانعكاس"}</span>
+            </button>
+          )}
+
+          {isFullView && onReset && (
+            <button
+              onClick={onReset}
+              title="إعادة بدء التجربة"
+              className="bg-slate-800/90 hover:bg-slate-700 text-slate-200 text-xs font-bold px-2.5 py-1.5 rounded-xl border border-slate-700 shadow-lg flex items-center gap-1 transition-all cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">إعادة البدء</span>
+            </button>
+          )}
+
+          <button
+            onClick={toggleFullscreen}
+            title={isFullView ? "الخروج من ملء الشاشة (Esc)" : "تكبير ملء الشاشة"}
+            className="bg-slate-900/90 hover:bg-slate-800 text-white p-2 rounded-xl border border-slate-700/80 shadow-lg transition-all cursor-pointer hover:border-emerald-500/50 group"
+          >
+            {isFullView ? (
+              <div className="flex items-center gap-1 text-xs text-rose-400 font-bold px-1">
+                <Minimize2 className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span>خروج من ملء الشاشة</span>
+              </div>
+            ) : (
+              <Maximize2 className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* 🧭 Telemetry HUD & Fullscreen Trigger (Top Right) */}
-      <div className="absolute top-3 right-3 z-20 flex flex-col gap-2 bg-slate-900/85 backdrop-blur-md p-2.5 rounded-xl border border-slate-700/80 shadow-lg text-right min-w-[160px]">
-        {/* Fullscreen Button in non-fullscreen mode */}
-        {!isFullView && (
-          <button
-            onClick={toggleFullscreen}
-            className="w-full mb-1 py-1.5 px-2.5 bg-indigo-600/90 hover:bg-indigo-500 text-white rounded-lg text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-sm border border-indigo-400/30"
-          >
-            <Maximize2 className="w-3.5 h-3.5" />
-            <span>تكبير ملء الشاشة</span>
-          </button>
+      {/* Floating Real-time Telemetry HUD (Left Side) */}
+      <div className="absolute top-16 left-3 z-20 flex flex-col gap-1.5 bg-slate-900/85 backdrop-blur-md p-2.5 rounded-xl border border-slate-700/70 text-right shadow-xl min-w-[130px]">
+        {/* Apparatus Name Badge */}
+        <div className="text-[10px] text-emerald-400 font-bold border-b border-slate-800 pb-1 flex items-center gap-1 justify-end">
+          <span>
+            {apparatusType === "magnetic_balance" ? "ميزان غوي المغناطيسي 🧲" :
+             apparatusType === "glass_basin" ? "حوض زجاجي وصينية الأدوات 🥣" :
+             apparatusType === "gas_prep" ? "جهاز إزاحة الغاز 💨" :
+             apparatusType === "test_tubes" ? "أنابيب المقارنة 🧪" :
+             "كأس تفاعل معملي ⚗️"}
+          </span>
+        </div>
+
+        {/* Temperature */}
+        <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold">
+          <span className="text-amber-400">{currentTemp}°C</span>
+          <div className="flex items-center gap-1 text-slate-300">
+            <span className="font-sans text-[10px]">الحرارة</span>
+            <Thermometer className="w-3 h-3 text-amber-400" />
+          </div>
+        </div>
+
+        {/* pH Value */}
+        <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold">
+          <span className={currentPh > 7 ? "text-emerald-400" : currentPh < 7 ? "text-rose-400" : "text-sky-400"}>
+            {currentPh.toFixed(1)}
+          </span>
+          <div className="flex items-center gap-1 text-slate-300">
+            <span className="font-sans text-[10px]">الرقم pH</span>
+            <Gauge className="w-3 h-3 text-indigo-400" />
+          </div>
+        </div>
+
+        {/* Gas Volume */}
+        {gasVolume > 0 && (
+          <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold">
+            <span className="text-sky-300">{currentGas} mL</span>
+            <div className="flex items-center gap-1 text-slate-300">
+              <span className="font-sans text-[10px]">الغاز</span>
+              <Sparkles className="w-3 h-3 text-sky-400" />
+            </div>
+          </div>
         )}
 
-        <div className="flex items-center justify-between gap-3 border-b border-slate-800 pb-1.5">
-          <div className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
-            <Thermometer className="w-3.5 h-3.5" />
-            <span>الحرارة:</span>
-          </div>
-          <span className="font-mono text-xs font-bold text-slate-100">
-            {currentTemp}°C
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between gap-3 border-b border-slate-800 pb-1.5">
-          <div className="flex items-center gap-1 text-[11px] font-bold text-purple-400">
-            <Droplet className="w-3.5 h-3.5" />
-            <span>الرقم الهيدروجيني:</span>
-          </div>
-          <span className={"font-mono text-xs font-bold " + (currentPh > 7 ? "text-blue-400" : currentPh < 7 ? "text-rose-400" : "text-emerald-400")}>
-            pH {currentPh.toFixed(1)}
-          </span>
-        </div>
-
-        <div className="flex items-center justify-between gap-3 border-b border-slate-800 pb-1.5">
-          <div className="flex items-center gap-1 text-[11px] font-bold text-sky-400">
-            <Gauge className="w-3.5 h-3.5" />
-            <span>الغاز المتجمع:</span>
-          </div>
-          <span className="font-mono text-xs font-bold text-slate-100">
-            {currentGas} mL
-          </span>
-        </div>
-
-        {/* ⚖️ Gouy Magnetic Balance Weight / Telemetry */}
+        {/* Apparent Weight (for Gouy balance) */}
         {currentWeight !== undefined && (
-          <div className="flex items-center justify-between gap-3 pt-0.5 animate-pulse">
-            <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
-              <Scale className="w-3.5 h-3.5" />
-              <span>الوزن الحساس:</span>
+          <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold pt-1 border-t border-slate-800">
+            <span className="text-emerald-300">{currentWeight.toFixed(2)} g</span>
+            <div className="flex items-center gap-1 text-slate-300">
+              <span className="font-sans text-[10px]">الوزن الظاهري</span>
+              <Scale className="w-3 h-3 text-emerald-400" />
             </div>
-            <span className="font-mono text-xs font-bold text-emerald-300">
-              {currentWeight.toFixed(2)} g
-            </span>
           </div>
         )}
 
@@ -1047,6 +1304,24 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
             <span className={"font-bold px-1.5 py-0.5 rounded " + (magneticFieldOn ? "bg-cyan-950 text-cyan-300 border border-cyan-800" : "bg-slate-800 text-slate-400")}>
               {magneticFieldOn ? "مشغل ⚡" : "مطفأ"}
             </span>
+          </div>
+        )}
+
+        {/* Glass Basin Alkali Status */}
+        {apparatusType === "glass_basin" && (
+          <div className="pt-1 border-t border-slate-800 space-y-1 text-[10px]">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">الفلز النشط:</span>
+              <span className="font-bold text-amber-300">
+                {activeAlkali === "na" ? "صوديوم Na 🟡" : activeAlkali === "k" ? "بوتاسيوم K 🟣" : "في الانتظار"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400">دليل الفينول:</span>
+              <span className={"font-bold px-1 rounded " + (isIndicatorAdded ? "text-pink-400 bg-pink-950" : "text-slate-400")}>
+                {isIndicatorAdded ? "مُضاف (وردي) 🌸" : "غير مضاف"}
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -1104,15 +1379,64 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         <div className="flex items-center gap-1.5 mr-auto">
           {onActionTrigger && (
             <>
-              <button
-                onClick={() => onActionTrigger("add_reagent")}
-                className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
-              >
-                <Droplet className="w-3 h-3" />
-                <span>إضافة كاشف</span>
-              </button>
+              {apparatusType === "glass_basin" ? (
+                /* Dedicated Interactive Tools Dock for Alkali Metal Basin */
+                <div className="flex flex-wrap items-center gap-1">
+                  <button
+                    onClick={() => onActionTrigger("pour_water")}
+                    title="صب الماء المقطر في الحوض"
+                    className="px-2.5 py-1 bg-sky-700 hover:bg-sky-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Droplet className="w-3 h-3 text-sky-300" />
+                    <span>ماء مقطر</span>
+                  </button>
 
-              {apparatusType === "magnetic_balance" ? (
+                  <button
+                    onClick={() => onActionTrigger("cut_metal")}
+                    title="قطع الفلز بالسكين وتجفيفه بورق الترشيح"
+                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Scissors className="w-3 h-3 text-amber-400" />
+                    <span>سكين + ورق</span>
+                  </button>
+
+                  <button
+                    onClick={() => onActionTrigger("drop_sodium")}
+                    title="التقاط قطعة الصوديوم Na بالملقط وإسقاطها في الحوض"
+                    className="px-2.5 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-200" />
+                    <span>ملقط + Na 🟡</span>
+                  </button>
+
+                  <button
+                    onClick={() => onActionTrigger("drop_potassium")}
+                    title="التقاط قطعة البوتاسيوم K بالملقط وإسقاطها في الحوض"
+                    className="px-2.5 py-1 bg-purple-700 hover:bg-purple-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Sparkles className="w-3 h-3 text-purple-200" />
+                    <span>ملقط + K 🟣</span>
+                  </button>
+
+                  <button
+                    onClick={() => onActionTrigger("add_indicator")}
+                    title="إضافة قطرات دليل الفينول فثالين"
+                    className="px-2.5 py-1 bg-pink-700 hover:bg-pink-600 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Pipette className="w-3 h-3 text-pink-200" />
+                    <span>دليل الفينول 🌸</span>
+                  </button>
+
+                  <button
+                    onClick={() => onActionTrigger("clean_basin")}
+                    title="تفريغ الحوض وغسيله بماء جديد"
+                    className="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-slate-200 rounded-lg text-xs transition-colors cursor-pointer"
+                  >
+                    <RotateCcw className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : apparatusType === "magnetic_balance" ? (
+                /* Gouy Magnet Trigger */
                 <button
                   onClick={() => onActionTrigger("toggle_magnet")}
                   className={
@@ -1126,27 +1450,38 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                   <span>{magneticFieldOn ? "إيقاف المغناطيس" : "تشغيل المغناطيس ⚡"}</span>
                 </button>
               ) : (
-                <button
-                  onClick={() => onActionTrigger("toggle_heat")}
-                  className={
-                    "px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm " +
-                    (isHeating
-                      ? "bg-rose-600 text-white hover:bg-rose-500"
-                      : "bg-amber-600 text-white hover:bg-amber-500")
-                  }
-                >
-                  <Flame className="w-3 h-3" />
-                  <span>{isHeating ? "إطفاء الموقد" : "إشعال بنسن"}</span>
-                </button>
-              )}
+                /* Standard Reaction Triggers */
+                <>
+                  <button
+                    onClick={() => onActionTrigger("add_reagent")}
+                    className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Droplet className="w-3 h-3" />
+                    <span>إضافة كاشف</span>
+                  </button>
 
-              <button
-                onClick={() => onActionTrigger("stir")}
-                className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
-              >
-                <Sparkles className="w-3 h-3 text-amber-400" />
-                <span>رج المحلول</span>
-              </button>
+                  <button
+                    onClick={() => onActionTrigger("toggle_heat")}
+                    className={
+                      "px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm " +
+                      (isHeating
+                        ? "bg-rose-600 text-white hover:bg-rose-500"
+                        : "bg-amber-600 text-white hover:bg-amber-500")
+                    }
+                  >
+                    <Flame className="w-3 h-3" />
+                    <span>{isHeating ? "إطفاء الموقد" : "إشعال بنسن"}</span>
+                  </button>
+
+                  <button
+                    onClick={() => onActionTrigger("stir")}
+                    className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Sparkles className="w-3 h-3 text-amber-400" />
+                    <span>رج المحلول</span>
+                  </button>
+                </>
+              )}
             </>
           )}
 
