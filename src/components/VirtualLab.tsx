@@ -1437,7 +1437,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
                   isPrecipitating={currentStepReflection?.telemetry.isPrecipitating || lab3D.isPrecipitating}
                   isSmoking={currentStepReflection?.telemetry.isSmoking || lab3D.isSmoking}
                   flameColor={currentStepReflection?.telemetry.flameColor || lab3D.flameColor}
-                  temperature={currentStepReflection?.telemetry.temp || lab3D.temperature}
+                  temperature={manualHeating ? Math.max(180, (currentStepReflection?.telemetry.temp || 25)) : (currentStepReflection?.telemetry.temp || lab3D.temperature)}
                   phValue={currentStepReflection?.telemetry.ph || lab3D.phValue}
                   gasVolume={currentStepReflection?.telemetry.gas || lab3D.gasVolume}
                   apparentWeight={currentStepReflection?.telemetry.weight !== undefined ? currentStepReflection.telemetry.weight : lab3D.apparentWeight}

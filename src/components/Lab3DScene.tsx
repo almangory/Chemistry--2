@@ -106,6 +106,57 @@ function createToolBadge(badgeText: string): THREE.Sprite {
   return sprite;
 }
 
+// 🎨 Helper: Create crisp 3D canvas burner ignition badge billboard sprite
+function createBurnerBadge(isBurning: boolean): THREE.Sprite {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 80;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.clearRect(0, 0, 256, 80);
+    // Rounded pill background
+    ctx.beginPath();
+    ctx.roundRect(8, 8, 240, 64, 32);
+    ctx.fillStyle = isBurning ? "rgba(225, 29, 72, 0.92)" : "rgba(15, 23, 42, 0.90)";
+    ctx.fill();
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = isBurning ? "#fbbf24" : "#f59e0b";
+    ctx.stroke();
+
+    // Text label
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 26px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(isBurning ? "❄️ إطفاء الموقد" : "🔥 إشعال الموقد", 128, 40);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(1.1, 0.35, 1);
+  return sprite;
+}
+
+// 🎨 Helper: Determine realistic fluid color for pouring stream
+function getToolPourColor(tool: THREE.Group): number {
+  const id = ((tool.userData && tool.userData.id) || "").toLowerCase();
+  const label = ((tool.userData && tool.userData.label) || "").toLowerCase();
+  if (label.includes("بروم") || id.includes("bromine")) return 0xd97706; // deep amber/orange
+  if (label.includes("نحاس") || id.includes("copper")) return 0x0284c7; // sky blue
+  if (label.includes("فينول") || id.includes("indicator")) return 0xf472b6; // pink
+  if (label.includes("ماء") || id.includes("water")) return 0x38bdf8; // cyan water
+  if (label.includes("كبريتيك") || label.includes("حمض") || id.includes("acid")) return 0xf1f5f9; // clear acid
+  if (label.includes("كلور") || id.includes("chlorine")) return 0xa3e635; // pale yellowish green
+  if (label.includes("صوديوم") || id.includes("sodium")) return 0xfbbf24; // gold
+  if (label.includes("بوتاسيوم") || id.includes("potassium")) return 0xa855f7; // purple
+  if (label.includes("كالسيوم") || id.includes("calcium")) return 0xf87171; // red
+  if (label.includes("باريوم") || id.includes("barium")) return 0x4ade80; // green
+  if (label.includes("استرونشيوم") || id.includes("strontium")) return 0xf43f5e; // crimson
+  if (tool.userData && tool.userData.color) return tool.userData.color;
+  return 0x38bdf8;
+}
+
+
 export const Lab3DScene: React.FC<Lab3DProps> = ({
   experimentId,
   stepIndex,
@@ -179,6 +230,32 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     position: new THREE.Vector3(0, 3.32, 0),
     radius: 1.5
   });
+
+  // 🌊 Pouring Physics & Natural Liquid Stream References
+  const activePourRef = useRef<{
+    toolGroup: THREE.Group;
+    actionId: string;
+    toolLabel: string;
+    startTime: number;
+    duration: number;
+    startPos: THREE.Vector3;
+    targetPourPos: THREE.Vector3;
+    targetImpactPos: THREE.Vector3;
+    pourColor: number;
+    isCompleted: boolean;
+  } | null>(null);
+
+  const pouringComponentsRef = useRef<{
+    group: THREE.Group;
+    stream: THREE.Mesh;
+    droplets: THREE.Mesh[];
+    ripple: THREE.Mesh;
+  } | null>(null);
+
+  const burnerGroupRef = useRef<THREE.Group | null>(null);
+  const burnerBadgeSpriteRef = useRef<THREE.Sprite | null>(null);
+  const sparksGroupRef = useRef<THREE.Group | null>(null);
+  const sparkStartTimeRef = useRef<number>(0);
 
   // Draggable tool groups and physics references
   const draggableToolsRef = useRef<THREE.Group[]>([]);
@@ -1012,6 +1089,38 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
       burnerGroup.add(flameGroup);
       flameMeshRef.current = flameGroup;
+
+      burnerGroup.userData = { id: "toggle_heat", isBurner: true, label: "موقد بنسن" };
+      burnerBase.userData = { id: "toggle_heat", isBurner: true };
+      burnerBarrel.userData = { id: "toggle_heat", isBurner: true };
+      burnerGroupRef.current = burnerGroup;
+
+      // 3D Burner Floating Ignition Badge Sprite
+      const burnerBadge = createBurnerBadge(isHeating);
+      burnerBadge.position.set(0, 0.45, 0.72);
+      burnerBadge.userData = { id: "toggle_heat", isBurner: true, label: "إشعال الموقد" };
+      burnerGroup.add(burnerBadge);
+      burnerBadgeSpriteRef.current = burnerBadge;
+
+      // Electrical Sparks System for Burner Ignition
+      const sparksGroup = new THREE.Group();
+      sparksGroup.position.set(0, 1.3, 0);
+      const sparkGeo = new THREE.SphereGeometry(0.025, 6, 6);
+      for (let s = 0; s < 14; s++) {
+        const sparkMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0 });
+        const spMesh = new THREE.Mesh(sparkGeo, sparkMat);
+        spMesh.userData = {
+          vel: new THREE.Vector3(
+            (Math.random() - 0.5) * 0.9,
+            Math.random() * 0.8 + 0.3,
+            (Math.random() - 0.5) * 0.9
+          )
+        };
+        sparksGroup.add(spMesh);
+      }
+      burnerGroup.add(sparksGroup);
+      sparksGroupRef.current = sparksGroup;
+
       appGroup.add(burnerGroup);
 
       const tripodRing = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.04, 16, 32), metalMat);
@@ -1748,6 +1857,62 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       }
     }
 
+    // 🌊 Universal Pouring Physics & Liquid Stream System
+    const pouringGroup = new THREE.Group();
+    pouringGroup.visible = false;
+
+    // 1. Tapered Fluid Stream Mesh
+    const streamGeo = new THREE.CylinderGeometry(0.025, 0.065, 1, 16);
+    streamGeo.translate(0, -0.5, 0); // pivot at top nozzle
+    const streamMat = new THREE.MeshPhysicalMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.85,
+      roughness: 0.15,
+      metalness: 0.05,
+      transmission: 0.35,
+      depthWrite: false
+    });
+    const streamMesh = new THREE.Mesh(streamGeo, streamMat);
+    pouringGroup.add(streamMesh);
+
+    // 2. Cascading Fluid Droplets
+    const dropletGeo = new THREE.SphereGeometry(0.034, 8, 8);
+    const dropletMeshes: THREE.Mesh[] = [];
+    for (let d = 0; d < 14; d++) {
+      const dmMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.9 });
+      const dm = new THREE.Mesh(dropletGeo, dmMat);
+      dm.userData = {
+        progress: d / 14,
+        speed: 1.2 + Math.random() * 0.8,
+        jitter: new THREE.Vector3((Math.random() - 0.5) * 0.04, 0, (Math.random() - 0.5) * 0.04)
+      };
+      pouringGroup.add(dm);
+      dropletMeshes.push(dm);
+    }
+
+    // 3. Surface Impact Ripple Ring
+    const rippleGeo = new THREE.RingGeometry(0.04, 0.12, 24);
+    const rippleMat = new THREE.MeshBasicMaterial({
+      color: 0x38bdf8,
+      transparent: true,
+      opacity: 0.75,
+      side: THREE.DoubleSide,
+      depthWrite: false
+    });
+    const rippleMesh = new THREE.Mesh(rippleGeo, rippleMat);
+    rippleMesh.rotation.x = -Math.PI / 2;
+    pouringGroup.add(rippleMesh);
+
+    appGroup.add(pouringGroup);
+
+    pouringComponentsRef.current = {
+      group: pouringGroup,
+      stream: streamMesh,
+      droplets: dropletMeshes,
+      ripple: rippleMesh
+    };
+
     scene.add(appGroup);
   }, [
     apparatusType, 
@@ -1777,6 +1942,13 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     const animate = () => {
       animFrameIdRef.current = requestAnimationFrame(animate);
       const elapsedTime = clock.getElapsedTime();
+
+      // Update Burner Badge Sprite Texture
+      if (burnerBadgeSpriteRef.current) {
+        const bBadge = createBurnerBadge(isHeating);
+        burnerBadgeSpriteRef.current.material.map = bBadge.material.map;
+        burnerBadgeSpriteRef.current.material.needsUpdate = true;
+      }
 
       // Flame flicker for Bunsen burner
       if (flameMeshRef.current) {
@@ -1841,8 +2013,120 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         alkaliBallRef.current.position.y = waterTop + Math.sin(elapsedTime * 14) * 0.02;
       }
 
-      // Smooth return for non-dragged tools back to their home positions
-      if (!isDraggingToolRef.current) {
+      // ⚡ Burner Electrical Ignition Sparks Simulation
+      if (sparkStartTimeRef.current > 0) {
+        const sparkElapsed = (performance.now() - sparkStartTimeRef.current) / 1000;
+        if (sparksGroupRef.current) {
+          if (sparkElapsed < 0.45) {
+            sparksGroupRef.current.visible = true;
+            sparksGroupRef.current.children.forEach((child) => {
+              const sp = child as THREE.Mesh;
+              const vel = sp.userData.vel as THREE.Vector3;
+              sp.position.addScaledVector(vel, 0.035);
+              if (sp.material) {
+                (sp.material as THREE.MeshBasicMaterial).opacity = Math.max(0, 1 - sparkElapsed / 0.45);
+              }
+            });
+          } else {
+            sparksGroupRef.current.visible = false;
+            sparkStartTimeRef.current = 0;
+            sparksGroupRef.current.children.forEach((child) => {
+              (child as THREE.Mesh).position.set(0, 0, 0);
+            });
+          }
+        }
+      }
+
+      // 🌊 Real-Time Natural Fluid Pouring Physics
+      if (activePourRef.current) {
+        const pour = activePourRef.current;
+        const now = performance.now();
+        const progress = (now - pour.startTime) / (pour.duration * 1000);
+        const pc = pouringComponentsRef.current;
+
+        if (progress < 0.22) {
+          // Phase 1: Lift & Glide towards container rim
+          const t = Math.min(1, progress / 0.22);
+          const ease = t * t * (3 - 2 * t);
+          pour.toolGroup.position.lerpVectors(pour.startPos, pour.targetPourPos, ease);
+          pour.toolGroup.rotation.z = THREE.MathUtils.lerp(0, -0.3, ease);
+          if (pc) pc.group.visible = false;
+        } else if (progress < 0.78) {
+          // Phase 2: Tilt to 65° & Pouring Stream
+          const pourT = (progress - 0.22) / 0.56;
+          pour.toolGroup.position.copy(pour.targetPourPos);
+
+          const tiltEase = Math.min(1, pourT * 3.0);
+          pour.toolGroup.rotation.z = THREE.MathUtils.lerp(-0.3, -1.15, tiltEase);
+          pour.toolGroup.rotation.x = 0.16;
+
+          if (pc) {
+            pc.group.visible = true;
+            const nozzleLocal = new THREE.Vector3(0, 1.15, 0);
+            const nozzleWorld = nozzleLocal.applyMatrix4(pour.toolGroup.matrixWorld);
+
+            const streamDir = new THREE.Vector3().subVectors(pour.targetImpactPos, nozzleWorld);
+            const streamDist = streamDir.length();
+
+            pc.stream.position.copy(nozzleWorld);
+            pc.stream.scale.set(
+              1.0 + Math.sin(now * 0.035) * 0.15,
+              streamDist,
+              1.0 + Math.cos(now * 0.035) * 0.15
+            );
+            pc.stream.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), streamDir.clone().normalize());
+            (pc.stream.material as THREE.MeshPhysicalMaterial).color.setHex(pour.pourColor);
+
+            pc.droplets.forEach((dm) => {
+              const ud = dm.userData;
+              ud.progress = (ud.progress + 0.032 * ud.speed) % 1.0;
+              dm.position.lerpVectors(nozzleWorld, pour.targetImpactPos, ud.progress).add(ud.jitter);
+              (dm.material as THREE.MeshBasicMaterial).color.setHex(pour.pourColor);
+            });
+
+            pc.ripple.position.copy(pour.targetImpactPos);
+            pc.ripple.position.y += 0.01;
+            const ripT = (now * 0.0035) % 1.0;
+            const ripScale = 0.6 + ripT * 2.2;
+            pc.ripple.scale.set(ripScale, ripScale, ripScale);
+            (pc.ripple.material as THREE.MeshBasicMaterial).opacity = (1.0 - ripT) * 0.75;
+            (pc.ripple.material as THREE.MeshBasicMaterial).color.setHex(pour.pourColor);
+
+            if (liquidMeshRef.current) {
+              liquidMeshRef.current.position.y += Math.sin(now * 0.03) * 0.002;
+            }
+          }
+        } else if (progress <= 1.0) {
+          // Phase 3: Straighten & Return home
+          const returnT = (progress - 0.78) / 0.22;
+          const ease = returnT * returnT * (3 - 2 * returnT);
+          if (pc) pc.group.visible = false;
+
+          pour.toolGroup.rotation.z = THREE.MathUtils.lerp(-1.15, 0, ease);
+          pour.toolGroup.rotation.x = THREE.MathUtils.lerp(0.16, 0, ease);
+          const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+          pour.toolGroup.position.lerpVectors(pour.targetPourPos, home, ease);
+        } else {
+          // Phase 4: Finish!
+          if (pc) pc.group.visible = false;
+          const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+          pour.toolGroup.position.copy(home);
+          pour.toolGroup.rotation.set(0, 0, 0);
+
+          if (!pour.isCompleted) {
+            pour.isCompleted = true;
+            if (onActionTrigger) {
+              onActionTrigger(pour.actionId);
+            }
+            setDragFeedback("✨ تم سكب وإضافة " + pour.toolLabel + " بنجاح!");
+            setTimeout(() => setDragFeedback(null), 1800);
+          }
+          activePourRef.current = null;
+        }
+      }
+
+      // Smooth return for non-dragged and non-pouring tools back to their home positions
+      if (!isDraggingToolRef.current && !activePourRef.current) {
         draggableToolsRef.current.forEach((tool) => {
           if (tool.userData && tool.userData.homePos) {
             const home = tool.userData.homePos as THREE.Vector3;
@@ -1987,6 +2271,72 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   };
 
   // 4. Unified Pointer Drag & Drop Engine (Mouse + Touch on Mobile)
+
+  // 🔥 Handle Interactive Bunsen Burner Ignition & Extinction
+  const handleToggleBurner = useCallback(() => {
+    sparkStartTimeRef.current = performance.now();
+    if (onActionTrigger) {
+      onActionTrigger("toggle_heat");
+    }
+  }, [onActionTrigger]);
+
+  // 🌊 Trigger Realistic Physical Liquid Pouring Animation
+  const startPourAnimation = useCallback((toolGroup: THREE.Group, actionId: string) => {
+    if (activePourRef.current) return; // already active
+
+    // If burner or heating, toggle burner directly
+    if (actionId === "toggle_heat" || (toolGroup.userData && toolGroup.userData.iconType === "flame")) {
+      handleToggleBurner();
+      return;
+    }
+
+    const pourColor = getToolPourColor(toolGroup);
+    const dropTarget = dropZoneTargetRef.current;
+
+    // Pour position positioned naturally right above the container lip
+    const targetPourPos = new THREE.Vector3(
+      dropTarget.position.x + 0.92,
+      dropTarget.position.y + 0.52,
+      dropTarget.position.z + 0.32
+    );
+
+    // Target impact point on liquid surface inside container
+    const targetImpactPos = new THREE.Vector3(
+      dropTarget.position.x + 0.04,
+      Math.max(1.65, dropTarget.position.y - 1.15 + (liquidHeight || 0.4) * 1.35),
+      dropTarget.position.z + 0.04
+    );
+
+    activePourRef.current = {
+      toolGroup,
+      actionId,
+      toolLabel: (toolGroup.userData && toolGroup.userData.label) || "المحلول",
+      startTime: performance.now(),
+      duration: 1.6,
+      startPos: toolGroup.position.clone(),
+      targetPourPos,
+      targetImpactPos,
+      pourColor,
+      isCompleted: false
+    };
+
+    setDragFeedback("🧪 جاري سكب وإضافة " + ((toolGroup.userData && toolGroup.userData.label) || "المحلول") + "...");
+  }, [liquidHeight, handleToggleBurner]);
+
+  // 🖱️ Dispatch tool clicks with smooth pouring animation
+  const handleToolButtonClick = (actionId: string) => {
+    if (actionId === "toggle_heat") {
+      handleToggleBurner();
+      return;
+    }
+    const toolGroup = draggableToolsRef.current.find(t => t.userData && t.userData.id === actionId);
+    if (toolGroup && !activePourRef.current) {
+      startPourAnimation(toolGroup, actionId);
+    } else {
+      onActionTrigger?.(actionId);
+    }
+  };
+
   const handlePointerDown = (e: React.PointerEvent) => {
     if (!mountRef.current || !cameraRef.current) return;
     
@@ -2017,8 +2367,17 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
     prevMousePosRef.current = { x: e.clientX, y: e.clientY };
 
-    // Check if clicked an interactive tool
+    // Check if clicked the Bunsen burner or its floating ignition badge
     raycasterRef.current.setFromCamera(mouseVecRef.current, cameraRef.current);
+    if (burnerGroupRef.current) {
+      const burnerHits = raycasterRef.current.intersectObjects([burnerGroupRef.current], true);
+      if (burnerHits.length > 0) {
+        handleToggleBurner();
+        return;
+      }
+    }
+
+    // Check if clicked an interactive tool
     const intersects = raycasterRef.current.intersectObjects(draggableToolsRef.current, true);
 
     if (intersects.length > 0) {
@@ -2149,8 +2508,10 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       const isQuickClick = dragDistance < 12;
 
       if (isOverTarget || isQuickClick) {
-        if (onActionTrigger) {
-          onActionTrigger(actionId);
+        if (actionId === "toggle_heat" || (tool.userData && tool.userData.iconType === "flame")) {
+          handleToggleBurner();
+        } else {
+          startPourAnimation(tool, actionId);
         }
 
         if (dropZoneRingRef.current) {
@@ -2255,6 +2616,20 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
               className="p-1 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+
+            {/* 🔥 Bunsen Burner Quick Ignition Button */}
+            <button
+              onClick={handleToggleBurner}
+              title="زر إشعال موقد بنسن لتسخين التفاعل"
+              className={"px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-bold rounded-lg flex items-center gap-1 transition-all cursor-pointer " + (
+                isHeating
+                  ? "bg-rose-600 text-white shadow-md shadow-rose-900/50 animate-pulse ring-1 ring-rose-400"
+                  : "bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40"
+              )}
+            >
+              <Flame className={"w-3.5 h-3.5 " + (isHeating ? "text-amber-300 animate-bounce" : "text-amber-400")} />
+              <span>{isHeating ? "إطفاء الموقد ❄️" : "إشعال الموقد 🔥"}</span>
             </button>
           </div>
 
@@ -2520,13 +2895,27 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                 ) : (
 
                   <div className="flex flex-wrap items-center gap-1">
-                    {getExperimentTools(experimentId, chemicals, apparatusList).map((tool) => {
+                    <button
+                        type="button"
+                        onClick={handleToggleBurner}
+                        className={"px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm " + (
+                          isHeating
+                            ? "bg-rose-600 hover:bg-rose-500 text-white animate-pulse ring-2 ring-amber-400"
+                            : "bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/50 hover:border-amber-400"
+                        )}
+                        title="انقر لإشعال أو إطفاء موقد بنسن لتسخين التجربة"
+                      >
+                        <Flame className={"w-3.5 h-3.5 " + (isHeating ? "text-amber-300 animate-bounce" : "text-rose-400")} />
+                        <span>{isHeating ? "إطفاء الموقد ❄️" : "إشعال الموقد 🔥"}</span>
+                      </button>
+
+                      {getExperimentTools(experimentId, chemicals, apparatusList).map((tool) => {
                       const isTarget = tool.id === currentActiveToolId;
                       return (
                         <button
                           key={tool.id}
                           type="button"
-                          onClick={() => onActionTrigger(tool.id)}
+                          onClick={() => handleToolButtonClick(tool.id)}
                           title={tool.label}
                           className={"px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm " + (
                             isTarget
@@ -2628,15 +3017,26 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                 <span className="font-mono font-bold text-sky-300">{currentGas} mL</span>
               </div>
             ) : (
-              <div className="flex items-center justify-between bg-slate-800/70 px-2.5 py-1.5 rounded-lg border border-slate-700/50">
-                <div className="flex items-center gap-1 text-slate-400 text-[10px]">
-                  <Flame className="w-3.5 h-3.5 text-rose-400" />
-                  <span>الموقد</span>
+              <button
+                type="button"
+                onClick={handleToggleBurner}
+                className={"w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg border transition-all cursor-pointer shadow-sm " + (
+                  isHeating
+                    ? "bg-gradient-to-r from-rose-900/80 to-amber-900/80 border-rose-500 text-rose-100 ring-2 ring-rose-500/50 animate-pulse"
+                    : "bg-slate-800/80 hover:bg-slate-700/80 border-slate-700 text-slate-200 hover:border-amber-500/60"
+                )}
+                title="انقر هنا لإشعال أو إطفاء موقد بنسن لتسخين التفاعل"
+              >
+                <div className="flex items-center gap-1 text-[10px] font-bold">
+                  <Flame className={"w-3.5 h-3.5 " + (isHeating ? "text-amber-400 animate-bounce" : "text-rose-400")} />
+                  <span>الموقد الحراري</span>
                 </div>
-                <span className={"font-bold text-[10px] " + (isHeating ? "text-rose-400" : "text-slate-400")}>
-                  {isHeating ? "مشتعل 🔥" : "مطفأ"}
+                <span className={"px-1.5 py-0.5 rounded text-[9px] font-extrabold flex items-center gap-1 " + (
+                  isHeating ? "bg-rose-600 text-white shadow" : "bg-amber-500/20 text-amber-300 border border-amber-500/40"
+                )}>
+                  {isHeating ? "مشتعل 🔥 (إطفاء)" : "إشعال الموقد 🔥"}
                 </span>
-              </div>
+              </button>
             )}
 
             {/* Indicator / Magnetic / Weight */}
@@ -2757,13 +3157,27 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
               ) : (
 
                 <div className="grid grid-cols-2 gap-1.5">
-                  {getExperimentTools(experimentId, chemicals, apparatusList).map((tool) => {
+                  <button
+                      type="button"
+                      onClick={handleToggleBurner}
+                      className={"col-span-2 p-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-sm " + (
+                        isHeating
+                          ? "bg-rose-600 text-white animate-pulse ring-2 ring-amber-300"
+                          : "bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border border-amber-500/60"
+                      )}
+                      title="انقر لإشعال أو إطفاء موقد بنسن"
+                    >
+                      <Flame className={"w-4 h-4 " + (isHeating ? "text-amber-300 animate-bounce" : "text-amber-400")} />
+                      <span>{isHeating ? "موقد بنسن مشتعل 🔥 (انقر للإطفاء)" : "🔥 انقر هنا لإشعال موقد بنسن"}</span>
+                    </button>
+
+                    {getExperimentTools(experimentId, chemicals, apparatusList).map((tool) => {
                     const isTarget = tool.id === currentActiveToolId;
                     return (
                       <button
                         key={tool.id}
                         type="button"
-                        onClick={() => onActionTrigger(tool.id)}
+                        onClick={() => handleToolButtonClick(tool.id)}
                         className={"p-2 rounded-lg text-xs font-bold flex items-center justify-between gap-1 transition-all cursor-pointer shadow-sm " + (
                           isTarget
                             ? "bg-amber-500 text-slate-950 ring-2 ring-amber-300 font-extrabold shadow-md"
