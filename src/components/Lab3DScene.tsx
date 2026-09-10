@@ -2503,42 +2503,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         )}
 
 
-        {/* 🎯 Interactive Mission Step Guidance Banner */}
-        {currentGuidance && (
-          <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20 w-[94%] max-w-lg">
-            <div className="bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-amber-500/70 shadow-2xl flex items-center justify-between gap-2.5">
-              <div className="flex items-center gap-2.5 text-right flex-1 min-w-0">
-                <span className="w-8 h-8 rounded-full bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center shrink-0 shadow-md animate-bounce">
-                  {currentGuidance.badgeSymbol}
-                </span>
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="text-[10px] text-amber-400 font-bold">
-                      المهمة المطلوبة (خطوة {stepIndex + 1}/{totalSteps}):
-                    </span>
-                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold border border-emerald-500/40 animate-pulse">
-                      اسحب الأداة أو انقر عليها ⚡
-                    </span>
-                  </div>
-                  <p className="text-xs text-white font-bold font-sans truncate leading-tight mt-0.5">
-                    {currentGuidance.hintText}
-                  </p>
-                </div>
-              </div>
-              {onActionTrigger && (
-                <button
-                  type="button"
-                  onClick={() => onActionTrigger(currentGuidance.targetActionId)}
-                  className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
-                  title="تنفيذ الإجراء المطلوب بالخطوة"
-                >
-                  <span>تنفيذ</span>
-                  <Sparkles className="w-3.5 h-3.5 text-slate-950" />
-                </button>
-              )}
-            </div>
-          </div>
-        )}
 
         {/* 🔬 Live Chemical State & Note Badge (Desktop / Fullscreen only) */}
         {chemicalNote && (
