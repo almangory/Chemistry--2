@@ -21,7 +21,10 @@ import {
   FileText,
   Pipette,
   FlaskConical,
-  Layers
+  Layers,
+  Hand,
+  MousePointer,
+  Grab
 } from "lucide-react";
 
 export interface Lab3DProps {
@@ -101,6 +104,10 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   const [isModalFullscreen, setIsModalFullscreen] = useState<boolean>(false);
   const [showReflectionDrawer, setShowReflectionDrawer] = useState<boolean>(true);
 
+  // Drag and drop interactive state
+  const [dragFeedback, setDragFeedback] = useState<string | null>(null);
+  const [isCurrentlyDragging, setIsCurrentlyDragging] = useState<boolean>(false);
+
   // Object references for real-time updates
   const liquidMeshRef = useRef<THREE.Mesh | null>(null);
   const flameMeshRef = useRef<THREE.Group | null>(null);
@@ -112,10 +119,21 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   const sampleTubeGroupRef = useRef<THREE.Group | null>(null);
   const balanceBeamRef = useRef<THREE.Mesh | null>(null);
   const alkaliBallRef = useRef<THREE.Group | null>(null);
+  const dropZoneRingRef = useRef<THREE.Mesh | null>(null);
+
+  // Draggable tool groups and physics references
+  const draggableToolsRef = useRef<THREE.Group[]>([]);
+  const draggedObjectRef = useRef<THREE.Group | null>(null);
+  const dragPlaneRef = useRef<THREE.Plane>(new THREE.Plane(new THREE.Vector3(0, 1, 0), -2.2));
+  const dragOffsetRef = useRef<THREE.Vector3>(new THREE.Vector3());
+  const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
+  const mouseVecRef = useRef<THREE.Vector2>(new THREE.Vector2());
 
   // Orbit rotation controls
-  const isDraggingRef = useRef<boolean>(false);
+  const isDraggingCameraRef = useRef<boolean>(false);
+  const isDraggingToolRef = useRef<boolean>(false);
   const prevMousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
+  const pointerDownPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
   const cameraAngleRef = useRef<{ theta: number; phi: number; radius: number }>({
     theta: Math.PI / 4,
     phi: Math.PI / 3,
@@ -217,7 +235,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
     // Scene
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color("#0B1329"); // Deep sleek laboratory background
+    scene.background = new THREE.Color("#0B1329");
     scene.fog = new THREE.FogExp2("#0B1329", 0.035);
     sceneRef.current = scene;
 
@@ -305,6 +323,9 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     const scene = sceneRef.current;
     if (!scene) return;
 
+    // Reset draggable objects
+    draggableToolsRef.current = [];
+
     // Remove existing apparatus if any
     if (apparatusGroupRef.current) {
       scene.remove(apparatusGroupRef.current);
@@ -349,18 +370,16 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     });
 
     // ==============================================================
-    // 🧲 CASE A: GOUY MAGNETIC BALANCE & ELECTROMAGNET (ميزان غوي والمغناطيس)
+    // 🧲 CASE A: GOUY MAGNETIC BALANCE & ELECTROMAGNET
     // ==============================================================
     if (apparatusType === "magnetic_balance") {
       const magnetBalanceGroup = new THREE.Group();
 
-      // 1. Heavy Electromagnet U-Yoke Frame
       const yokeBase = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.45, 1.8), darkIronMat);
       yokeBase.position.set(0, 0.225, 0);
       yokeBase.castShadow = true;
       magnetBalanceGroup.add(yokeBase);
 
-      // Left & Right Core Pillars
       const pillarGeo = new THREE.CylinderGeometry(0.48, 0.48, 2.2, 32);
       const leftPillar = new THREE.Mesh(pillarGeo, darkIronMat);
       leftPillar.position.set(-1.4, 1.35, 0);
@@ -370,7 +389,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       rightPillar.position.set(1.4, 1.35, 0);
       magnetBalanceGroup.add(rightPillar);
 
-      // Copper Windings / Coils
       const coilGeo = new THREE.CylinderGeometry(0.72, 0.72, 1.5, 32);
       const leftCoil = new THREE.Mesh(coilGeo, copperMat);
       leftCoil.position.set(-1.4, 1.35, 0);
@@ -380,7 +398,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       rightCoil.position.set(1.4, 1.35, 0);
       magnetBalanceGroup.add(rightCoil);
 
-      // Tapered Pole Shoes (الأقطاب المغناطيسية المدببة)
       const leftPole = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.48, 0.65, 32), darkIronMat);
       leftPole.rotation.z = -Math.PI / 2;
       leftPole.position.set(-0.6, 2.0, 0);
@@ -391,7 +408,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       rightPole.position.set(0.6, 2.0, 0);
       magnetBalanceGroup.add(rightPole);
 
-      // Pole labels (N & S)
       const poleN = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.25, 0.25), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
       poleN.position.set(-0.65, 2.35, 0);
       magnetBalanceGroup.add(poleN);
@@ -400,7 +416,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       poleS.position.set(0.65, 2.35, 0);
       magnetBalanceGroup.add(poleS);
 
-      // 2. Animated Magnetic Field Flux (خطوط المجال المغناطيسي المتوهجة بين القطبين)
       const magFieldGroup = new THREE.Group();
       magFieldGroup.position.set(0, 2.0, 0);
 
@@ -423,7 +438,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       magneticFieldGroupRef.current = magFieldGroup;
       magnetBalanceGroup.add(magFieldGroup);
 
-      // 3. Overhead Analytical Balance (ميزان غوي الحساس فوق المغناطيس)
       const balanceStand = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 2.6, 24), metalMat);
       balanceStand.position.set(0, 3.7, -0.6);
       magnetBalanceGroup.add(balanceStand);
@@ -433,14 +447,12 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       balanceFulcrum.rotation.x = Math.PI;
       magnetBalanceGroup.add(balanceFulcrum);
 
-      // Balance Beam (عارضة الميزان الأفقية المتأرجحة)
       const beamGeo = new THREE.BoxGeometry(3.6, 0.08, 0.08);
       const beamMesh = new THREE.Mesh(beamGeo, copperMat);
       beamMesh.position.set(0, 4.95, 0);
       balanceBeamRef.current = beamMesh;
       magnetBalanceGroup.add(beamMesh);
 
-      // Center pointer & scale dial
       const pointer = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.7, 12), metalMat);
       pointer.position.set(0, 4.6, 0.05);
       magnetBalanceGroup.add(pointer);
@@ -449,7 +461,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       scalePlate.position.set(0, 4.3, 0.06);
       magnetBalanceGroup.add(scalePlate);
 
-      // Left Tare Pan (كفة الميزان اليسرى لمعايرة الوزن)
       const leftWire = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 1.8, 8), metalMat);
       leftWire.position.set(-1.7, 4.0, 0);
       magnetBalanceGroup.add(leftWire);
@@ -458,12 +469,10 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       leftPan.position.set(-1.7, 3.1, 0);
       magnetBalanceGroup.add(leftPan);
 
-      // Standard weights on left pan
       const weight1 = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.25, 16), darkIronMat);
       weight1.position.set(-1.7, 3.25, 0);
       magnetBalanceGroup.add(weight1);
 
-      // Right Suspension Wire & Gouy Sample Tube (أنبوبة العينة المعلقة بدقة بين القطبين)
       const tubeGroup = new THREE.Group();
       tubeGroup.position.set(1.7, 0, 0);
 
@@ -471,15 +480,13 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       rightWire.position.set(0, 3.7, 0);
       tubeGroup.add(rightWire);
 
-      // Gouy Sample Tube (أنبوبة زجاجية أسطوانية ضيقة طويلة ممتلئة بالملح)
       const sampleTube = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 1.6, 24), glassMaterial);
       sampleTube.position.set(0, 2.0, 0);
       tubeGroup.add(sampleTube);
 
-      // Powder/Crystal Sample Inside the Tube
-      let sampleColor = 0x86efac; // FeSO4 pale green default
-      if (activeSubstance === "CuSO4") sampleColor = 0x38bdf8; // Blue
-      if (activeSubstance === "ZnCl2") sampleColor = 0xf8fafc; // White
+      let sampleColor = 0x86efac;
+      if (activeSubstance === "CuSO4") sampleColor = 0x38bdf8;
+      if (activeSubstance === "ZnCl2") sampleColor = 0xf8fafc;
 
       const powderGeo = new THREE.CylinderGeometry(0.1, 0.1, 1.2, 24);
       const powderMat = new THREE.MeshStandardMaterial({
@@ -499,13 +506,11 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     }
 
     // ==============================================================
-    // 🥣 CASE B: LARGE GLASS BASIN & WORKBENCH TRAY (حوض زجاجي كبير وصينية الأدوات)
+    // 🥣 CASE B: LARGE GLASS BASIN & INTERACTIVE WORKBENCH TRAY
     // ==============================================================
     else if (apparatusType === "glass_basin") {
       const basinGroup = new THREE.Group();
 
-      // 1. Large Borosilicate Glass Pneumatic Trough / Basin
-      // Outer Cylindrical Glass Walls (thick glass, flat base, wide opening)
       const basinRadius = 1.9;
       const basinHeight = 1.35;
       const basinWallGeo = new THREE.CylinderGeometry(basinRadius, basinRadius * 0.96, basinHeight, 48, 1, true);
@@ -514,18 +519,30 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       basinWall.castShadow = true;
       basinGroup.add(basinWall);
 
-      // Basin Flat Glass Bottom Plate
       const basinBottom = new THREE.Mesh(new THREE.CylinderGeometry(basinRadius * 0.96, basinRadius * 0.96, 0.08, 48), glassMaterial);
       basinBottom.position.set(0.6, 0.08, 0);
       basinGroup.add(basinBottom);
 
-      // Heavy Rounded Safety Rim around the mouth of the basin
       const basinRim = new THREE.Mesh(new THREE.TorusGeometry(basinRadius, 0.05, 16, 48), glassMaterial);
       basinRim.rotation.x = Math.PI / 2;
       basinRim.position.set(0.6, basinHeight + 0.05, 0);
       basinGroup.add(basinRim);
 
-      // Water Liquid inside the basin
+      // 🎯 Glowing Drop Zone Target Ring
+      const dropZoneGeo = new THREE.TorusGeometry(basinRadius * 0.98, 0.045, 16, 48);
+      const dropZoneMat = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending
+      });
+      const dropZoneMesh = new THREE.Mesh(dropZoneGeo, dropZoneMat);
+      dropZoneMesh.rotation.x = Math.PI / 2;
+      dropZoneMesh.position.set(0.6, basinHeight + 0.1, 0);
+      dropZoneMesh.visible = false;
+      dropZoneRingRef.current = dropZoneMesh;
+      basinGroup.add(dropZoneMesh);
+
       const waterHeight = hasWater !== false ? Math.max(0.4, liquidHeight * 1.1) : 0.05;
       const waterGeo = new THREE.CylinderGeometry(basinRadius * 0.94, basinRadius * 0.94, waterHeight, 48);
       waterGeo.translate(0, waterHeight / 2, 0);
@@ -543,11 +560,10 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       basinGroup.add(waterMesh);
       liquidMeshRef.current = waterMesh;
 
-      // 2. Side Laboratory Workbench Tray (صينية الأدوات والمواد على طاولة المعمل)
+      // 2. Side Laboratory Workbench Tray Base
       const trayGroup = new THREE.Group();
       trayGroup.position.set(-2.5, 0, 0);
 
-      // Polished dark slate / wooden laboratory tray base
       const trayBase = new THREE.Mesh(
         new THREE.BoxGeometry(2.4, 0.08, 3.4),
         new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.4, metalness: 0.2 })
@@ -556,7 +572,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       trayBase.castShadow = true;
       trayGroup.add(trayBase);
 
-      // Raised tray borders
       const rimMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3 });
       const rimFront = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.14, 0.06), rimMat);
       rimFront.position.set(0, 0.09, 1.67);
@@ -571,7 +586,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       rimRight.position.set(1.17, 0.09, 0);
       trayGroup.add(rimRight);
 
-      // A. Watch Glass / Ceramic Tile for Cutting (بلاطة تقطيع وساعة زجاجية)
+      // Ceramic cutting tile
       const tile = new THREE.Mesh(
         new THREE.CylinderGeometry(0.7, 0.72, 0.05, 32),
         new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.2 })
@@ -579,7 +594,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       tile.position.set(-0.2, 0.1, 0.6);
       trayGroup.add(tile);
 
-      // B. Filter Paper Disc (ورق ترشيح دائري أبيض)
+      // Filter Paper Disc
       const filterPaper = new THREE.Mesh(
         new THREE.CylinderGeometry(0.55, 0.55, 0.015, 32),
         new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
@@ -587,30 +602,54 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       filterPaper.position.set(-0.2, 0.13, 0.6);
       trayGroup.add(filterPaper);
 
-      // Small cut shiny sodium piece on the filter paper if cut/dried
-      if (isCutAndDried || stepIndex >= 2) {
-        const cutPiece = new THREE.Mesh(
-          new THREE.BoxGeometry(0.12, 0.08, 0.12),
-          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.95, roughness: 0.1 })
-        );
-        cutPiece.position.set(-0.2, 0.18, 0.6);
-        trayGroup.add(cutPiece);
-      }
+      // ==============================================================
+      // 🖐️ DRAGGABLE TOOL 1: Cut Metal Piece (قطعة الصوديوم على ورق الترشيح)
+      // ==============================================================
+      const metalPieceGroup = new THREE.Group();
+      const cutPieceHome = new THREE.Vector3(-2.7, 0.18, 0.6);
+      metalPieceGroup.position.copy(cutPieceHome);
+      metalPieceGroup.userData = {
+        id: "drop_sodium",
+        label: "قطعة صوديوم Na 🟡",
+        homePos: cutPieceHome.clone()
+      };
 
-      // C. Sharp Scalpel / Knife (سكين حاد / مشرط جراحي)
+      const cutPiece = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.12, 0.18),
+        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.98, roughness: 0.08 })
+      );
+      cutPiece.castShadow = true;
+      metalPieceGroup.add(cutPiece);
+
+      const metalAura = new THREE.Mesh(
+        new THREE.SphereGeometry(0.18, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.4, wireframe: true })
+      );
+      metalPieceGroup.add(metalAura);
+
+      appGroup.add(metalPieceGroup);
+      draggableToolsRef.current.push(metalPieceGroup);
+
+      // ==============================================================
+      // 🖐️ DRAGGABLE TOOL 2: Sharp Scalpel / Knife (سكين حاد)
+      // ==============================================================
       const knifeGroup = new THREE.Group();
-      knifeGroup.position.set(0.6, 0.12, 0.6);
+      const knifeHome = new THREE.Vector3(-1.9, 0.14, 0.6);
+      knifeGroup.position.copy(knifeHome);
       knifeGroup.rotation.y = -0.3;
+      knifeGroup.userData = {
+        id: "cut_metal",
+        label: "سكين حاد 🔪",
+        homePos: knifeHome.clone()
+      };
 
-      // Stainless Steel Blade
       const blade = new THREE.Mesh(
-        new THREE.BoxGeometry(0.02, 0.12, 0.7),
+        new THREE.BoxGeometry(0.03, 0.12, 0.7),
         new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.08 })
       );
       blade.position.set(0, 0.06, -0.35);
       knifeGroup.add(blade);
 
-      // Knife handle
       const knifeHandle = new THREE.Mesh(
         new THREE.CylinderGeometry(0.045, 0.045, 0.7, 16),
         new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.5 })
@@ -618,81 +657,139 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       knifeHandle.rotation.x = Math.PI / 2;
       knifeHandle.position.set(0, 0.06, 0.35);
       knifeGroup.add(knifeHandle);
-      trayGroup.add(knifeGroup);
 
-      // D. Metallic Forceps / Tweezers (ملقط معدني دقيق)
+      appGroup.add(knifeGroup);
+      draggableToolsRef.current.push(knifeGroup);
+
+      // ==============================================================
+      // 🖐️ DRAGGABLE TOOL 3: Metallic Forceps with Sodium (ملقط معدني)
+      // ==============================================================
       const forcepsGroup = new THREE.Group();
-      forcepsGroup.position.set(-0.6, 0.12, -0.7);
+      const forcepsHome = new THREE.Vector3(-3.1, 0.14, -0.7);
+      forcepsGroup.position.copy(forcepsHome);
       forcepsGroup.rotation.y = 0.4;
+      forcepsGroup.userData = {
+        id: "drop_sodium",
+        label: "ملقط معدني بالصوديوم 🥢",
+        homePos: forcepsHome.clone()
+      };
 
-      const prongMat = new THREE.MeshStandardMaterial({ color: 0xcfd8dc, metalness: 0.92, roughness: 0.15 });
-      const leftProng = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 1.1), prongMat);
+      const prongMat = new THREE.MeshStandardMaterial({ color: 0xcfd8dc, metalness: 0.95, roughness: 0.1 });
+      const leftProng = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 1.2), prongMat);
       leftProng.position.set(-0.03, 0.02, 0);
       leftProng.rotation.y = 0.05;
       forcepsGroup.add(leftProng);
 
-      const rightProng = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 1.1), prongMat);
+      const rightProng = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 1.2), prongMat);
       rightProng.position.set(0.03, 0.02, 0);
       rightProng.rotation.y = -0.05;
       forcepsGroup.add(rightProng);
 
       const forcepsJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.04, 16), prongMat);
-      forcepsJoint.position.set(0, 0.02, -0.55);
+      forcepsJoint.position.set(0, 0.02, -0.6);
       forcepsGroup.add(forcepsJoint);
-      trayGroup.add(forcepsGroup);
 
-      // E. Dropper Bottle with Indicator (قطارة دليل الفينول فثالين)
+      const graspedNa = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.95, roughness: 0.1 })
+      );
+      graspedNa.position.set(0, 0.02, 0.55);
+      forcepsGroup.add(graspedNa);
+
+      appGroup.add(forcepsGroup);
+      draggableToolsRef.current.push(forcepsGroup);
+
+      // ==============================================================
+      // 🖐️ DRAGGABLE TOOL 4: Dropper Bottle with Indicator (قطارة دليل الفينول)
+      // ==============================================================
       const dropperGroup = new THREE.Group();
-      dropperGroup.position.set(0.5, 0.08, -0.8);
+      const dropperHome = new THREE.Vector3(-2.0, 0.1, -0.8);
+      dropperGroup.position.copy(dropperHome);
+      dropperGroup.userData = {
+        id: "add_indicator",
+        label: "قطارة الفينول فثالين 🌸",
+        homePos: dropperHome.clone()
+      };
 
       const bottleBody = new THREE.Mesh(
         new THREE.CylinderGeometry(0.24, 0.24, 0.7, 24),
-        new THREE.MeshPhysicalMaterial({ color: 0x78350f, transparent: true, opacity: 0.8, roughness: 0.2 })
+        new THREE.MeshPhysicalMaterial({ color: 0x78350f, transparent: true, opacity: 0.85, roughness: 0.2 })
       );
       bottleBody.position.set(0, 0.35, 0);
       dropperGroup.add(bottleBody);
 
-      // Bottle Cap & Rubber Teat
       const bottleCap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.15, 24), darkIronMat);
       bottleCap.position.set(0, 0.75, 0);
       dropperGroup.add(bottleCap);
 
       const rubberTeat = new THREE.Mesh(
-        new THREE.SphereGeometry(0.12, 16, 16),
+        new THREE.SphereGeometry(0.14, 16, 16),
         new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.7 })
       );
-      rubberTeat.position.set(0, 0.88, 0);
+      rubberTeat.position.set(0, 0.9, 0);
       dropperGroup.add(rubberTeat);
-      trayGroup.add(dropperGroup);
 
-      // F. Reagent Jars for Sodium and Potassium (أوعية كيروسين لحفظ الصوديوم Na والبوتاسيوم K)
-      const naJar = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.25, 0.25, 0.6, 24),
-        new THREE.MeshPhysicalMaterial({ color: 0xfef08a, transparent: true, opacity: 0.75 })
+      const pipetteTube = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.02, 0.8, 16), glassMaterial);
+      pipetteTube.position.set(0, -0.2, 0);
+      dropperGroup.add(pipetteTube);
+
+      const dropIndicator = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xec4899, transparent: true, opacity: 0.6 })
       );
-      naJar.position.set(-0.2, 0.38, -0.8);
-      trayGroup.add(naJar);
+      dropIndicator.position.set(0, 1.25, 0);
+      dropperGroup.add(dropIndicator);
 
-      const naCap = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.1, 24), darkIronMat);
-      naCap.position.set(-0.2, 0.73, -0.8);
-      trayGroup.add(naCap);
+      appGroup.add(dropperGroup);
+      draggableToolsRef.current.push(dropperGroup);
+
+      // ==============================================================
+      // 🖐️ DRAGGABLE TOOL 5: Potassium Reagent Jar (وعاء البوتاسيوم K)
+      // ==============================================================
+      const kJarGroup = new THREE.Group();
+      const kJarHome = new THREE.Vector3(-2.7, 0.1, -0.8);
+      kJarGroup.position.copy(kJarHome);
+      kJarGroup.userData = {
+        id: "drop_potassium",
+        label: "قطعة بوتاسيوم K 🟣",
+        homePos: kJarHome.clone()
+      };
+
+      const kJar = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.25, 0.25, 0.6, 24),
+        new THREE.MeshPhysicalMaterial({ color: 0xc084fc, transparent: true, opacity: 0.75 })
+      );
+      kJar.position.set(0, 0.3, 0);
+      kJarGroup.add(kJar);
+
+      const kCap = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.1, 24), darkIronMat);
+      kCap.position.set(0, 0.65, 0);
+      kJarGroup.add(kCap);
+
+      const kBeacon = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xa855f7, transparent: true, opacity: 0.6 })
+      );
+      kBeacon.position.set(0, 0.95, 0);
+      kJarGroup.add(kBeacon);
+
+      appGroup.add(kJarGroup);
+      draggableToolsRef.current.push(kJarGroup);
 
       basinGroup.add(trayGroup);
 
-      // 3. Floating & Darting Molten Alkali Metal Sphere (كرة الفلز المنصهرة السابحة في الماء)
+      // 3. Floating & Darting Molten Alkali Metal Sphere
       const effectiveAlkali = activeAlkali !== "none" ? activeAlkali : (stepIndex >= 2 ? (stepIndex === 2 ? "na" : "k") : "none");
       if (effectiveAlkali !== "none") {
         const alkaliSphereGroup = new THREE.Group();
         alkaliSphereGroup.position.set(0.6, waterHeight + 0.12, 0);
 
-        // Shiny molten metallic sphere
         const metalBall = new THREE.Mesh(
           new THREE.SphereGeometry(0.14, 24, 24),
           new THREE.MeshStandardMaterial({ color: 0xf1f5f9, metalness: 0.98, roughness: 0.05 })
         );
         alkaliSphereGroup.add(metalBall);
 
-        // Flame and glow directly on the ball
         const alkaliFlameColor = effectiveAlkali === "k" ? 0xa855f7 : 0xfbbf24;
         const ballFlame = new THREE.Mesh(
           new THREE.ConeGeometry(0.16, 0.65, 16),
@@ -730,7 +827,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       bubblesGroupRef.current = bubbles;
       basinGroup.add(bubbles);
 
-      // Smoke particles over the basin
       const smokeCount = 50;
       const smokeGeo = new THREE.BufferGeometry();
       const smokePos = new Float32Array(smokeCount * 3);
@@ -755,7 +851,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     // 🧪 CASE C: STANDARD BEAKER / BURNER / RACK / GAS PREP APPARATUS
     // ==============================================================
     else {
-      // Retort stand
       const standBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.1, 1.4), metalMat);
       standBase.position.set(-1.8, 0.05, 0);
       standBase.castShadow = true;
@@ -774,7 +869,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       clampArm.position.set(-0.9, 2.4, -0.4);
       appGroup.add(clampArm);
 
-      // Bunsen Burner
       const burnerGroup = new THREE.Group();
       burnerGroup.position.set(0, 0, 0);
 
@@ -786,7 +880,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       burnerBarrel.position.set(0, 0.7, 0);
       burnerGroup.add(burnerBarrel);
 
-      // Bunsen Flame
       const flameGroup = new THREE.Group();
       flameGroup.position.set(0, 1.25, 0);
 
@@ -813,7 +906,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       flameMeshRef.current = flameGroup;
       appGroup.add(burnerGroup);
 
-      // Tripod & Gauze
       const tripodRing = new THREE.Mesh(new THREE.TorusGeometry(0.9, 0.04, 16, 32), metalMat);
       tripodRing.rotation.x = Math.PI / 2;
       tripodRing.position.set(0, 1.5, 0);
@@ -832,7 +924,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         appGroup.add(tripodLeg);
       }
 
-      // Reaction Beaker (الكأس الزجاجي)
       const beakerRadius = 0.8;
       const beakerHeight = 1.8;
       const beakerGeo = new THREE.CylinderGeometry(beakerRadius, beakerRadius * 0.95, beakerHeight, 32, 1, true);
@@ -841,12 +932,10 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       beaker.castShadow = true;
       appGroup.add(beaker);
 
-      // Beaker Bottom
       const beakerBottom = new THREE.Mesh(new THREE.CylinderGeometry(beakerRadius * 0.95, beakerRadius * 0.95, 0.04, 32), glassMaterial);
       beakerBottom.position.set(0, 1.53, 0);
       appGroup.add(beakerBottom);
 
-      // Liquid Mesh inside Beaker
       const realLiquidHeight = Math.max(0.1, liquidHeight * 1.5);
       const liquidGeo = new THREE.CylinderGeometry(beakerRadius * 0.93, beakerRadius * 0.93, realLiquidHeight, 32);
       liquidGeo.translate(0, realLiquidHeight / 2, 0);
@@ -863,18 +952,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       liquidMeshRef.current = liquidMesh;
       appGroup.add(liquidMesh);
 
-      // Beaker Graduations / Lines
-      for (let g = 1; g <= 4; g++) {
-        const ringLine = new THREE.Mesh(
-          new THREE.TorusGeometry(beakerRadius * 0.98, 0.008, 8, 32),
-          new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.4 })
-        );
-        ringLine.rotation.x = Math.PI / 2;
-        ringLine.position.set(0, 1.52 + g * 0.35, 0);
-        appGroup.add(ringLine);
-      }
-
-      // Bubbles Particle System
       const bubbleGeo = new THREE.BufferGeometry();
       const bubbleCount = 35;
       const bubblePos = new Float32Array(bubbleCount * 3);
@@ -895,7 +972,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       bubblesGroupRef.current = bubbles;
       appGroup.add(bubbles);
 
-      // Smoke Particle System
       const smokeCount = 45;
       const smokeGeo = new THREE.BufferGeometry();
       const smokePos = new Float32Array(smokeCount * 3);
@@ -913,7 +989,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       smokeGroupRef.current = smoke;
       appGroup.add(smoke);
 
-      // Secondary apparatus: Gas prep trough
       if (apparatusType === "gas_prep") {
         const troughGroup = new THREE.Group();
         troughGroup.position.set(2.8, 0, 0);
@@ -946,7 +1021,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         appGroup.add(troughGroup);
       }
 
-      // Secondary apparatus: Test tubes rack
       if (apparatusType === "test_tubes") {
         const rackGroup = new THREE.Group();
         rackGroup.position.set(2.4, 0, 0);
@@ -1029,7 +1103,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           }
         }
 
-        // Deflect sample tube & balance beam according to substance and magnetism!
         if (sampleTubeGroupRef.current && balanceBeamRef.current) {
           let targetDeflection = 0;
           let beamTilt = 0;
@@ -1063,6 +1136,24 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         alkaliBallRef.current.position.z = Math.sin(angle) * radiusVal;
         const waterTop = (hasWater !== false ? Math.max(0.4, liquidHeight * 1.1) : 0.05) + 0.12;
         alkaliBallRef.current.position.y = waterTop + Math.sin(elapsedTime * 14) * 0.02;
+      }
+
+      // Smooth return for non-dragged tools back to their home positions
+      if (!isDraggingToolRef.current) {
+        draggableToolsRef.current.forEach((tool) => {
+          if (tool.userData && tool.userData.homePos) {
+            const home = tool.userData.homePos as THREE.Vector3;
+            tool.position.lerp(home, 0.12);
+            tool.rotation.x = THREE.MathUtils.lerp(tool.rotation.x, 0, 0.12);
+            tool.rotation.z = THREE.MathUtils.lerp(tool.rotation.z, 0, 0.12);
+          }
+        });
+      }
+
+      // Pulsing Drop Zone Ring
+      if (dropZoneRingRef.current && dropZoneRingRef.current.visible) {
+        const ringPulse = 1.0 + Math.sin(elapsedTime * 10) * 0.04;
+        dropZoneRingRef.current.scale.set(ringPulse, ringPulse, ringPulse);
       }
 
       // Bubbles animation
@@ -1110,25 +1201,146 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     };
   }, [isHeating, liquidHeight, magneticFieldOn, activeSubstance, apparatusType, activeAlkali, hasWater, stepIndex]);
 
-  // 4. Mouse Orbit Interaction
-  const handleMouseDown = (e: React.MouseEvent) => {
-    isDraggingRef.current = true;
-    prevMousePosRef.current = { x: e.clientX, y: e.clientY };
+  // Helper to find root draggable group from intersected child mesh
+  const findDraggableGroup = (object: THREE.Object3D | null): THREE.Group | null => {
+    let curr = object;
+    while (curr && curr.parent) {
+      if (curr.userData && curr.userData.id) {
+        return curr as THREE.Group;
+      }
+      curr = curr.parent;
+    }
+    return null;
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingRef.current) return;
-    const deltaX = e.clientX - prevMousePosRef.current.x;
-    const deltaY = e.clientY - prevMousePosRef.current.y;
+  // 4. Unified Pointer Drag & Drop Engine (Mouse + Touch on Mobile)
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (!mountRef.current || !cameraRef.current) return;
+    const rect = mountRef.current.getBoundingClientRect();
+    const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    mouseVecRef.current.set(mouseX, mouseY);
+    pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
     prevMousePosRef.current = { x: e.clientX, y: e.clientY };
 
-    cameraAngleRef.current.theta -= deltaX * 0.008;
-    cameraAngleRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, cameraAngleRef.current.phi - deltaY * 0.008));
-    updateCameraPos();
+    // Check if clicked an interactive tool
+    raycasterRef.current.setFromCamera(mouseVecRef.current, cameraRef.current);
+    const intersects = raycasterRef.current.intersectObjects(draggableToolsRef.current, true);
+
+    if (intersects.length > 0) {
+      const hitTool = findDraggableGroup(intersects[0].object);
+      if (hitTool) {
+        isDraggingToolRef.current = true;
+        draggedObjectRef.current = hitTool;
+        setIsCurrentlyDragging(true);
+
+        const planeIntersect = new THREE.Vector3();
+        if (raycasterRef.current.ray.intersectPlane(dragPlaneRef.current, planeIntersect)) {
+          dragOffsetRef.current.copy(hitTool.position).sub(planeIntersect);
+          hitTool.position.y = 2.4;
+        }
+
+        if (dropZoneRingRef.current) {
+          dropZoneRingRef.current.visible = true;
+        }
+
+        setDragFeedback("🎯 اسحب " + hitTool.userData.label + " وأفلتها فوق الحوض للسكب والتفاعل!");
+        return;
+      }
+    }
+
+    // Otherwise, drag camera orbit
+    isDraggingCameraRef.current = true;
   };
 
-  const handleMouseUp = () => {
-    isDraggingRef.current = false;
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!mountRef.current || !cameraRef.current) return;
+    const rect = mountRef.current.getBoundingClientRect();
+    const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+    const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+
+    mouseVecRef.current.set(mouseX, mouseY);
+
+    // If dragging a 3D physical tool
+    if (isDraggingToolRef.current && draggedObjectRef.current) {
+      raycasterRef.current.setFromCamera(mouseVecRef.current, cameraRef.current);
+      const planeIntersect = new THREE.Vector3();
+
+      if (raycasterRef.current.ray.intersectPlane(dragPlaneRef.current, planeIntersect)) {
+        draggedObjectRef.current.position.x = planeIntersect.x + dragOffsetRef.current.x;
+        draggedObjectRef.current.position.z = planeIntersect.z + dragOffsetRef.current.z;
+
+        if (draggedObjectRef.current.userData.id === "add_indicator") {
+          draggedObjectRef.current.rotation.z = -0.4;
+        } else if (draggedObjectRef.current.userData.id === "drop_sodium") {
+          draggedObjectRef.current.rotation.x = 0.2;
+        }
+
+        const distToBasin = Math.hypot(draggedObjectRef.current.position.x - 0.6, draggedObjectRef.current.position.z - 0);
+        const isOverBasin = distToBasin < 2.1;
+
+        if (isOverBasin) {
+          if (dropZoneRingRef.current) {
+            (dropZoneRingRef.current.material as THREE.MeshBasicMaterial).color.setHex(0x22c55e);
+          }
+          setDragFeedback("✨ حرر الآن لسكب وإسقاط " + draggedObjectRef.current.userData.label + " في الحوض!");
+        } else {
+          if (dropZoneRingRef.current) {
+            (dropZoneRingRef.current.material as THREE.MeshBasicMaterial).color.setHex(0x38bdf8);
+          }
+          setDragFeedback("🎯 اسحب " + draggedObjectRef.current.userData.label + " نحو الحوض الكبير");
+        }
+      }
+      return;
+    }
+
+    // Camera Orbit drag
+    if (isDraggingCameraRef.current) {
+      const deltaX = e.clientX - prevMousePosRef.current.x;
+      const deltaY = e.clientY - prevMousePosRef.current.y;
+      prevMousePosRef.current = { x: e.clientX, y: e.clientY };
+
+      cameraAngleRef.current.theta -= deltaX * 0.008;
+      cameraAngleRef.current.phi = Math.max(0.1, Math.min(Math.PI / 2 - 0.05, cameraAngleRef.current.phi - deltaY * 0.008));
+      updateCameraPos();
+    }
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (isDraggingToolRef.current && draggedObjectRef.current) {
+      const tool = draggedObjectRef.current;
+      const actionId = tool.userData.id as string;
+      const distToBasin = Math.hypot(tool.position.x - 0.6, tool.position.z - 0);
+      const isOverBasin = distToBasin < 2.1;
+
+      const dragDistance = Math.hypot(e.clientX - pointerDownPosRef.current.x, e.clientY - pointerDownPosRef.current.y);
+      const isQuickClick = dragDistance < 10;
+
+      if (isOverBasin || isQuickClick) {
+        if (onActionTrigger) {
+          onActionTrigger(actionId);
+        }
+
+        if (dropZoneRingRef.current) {
+          (dropZoneRingRef.current.material as THREE.MeshBasicMaterial).color.setHex(0xfbbf24);
+          setTimeout(() => {
+            if (dropZoneRingRef.current) dropZoneRingRef.current.visible = false;
+          }, 450);
+        }
+      } else {
+        if (dropZoneRingRef.current) {
+          dropZoneRingRef.current.visible = false;
+        }
+      }
+
+      isDraggingToolRef.current = false;
+      draggedObjectRef.current = null;
+      setIsCurrentlyDragging(false);
+      setDragFeedback(null);
+    }
+
+    isDraggingCameraRef.current = false;
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -1137,7 +1349,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     updateCameraPos();
   };
 
-  // Determine fullscreen container styling
   const isFullView = isFullscreen || isModalFullscreen;
 
   return (
@@ -1148,21 +1359,22 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           ? "fixed inset-0 z-50 w-screen h-screen bg-[#0B1329] flex flex-col justify-between overflow-hidden select-none"
           : "relative w-full h-[450px] sm:h-[490px] rounded-xl overflow-hidden shadow-inner border border-slate-800 bg-[#0B1329] select-none"
       }
+      style={{ touchAction: "none" }}
     >
-      {/* 3D Canvas Mount Point */}
+      {/* 3D Canvas Mount Point with Unified Pointer Events */}
       <div
         ref={mountRef}
-        className="w-full h-full cursor-grab active:cursor-grabbing"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        className={"w-full h-full " + (isCurrentlyDragging ? "cursor-grabbing" : "cursor-grab active:cursor-grabbing")}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
         onWheel={handleWheel}
       />
 
       {/* Top Floating Control Bar */}
       <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-20">
-        {/* Left: Quick Actions & Camera Presets */}
+        {/* Left: Camera Presets */}
         <div className="flex items-center gap-1.5 pointer-events-auto bg-slate-900/85 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-slate-700/80 shadow-lg">
           <button
             onClick={() => setCameraPreset("front")}
@@ -1242,9 +1454,25 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         </div>
       </div>
 
+      {/* 🖐️ Top Interactive Drag-and-Drop Guidance Banner */}
+      <div className="absolute top-16 left-1/2 -translate-x-1/2 z-20 pointer-events-none max-w-lg w-[90%] text-center">
+        {dragFeedback ? (
+          <div className="bg-emerald-950/90 backdrop-blur-md px-4 py-2 rounded-xl border border-emerald-400 text-emerald-200 text-xs font-bold shadow-2xl flex items-center justify-center gap-2 animate-bounce">
+            <Grab className="w-4 h-4 text-emerald-300 shrink-0" />
+            <span>{dragFeedback}</span>
+          </div>
+        ) : (
+          apparatusType === "glass_basin" && (
+            <div className="bg-slate-900/80 backdrop-blur-sm px-3.5 py-1.5 rounded-full border border-slate-700/70 text-slate-300 text-[11px] font-sans font-medium flex items-center justify-center gap-1.5 shadow-lg">
+              <Hand className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+              <span>ميزة الالتقاط والسحب 3D: يمكنك سحب أي أداة بالماوس أو بيدك وسكبها فوق الحوض!</span>
+            </div>
+          )
+        )}
+      </div>
+
       {/* Floating Real-time Telemetry HUD (Left Side) */}
-      <div className="absolute top-16 left-3 z-20 flex flex-col gap-1.5 bg-slate-900/85 backdrop-blur-md p-2.5 rounded-xl border border-slate-700/70 text-right shadow-xl min-w-[130px]">
-        {/* Apparatus Name Badge */}
+      <div className="absolute top-24 left-3 z-20 flex flex-col gap-1.5 bg-slate-900/85 backdrop-blur-md p-2.5 rounded-xl border border-slate-700/70 text-right shadow-xl min-w-[130px]">
         <div className="text-[10px] text-emerald-400 font-bold border-b border-slate-800 pb-1 flex items-center gap-1 justify-end">
           <span>
             {apparatusType === "magnetic_balance" ? "ميزان غوي المغناطيسي 🧲" :
@@ -1255,7 +1483,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           </span>
         </div>
 
-        {/* Temperature */}
         <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold">
           <span className="text-amber-400">{currentTemp}°C</span>
           <div className="flex items-center gap-1 text-slate-300">
@@ -1264,7 +1491,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           </div>
         </div>
 
-        {/* pH Value */}
         <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold">
           <span className={currentPh > 7 ? "text-emerald-400" : currentPh < 7 ? "text-rose-400" : "text-sky-400"}>
             {currentPh.toFixed(1)}
@@ -1275,7 +1501,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           </div>
         </div>
 
-        {/* Gas Volume */}
         {gasVolume > 0 && (
           <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold">
             <span className="text-sky-300">{currentGas} mL</span>
@@ -1286,7 +1511,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           </div>
         )}
 
-        {/* Apparent Weight (for Gouy balance) */}
         {currentWeight !== undefined && (
           <div className="flex items-center justify-between gap-2 text-[11px] font-mono font-bold pt-1 border-t border-slate-800">
             <span className="text-emerald-300">{currentWeight.toFixed(2)} g</span>
@@ -1297,7 +1521,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           </div>
         )}
 
-        {/* Magnet State Tag */}
         {apparatusType === "magnetic_balance" && (
           <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-800 text-[10px]">
             <span className="text-slate-400">المغناطيس:</span>
@@ -1307,7 +1530,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           </div>
         )}
 
-        {/* Glass Basin Alkali Status */}
         {apparatusType === "glass_basin" && (
           <div className="pt-1 border-t border-slate-800 space-y-1 text-[10px]">
             <div className="flex items-center justify-between">
@@ -1326,7 +1548,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         )}
       </div>
 
-      {/* 🌟 Floating Live Reflection Drawer (In Fullscreen Mode or on request) */}
+      {/* 🌟 Floating Live Reflection Drawer */}
       {isFullView && showReflectionDrawer && (
         <div className="absolute top-16 right-3 max-w-sm w-[92%] sm:w-96 z-20 bg-slate-900/90 backdrop-blur-md p-4 rounded-2xl border border-indigo-500/30 text-right shadow-2xl space-y-2.5">
           <div className="flex items-center justify-between border-b border-slate-800 pb-2">
@@ -1359,7 +1581,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         </div>
       )}
 
-      {/* 🔬 Live Chemical State & Note Badge (Floating Clean Pill) */}
+      {/* 🔬 Live Chemical State & Note Badge */}
       {chemicalNote && !isFullView && (
         <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20 max-w-lg w-[92%] bg-slate-900/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-emerald-500/40 text-center shadow-2xl">
           <p className="text-xs text-emerald-300 font-bold font-sans flex items-center justify-center gap-1.5 leading-relaxed">
@@ -1371,8 +1593,9 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
       {/* 🧪 Laboratory Action Triggers & Step Navigation (Bottom Bar) */}
       <div className="absolute bottom-3 left-3 right-3 z-20 flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/80">
-        <span className="text-[10px] text-slate-400 font-sans hidden md:inline">
-          💡 انقر واسحب بالماوس للتدوير 360° • عجلة الماوس للتقريب
+        <span className="text-[10px] text-slate-400 font-sans hidden md:inline flex items-center gap-1">
+          <MousePointer className="w-3 h-3 text-sky-400" />
+          <span>اسحب أي أداة بالماوس أو إصبعك وأسقطها فوق الحوض • انقر واسحب في الفراغ للتدوير 360°</span>
         </span>
 
         {/* Action Triggers */}
@@ -1380,7 +1603,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           {onActionTrigger && (
             <>
               {apparatusType === "glass_basin" ? (
-                /* Dedicated Interactive Tools Dock for Alkali Metal Basin */
                 <div className="flex flex-wrap items-center gap-1">
                   <button
                     onClick={() => onActionTrigger("pour_water")}
@@ -1436,7 +1658,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                   </button>
                 </div>
               ) : apparatusType === "magnetic_balance" ? (
-                /* Gouy Magnet Trigger */
                 <button
                   onClick={() => onActionTrigger("toggle_magnet")}
                   className={
@@ -1450,7 +1671,6 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                   <span>{magneticFieldOn ? "إيقاف المغناطيس" : "تشغيل المغناطيس ⚡"}</span>
                 </button>
               ) : (
-                /* Standard Reaction Triggers */
                 <>
                   <button
                     onClick={() => onActionTrigger("add_reagent")}
