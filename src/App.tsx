@@ -7,6 +7,7 @@ import { GlossaryView } from "./components/GlossaryView";
 import { QuizView } from "./components/QuizView";
 import { StudentAssistant } from "./components/StudentAssistant";
 import { WorksheetGenerator } from "./components/WorksheetGenerator";
+import { StudentProfileModal } from "./components/StudentProfileModal";
 import {
   Award,
   BookOpen,
@@ -24,7 +25,9 @@ import {
   Wifi,
   WifiOff,
   Maximize2,
-  Minimize2
+  Minimize2,
+  GraduationCap,
+  SlidersHorizontal
 } from "lucide-react";
 
 type TabType = "dashboard" | "syllabus" | "lab" | "glossary" | "quiz" | "worksheets";
@@ -42,6 +45,15 @@ export default function App() {
   const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
   const [isExitModalOpen, setIsExitModalOpen] = useState<boolean>(false);
   const [isFocusReading, setIsFocusReading] = useState<boolean>(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<any>(() => {
+    try {
+      const saved = localStorage.getItem("sudan_auth_user") || localStorage.getItem("currentUser") || localStorage.getItem("user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
 
   // Reset focus reading mode when active tab changes
   useEffect(() => {
@@ -240,11 +252,11 @@ export default function App() {
   };
 
   const menuItems = [
-    { id: "dashboard", label: "الرئيسة والمؤشرات", icon: Award },
+    { id: "dashboard", label: "الرئيسة ولوحة الوحدات", icon: Award },
     { id: "syllabus", label: "قسم المنهج والدروس", icon: BookOpen },
-    { id: "worksheets", label: "توليد أوراق العمل", icon: FileText },
-    { id: "lab", label: "المعمل الكيميائي التفاعلي", icon: FlaskConical },
-    { id: "glossary", label: "المصطلحات العلمية", icon: Atom },
+    { id: "lab", label: "المعمل الكيميائي (21 تجربة)", icon: FlaskConical },
+    { id: "worksheets", label: "توليد أوراق العمل والطباعة", icon: FileText },
+    { id: "glossary", label: "المصطلحات والمفاهيم", icon: Atom },
     { id: "quiz", label: "الامتحانات والتقييم", icon: CheckSquare }
   ];
 
@@ -263,18 +275,27 @@ export default function App() {
       </div>
 
       {/* Mobile Top Navbar */}
-      <header className={`${isFocusReading ? "hidden" : "lg:hidden flex"} bg-white/95 backdrop-blur border-b border-[#E5E2DE] sticky top-0 z-40 px-4 py-3 justify-between items-center`}>
+      <header className={`${isFocusReading ? "hidden" : "lg:hidden flex"} bg-white/95 dark:bg-[#1A1A1E]/95 backdrop-blur border-b border-[#E5E2DE] dark:border-slate-800 sticky top-0 z-40 px-4 py-3 justify-between items-center`}>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="p-1.5 rounded bg-[#F9F8F6] border border-[#E5E2DE] hover:bg-[#E5E2DE] text-[#2C3E50] focus:outline-none"
+            className="p-1.5 rounded-lg bg-[#F9F8F6] dark:bg-slate-800 border border-[#E5E2DE] dark:border-slate-700 text-[#2C3E50] dark:text-slate-200 focus:outline-none"
           >
             {isSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
           
           <button
+            onClick={() => setIsProfileModalOpen(true)}
+            className="px-2.5 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs"
+            title="مؤشراتي وملف الطالب"
+          >
+            <GraduationCap className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            <span className="hidden sm:inline">{currentUser?.username || "مؤشراتي"}</span>
+          </button>
+
+          <button
             onClick={toggleDarkMode}
-            className="p-1.5 rounded bg-[#F9F8F6] border border-[#E5E2DE] hover:bg-[#E5E2DE] text-[#2C3E50] focus:outline-none flex items-center justify-center"
+            className="p-1.5 rounded-lg bg-[#F9F8F6] dark:bg-slate-800 border border-[#E5E2DE] dark:border-slate-700 text-[#2C3E50] dark:text-slate-200 focus:outline-none flex items-center justify-center"
             title="تبديل وضع القراءة الليلي"
           >
             {isDarkMode ? <Sun className="w-5 h-5 text-amber-500" /> : <Moon className="w-5 h-5 text-indigo-600" />}
@@ -282,10 +303,10 @@ export default function App() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="font-serif font-bold text-lg text-[#2C3E50]">
+          <span className="font-serif font-bold text-base text-[#2C3E50] dark:text-slate-100">
             كيمياء الثاني الثانوي
           </span>
-          <Atom className="w-6 h-6 text-[#E67E22] animate-spin" style={{ animationDuration: "12s" }} />
+          <Atom className="w-5 h-5 text-[#047857] dark:text-emerald-400 animate-spin" style={{ animationDuration: "12s" }} />
         </div>
       </header>
 
@@ -293,28 +314,54 @@ export default function App() {
       <div className="flex flex-1 relative">
         {/* Sidebar Nav (Desktop & Mobile Drawer) */}
         <aside
-          className={`${isFocusReading ? "hidden" : "lg:block"} shrink-0 bg-[#F9F8F6] border-l border-[#E5E2DE] w-64 lg:w-72 fixed lg:static top-0 bottom-0 right-0 z-50 lg:z-auto transition-transform duration-300 transform ${
+          className={`${isFocusReading ? "hidden" : "lg:block"} shrink-0 bg-[#F9F8F6] dark:bg-[#16161A] border-l border-[#E5E2DE] dark:border-slate-800 w-64 lg:w-72 fixed lg:static top-0 bottom-0 right-0 z-50 lg:z-auto transition-transform duration-300 transform ${
             isSidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
           }`}
         >
-          <div className="h-full flex flex-col justify-between p-6">
-            <div className="space-y-6 flex-1 flex flex-col justify-between">
-              <div className="space-y-6">
+          <div className="h-full flex flex-col justify-between p-5">
+            <div className="space-y-4 flex-1 flex flex-col justify-between overflow-y-auto">
+              <div className="space-y-4">
                 {/* Branding Section */}
-                <div className="hidden lg:flex items-center gap-3 justify-end border-b border-[#E5E2DE] pb-5">
+                <div className="hidden lg:flex items-center gap-3 justify-end border-b border-[#E5E2DE] dark:border-slate-800 pb-4">
                   <div className="text-right">
-                    <span className="font-serif font-bold text-xl text-[#2C3E50]">
+                    <span className="font-serif font-bold text-lg text-[#2C3E50] dark:text-white">
                       الكيمياء التفاعلية
                     </span>
-                    <span className="block text-[10px] text-[#7F8C8D] font-medium mt-0.5">منهج السودان • الثاني الثانوي</span>
+                    <span className="block text-[10px] text-[#7F8C8D] dark:text-slate-400 font-medium mt-0.5">منهج السودان • الثاني الثانوي</span>
                   </div>
-                  <div className="w-10 h-10 rounded-full bg-[#2C3E50] flex items-center justify-center text-white shadow-md">
-                    <Atom className="w-6 h-6 text-white animate-spin" style={{ animationDuration: "12s" }} />
+                  <div className="w-9 h-9 rounded-xl bg-[#064E3B] flex items-center justify-center text-white shadow-md">
+                    <Atom className="w-5 h-5 text-emerald-300 animate-spin" style={{ animationDuration: "12s" }} />
                   </div>
                 </div>
 
+                {/* 🇸🇩 Student Profile & Indicators Card (Naqla SSO) */}
+                <div className="bg-white dark:bg-[#1E1E24] p-3.5 rounded-2xl border border-[#E5E2DE] dark:border-slate-800 shadow-xs space-y-2.5">
+                  <div className="flex items-center gap-2.5 justify-end">
+                    <div className="text-right flex-1 min-w-0">
+                      <span className="text-xs font-bold text-[#2C3E50] dark:text-white truncate block">
+                        {currentUser?.username || currentUser?.name || "طالب نقلة المتميز"}
+                      </span>
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold flex items-center gap-1 justify-end mt-0.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>منصة نقلة 🇸🇩</span>
+                      </span>
+                    </div>
+                    <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                      <GraduationCap className="w-5 h-5" />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => setIsProfileModalOpen(true)}
+                    className="w-full py-2 px-3 bg-emerald-50 hover:bg-emerald-100/80 dark:bg-emerald-950/40 dark:hover:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-800 text-[#047857] dark:text-emerald-300 text-xs font-bold rounded-xl flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    <span>المؤشرات والإعدادات ⚙️</span>
+                  </button>
+                </div>
+
                 {/* Navigation Items */}
-                <nav className="space-y-1.5">
+                <nav className="space-y-1">
                   {menuItems.map((item) => {
                     const Icon = item.icon;
                     const isActive = activeTab === item.id;
@@ -325,14 +372,14 @@ export default function App() {
                           setActiveTab(item.id as TabType);
                           setIsSidebarOpen(false);
                         }}
-                        className={`w-full px-4 py-3.5 rounded-lg text-xs font-bold flex items-center gap-3 justify-end transition-all ${
+                        className={`w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-3 justify-end transition-all cursor-pointer ${
                           isActive
-                            ? "bg-white text-[#2C3E50] border-r-4 border-[#E67E22] border-y border-l border-[#E5E2DE] shadow-sm"
-                            : "text-[#7F8C8D] hover:text-[#2C3E50] hover:bg-white/50"
+                            ? "bg-white dark:bg-[#1E1E24] text-[#047857] dark:text-emerald-400 border border-[#047857]/30 shadow-xs"
+                            : "text-[#7F8C8D] dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/40"
                         }`}
                       >
                         <span className="font-sans text-right">{item.label}</span>
-                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[#E67E22]" : "text-[#95A5A6]"}`} />
+                        <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-[#047857] dark:text-emerald-400" : "text-[#95A5A6]"}`} />
                       </button>
                     );
                   })}
@@ -340,26 +387,31 @@ export default function App() {
               </div>
 
               {/* App Settings & Reading Comfort */}
-              <div className="pt-4 border-t border-[#E5E2DE] space-y-3 text-right">
-                <span className="text-[10px] font-bold text-[#95A5A6] block font-sans uppercase">إعدادات التطبيق والمذاكرة</span>
-                
+              <div className="pt-3 border-t border-[#E5E2DE] dark:border-slate-800 space-y-2.5 text-right">
+                <button
+                  onClick={() => setIsProfileModalOpen(true)}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-200/70 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <span className="text-[11px]">لوحة المؤشرات الأكاديمية</span>
+                  <SlidersHorizontal className="w-3.5 h-3.5 text-slate-500" />
+                </button>
+
                 {/* Dark Mode Toggle Switch */}
-                <div className="bg-white/70 dark:bg-[#1E1E24]/70 p-3 rounded-lg border border-[#E5E2DE] dark:border-slate-800 flex items-center justify-between flex-row-reverse transition-all">
+                <div className="bg-white/80 dark:bg-[#1E1E24]/80 p-2.5 rounded-xl border border-[#E5E2DE] dark:border-slate-800 flex items-center justify-between flex-row-reverse transition-all">
                   <div className="flex items-center gap-2 flex-row-reverse">
                     {isDarkMode ? (
                       <Sun className="w-4 h-4 text-amber-500 shrink-0" />
                     ) : (
-                      <Moon className="w-4 h-4 text-[#E67E22] shrink-0" />
+                      <Moon className="w-4 h-4 text-[#047857] shrink-0" />
                     )}
-                    <span className="text-xs font-bold text-[#2C3E50]">وضع القراءة الليلي</span>
+                    <span className="text-xs font-bold text-[#2C3E50] dark:text-slate-200">وضع القراءة الليلي</span>
                   </div>
                   
-                  {/* Premium RTL Switch with Layout animation */}
                   <button
                     onClick={toggleDarkMode}
                     type="button"
                     className={`w-10 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none cursor-pointer flex items-center ${
-                      isDarkMode ? "bg-[#E67E22] justify-start" : "bg-[#BDC3C7] justify-end"
+                      isDarkMode ? "bg-emerald-600 justify-start" : "bg-[#BDC3C7] justify-end"
                     }`}
                   >
                     <motion.div
@@ -368,12 +420,9 @@ export default function App() {
                     />
                   </button>
                 </div>
-                
-                <p className="text-[10px] text-[#95A5A6] leading-normal font-sans text-right">
-                  * يُنصح بتفعيله لتقليل إجهاد شبكية العين ومساعدتك على التركيز خلال فترات المذاكرة الطويلة.
-                </p>
               </div>
             </div>
+
 
             {/* Bottom Credits block */}
             <div className="border-t border-[#E5E2DE] pt-4 text-center space-y-1 text-[#95A5A6]">
@@ -479,6 +528,23 @@ export default function App() {
         </main>
       </div>
       <StudentAssistant />
+
+      {/* 🇸🇩 Student Profile & Indicators Modal */}
+      <StudentProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        currentUser={currentUser}
+        completedLessons={completedLessons}
+        completedLabs={completedLabs}
+        quizScores={quizScores}
+        isDarkMode={isDarkMode}
+        toggleDarkMode={toggleDarkMode}
+        isOffline={isOffline}
+        onNavigateToTab={(tab) => {
+          setActiveTab(tab as TabType);
+          setIsProfileModalOpen(false);
+        }}
+      />
 
       {/* Exit Confirmation Dialog Modal */}
       <AnimatePresence>

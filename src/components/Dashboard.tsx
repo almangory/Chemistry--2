@@ -1,7 +1,19 @@
 import React from "react";
-import { Award, BookOpen, FlaskConical, CheckSquare, Sparkles, TrendingUp } from "lucide-react";
+import { 
+  BookOpen, 
+  FlaskConical, 
+  CheckSquare, 
+  Sparkles, 
+  ArrowLeft, 
+  FileText, 
+  Atom, 
+  Flame, 
+  Layers, 
+  CheckCircle2,
+  ChevronLeft
+} from "lucide-react";
+import { curriculumData } from "../data/curriculum";
 import { SudanCaseStudies } from "./SudanCaseStudies";
-import { SmartReview } from "./SmartReview";
 
 interface DashboardProps {
   completedLessons: string[];
@@ -9,6 +21,7 @@ interface DashboardProps {
   quizScores: Record<string, number>;
   activeTabSetter: (tab: string) => void;
   onNavigateToLesson: (lessonId: string) => void;
+  onNavigateToUnit?: (unitId: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -16,179 +29,291 @@ export const Dashboard: React.FC<DashboardProps> = ({
   completedLabs,
   quizScores,
   activeTabSetter,
-  onNavigateToLesson
+  onNavigateToLesson,
+  onNavigateToUnit
 }) => {
-  const totalLessonsCount = 21; // Exactly 21 lessons across 6 units
-  const totalLabsCount = 21;    // Exactly 21 matching interactive virtual lab experiments
-  const totalUnitsCount = 6;
+  const totalLessonsCount = 28; // Total lessons across 6 units
+  const totalLabsCount = 21;
 
-  // Calculate percentage of curriculum read
-  const syllabusPercentage = Math.round((completedLessons.length / totalLessonsCount) * 100);
-  const labsPercentage = Math.round((completedLabs.length / totalLabsCount) * 100);
+  // Unit metadata styling (chemistry theme colors & badges)
+  const unitBadges: Record<string, { icon: string; color: string; bg: string; borderColor: string; tag: string }> = {
+    "1": { icon: "⚛️", color: "text-blue-700 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-950/40", borderColor: "border-blue-200 dark:border-blue-800", tag: "بنية الذرة والجدول الدوري" },
+    "2": { icon: "⚡", color: "text-amber-700 dark:text-amber-400", bg: "bg-amber-50 dark:bg-amber-950/40", borderColor: "border-amber-200 dark:border-amber-800", tag: "عناصر s-block القلوية" },
+    "3": { icon: "🌿", color: "text-emerald-700 dark:text-emerald-400", bg: "bg-emerald-50 dark:bg-emerald-950/40", borderColor: "border-emerald-200 dark:border-emerald-800", tag: "الكيمياء العضوية والهيدروكربونات" },
+    "4": { icon: "💨", color: "text-purple-700 dark:text-purple-400", bg: "bg-purple-50 dark:bg-purple-950/40", borderColor: "border-purple-200 dark:border-purple-800", tag: "النيتروجين وتآصل الفوسفور" },
+    "5": { icon: "🧂", color: "text-rose-700 dark:text-rose-400", bg: "bg-rose-50 dark:bg-rose-950/40", borderColor: "border-rose-200 dark:border-rose-800", tag: "الهالوجينات والكلور" },
+    "6": { icon: "🔩", color: "text-slate-700 dark:text-slate-300", bg: "bg-slate-100 dark:bg-slate-800/50", borderColor: "border-slate-300 dark:border-slate-700", tag: "العناصر الانتقالية والحديد" }
+  };
 
-  // Completed exams count
-  const examsCompleted = Object.keys(quizScores).length;
-  const averageScore = examsCompleted > 0
-    ? Math.round((Object.values(quizScores) as number[]).reduce((a, b) => a + b, 0) / examsCompleted)
-    : 0;
-
-  // Badges lists
-  const badges = [
-    { id: "b1", title: "خبير الجدول الدوري", unit: "الوحدة 1", desc: "اكتملت جميع دروس الترتيب الدوري للعناصر واختباراتها.", icon: "🌟", color: "from-blue-600 to-indigo-600" },
-    { id: "b2", title: "مستكشف الأقلاء", unit: "الوحدة 2", desc: "أجرى بنجاح محاكاة تفاعل الصوديوم واستخلاصه.", icon: "🔥", color: "from-orange-500 to-amber-500" },
-    { id: "b3", title: "مهندس الكيمياء العضوية", unit: "الوحدة 3", desc: "أتقن تسمية IUPAC وكشف الرابطة الثنائية.", icon: "🌿", color: "from-emerald-500 to-teal-500" },
-    { id: "b4", title: "سيد النيتروجين والغازات", unit: "الوحدة 4", desc: "فهم تثبيت النيتروجين وصناعة هيدرات الأمونيا.", icon: "💨", color: "from-purple-500 to-fuchsia-500" },
-    { id: "b5", title: "صانع الأملاح", unit: "الوحدة 5", desc: "اكتملت جميع دروس الكلور وأكسدة الهيدروجين.", icon: "🧂", color: "from-red-500 to-rose-500" },
-    { id: "b6", title: "صائغ العناصر الانتقالية", unit: "الوحدة 6", desc: "أتقن كيمياء d5 وd10 والماء الملكي الاستثنائي.", icon: "👑", color: "from-slate-600 to-zinc-600" }
-  ];
+  const handleOpenUnit = (unitId: string) => {
+    const unit = curriculumData.find(u => u.id === unitId);
+    if (unit && unit.lessons.length > 0) {
+      onNavigateToLesson(unit.lessons[0].id);
+    } else {
+      activeTabSetter("syllabus");
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="relative overflow-hidden bg-white border border-[#E5E2DE] rounded-lg p-6 md:p-8 text-right shadow-sm">
-        <div className="absolute top-0 left-0 w-64 h-64 bg-[#F9F8F6]/50 rounded-full blur-3xl -translate-x-20 -translate-y-20" />
-        
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="order-2 md:order-1 flex gap-3 items-center">
-            <button
-              onClick={() => activeTabSetter("lab")}
-              className="px-4 py-2 bg-[#E67E22] hover:bg-[#d6721b] text-white font-bold rounded-sm text-xs shadow-sm transition-all"
-            >
-              افتح المعمل التفاعلي
-            </button>
-            <button
-              onClick={() => activeTabSetter("syllabus")}
-              className="px-4 py-2 bg-transparent hover:bg-[#F9F8F6] text-[#2C3E50] font-bold rounded-sm text-xs border border-[#2C3E50] transition-all"
-            >
-              تصفح كتاب المنهج
-            </button>
-          </div>
-          <div className="order-1 md:order-2 space-y-2 text-right">
-            <div className="flex justify-end items-center gap-2">
-              <span className="text-2xl md:text-3xl font-serif font-bold text-[#2C3E50] tracking-tight">أهلاً بك يا بطل الكيمياء!</span>
-              <Sparkles className="w-6 h-6 text-[#E67E22] animate-pulse" />
+    <div className="space-y-8 text-right" dir="rtl">
+      {/* 🌟 1. Compact & Inspiring Chemistry Welcome Hero */}
+      <div className="relative overflow-hidden bg-gradient-to-l from-[#064E3B] via-[#047857] to-[#059669] rounded-2xl p-6 md:p-8 text-white shadow-lg">
+        {/* Background decorative chemical orbits */}
+        <div className="absolute -top-16 -left-16 w-56 h-56 rounded-full bg-white/10 blur-2xl pointer-events-none" />
+        <div className="absolute -bottom-10 right-1/3 w-40 h-40 rounded-full bg-emerald-300/10 blur-xl pointer-events-none" />
+
+        <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-6">
+          <div className="space-y-2.5 max-w-2xl text-right">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-emerald-100 text-xs font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span>منهج الكيمياء التفاعلي • جمهورية السودان (بخت الرضا)</span>
             </div>
-            <p className="text-xs text-[#7F8C8D] max-w-xl leading-relaxed">
-              مرحباً بك في منصتك التفاعلية لدراسة كيمياء الصف الثاني الثانوي المنهج السوداني. استكشف الدروس البصرية الكاملة، اختبر معلوماتك، وأجرِ تجارب خطيرة بأمان تام في معملك الافتراضي.
+
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif font-black tracking-tight text-white leading-tight">
+              أهلاً بك في منصة كيمياء الصف الثاني الثانوي 🧪
+            </h1>
+
+            <p className="text-xs md:text-sm text-emerald-100 leading-relaxed font-sans opacity-95">
+              رحلتك التعليمية الميسرة لدراسة وتطبيق مفاهيم الكيمياء: تصفح الدروس المرتبة، أجرِ التجارب المعملية الخطيرة بأمان تام في المختبر الافتراضي، وطبّق أوراق العمل المعتمدة لامتحانات الشهادة.
             </p>
+
+            {/* Quick Access Action Pills */}
+            <div className="flex flex-wrap gap-2.5 pt-2">
+              <button
+                onClick={() => activeTabSetter("syllabus")}
+                className="px-4 py-2 bg-white text-[#064E3B] hover:bg-emerald-50 font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all font-sans cursor-pointer"
+              >
+                <BookOpen className="w-4 h-4 text-[#047857]" />
+                <span>تصفح وحدات المنهج</span>
+              </button>
+
+              <button
+                onClick={() => activeTabSetter("lab")}
+                className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-md transition-all font-sans cursor-pointer"
+              >
+                <FlaskConical className="w-4 h-4" />
+                <span>المعمل الافتراضي (21 تجربة)</span>
+              </button>
+
+              <button
+                onClick={() => activeTabSetter("worksheets")}
+                className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white border border-white/30 font-bold rounded-xl text-xs flex items-center gap-1.5 backdrop-blur-sm transition-all font-sans cursor-pointer"
+              >
+                <FileText className="w-4 h-4 text-emerald-200" />
+                <span>أوراق العمل والطباعة</span>
+              </button>
+
+              <button
+                onClick={() => activeTabSetter("glossary")}
+                className="px-4 py-2 bg-white/15 hover:bg-white/25 text-white border border-white/30 font-bold rounded-xl text-xs flex items-center gap-1.5 backdrop-blur-sm transition-all font-sans cursor-pointer"
+              >
+                <Atom className="w-4 h-4 text-emerald-200" />
+                <span>المعجم والمصطلحات</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Quick status summary chip */}
+          <div className="shrink-0 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-center space-y-2 w-full sm:w-auto min-w-[200px]">
+            <span className="text-[11px] text-emerald-200 font-bold block">حالة الدراسة الحالية</span>
+            <div className="flex items-center justify-center gap-3">
+              <div>
+                <span className="text-2xl font-black font-mono block">{completedLessons.length}</span>
+                <span className="text-[10px] text-emerald-100">دروس مكتملة</span>
+              </div>
+              <div className="h-8 w-px bg-white/20" />
+              <div>
+                <span className="text-2xl font-black font-mono block">{completedLabs.length}</span>
+                <span className="text-[10px] text-emerald-100">تجارب مجربة</span>
+              </div>
+            </div>
+            <span className="text-[10px] text-emerald-200 block pt-1 border-t border-white/15">
+              المؤشرات الكاملة متاحة بقائمة الإعدادات ⚙️
+            </span>
           </div>
         </div>
       </div>
 
-      {/* Progress Cards Bento Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Syllabus read progress */}
-        <div className="bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded text-right flex flex-col justify-between h-36 shadow-sm">
-          <div className="flex justify-between items-start">
-            <BookOpen className="w-5 h-5 text-[#2C3E50]" />
-            <span className="text-xs font-bold text-[#7F8C8D] font-sans uppercase tracking-wider">الدروس المنجزة</span>
+      {/* 📚 2. Six Curriculum Units Portal (بوابة الوحدات الست للمنهج) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Layers className="w-5 h-5 text-[#047857] dark:text-emerald-400" />
+            <h2 className="text-lg md:text-xl font-serif font-bold text-slate-900 dark:text-white">
+              وحدات منهج كيمياء الصف الثاني الثانوي
+            </h2>
           </div>
-          <div className="space-y-1 mt-2">
-            <span className="text-3xl font-serif font-bold text-[#2C3E50] font-mono">{completedLessons.length}</span>
-            <span className="text-xs text-[#95A5A6] block">من أصل {totalLessonsCount} درس متاح</span>
-          </div>
-          <div className="w-full bg-[#E5E2DE] h-1.5 rounded-full overflow-hidden mt-3">
-            <div style={{ width: `${syllabusPercentage}%` }} className="bg-[#2C3E50] h-full rounded-full" />
-          </div>
+          <button
+            onClick={() => activeTabSetter("syllabus")}
+            className="text-xs font-bold text-[#047857] dark:text-emerald-400 hover:underline flex items-center gap-1"
+          >
+            <span>عرض تفصيلي للدروس</span>
+            <ChevronLeft className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Card 2: Virtual Labs performed */}
-        <div className="bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded text-right flex flex-col justify-between h-36 shadow-sm">
-          <div className="flex justify-between items-start">
-            <FlaskConical className="w-5 h-5 text-[#E67E22]" />
-            <span className="text-xs font-bold text-[#7F8C8D] font-sans uppercase tracking-wider">التجارب المخبرية</span>
-          </div>
-          <div className="space-y-1 mt-2">
-            <span className="text-3xl font-serif font-bold text-[#2C3E50] font-mono">{completedLabs.length}</span>
-            <span className="text-xs text-[#95A5A6] block">من أصل {totalLabsCount} تجارب معملية</span>
-          </div>
-          <div className="w-full bg-[#E5E2DE] h-1.5 rounded-full overflow-hidden mt-3">
-            <div style={{ width: `${labsPercentage}%` }} className="bg-[#E67E22] h-full rounded-full" />
-          </div>
-        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {curriculumData.map((unit) => {
+            const badge = unitBadges[unit.id] || {
+              icon: "🧪",
+              color: "text-emerald-700",
+              bg: "bg-emerald-50",
+              borderColor: "border-emerald-200",
+              tag: "وحدة دراسية"
+            };
 
-        {/* Card 3: Evaluation Exams Completed */}
-        <div className="bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded text-right flex flex-col justify-between h-36 shadow-sm">
-          <div className="flex justify-between items-start">
-            <CheckSquare className="w-5 h-5 text-[#E67E22]" />
-            <span className="text-xs font-bold text-[#7F8C8D] font-sans uppercase tracking-wider">الاختبارات التقييمية</span>
-          </div>
-          <div className="space-y-1 mt-2">
-            <span className="text-3xl font-serif font-bold text-[#2C3E50] font-mono">{examsCompleted}</span>
-            <span className="text-xs text-[#95A5A6] block">من أصل {totalUnitsCount} اختبارات فصول</span>
-          </div>
-          <div className="w-full bg-[#E5E2DE] h-1.5 rounded-full overflow-hidden mt-3">
-            <div style={{ width: `${Math.round((examsCompleted / totalUnitsCount) * 100)}%` }} className="bg-[#E67E22] h-full rounded-full" />
-          </div>
-        </div>
+            const unitLessonIds = unit.lessons.map(l => l.id);
+            const unitCompletedCount = completedLessons.filter(id => unitLessonIds.includes(id)).length;
+            const unitPercentage = Math.round((unitCompletedCount / unit.lessons.length) * 100);
+            const isFinished = unitPercentage === 100;
 
-        {/* Card 4: Average Score */}
-        <div className="bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded text-right flex flex-col justify-between h-36 shadow-sm">
-          <div className="flex justify-between items-start">
-            <TrendingUp className="w-5 h-5 text-[#2C3E50]" />
-            <span className="text-xs font-bold text-[#7F8C8D] font-sans uppercase tracking-wider">معدل درجاتك</span>
-          </div>
-          <div className="space-y-1 mt-2">
-            <span className="text-3xl font-serif font-bold text-[#2C3E50] font-mono">{averageScore}%</span>
-            <span className="text-xs text-[#95A5A6] block">مجموع علامات اختباراتك</span>
-          </div>
-          <div className="w-full bg-[#E5E2DE] h-1.5 rounded-full overflow-hidden mt-3">
-            <div style={{ width: `${averageScore}%` }} className="bg-[#2C3E50] h-full rounded-full" />
-          </div>
-        </div>
-      </div>
-
-      {/* Smart Performance Review based on strengths/weaknesses */}
-      <SmartReview
-        completedLessons={completedLessons}
-        quizScores={quizScores}
-        onNavigateToLesson={onNavigateToLesson}
-        activeTabSetter={activeTabSetter}
-      />
-
-      {/* Sudan Real-world Case Studies */}
-      <SudanCaseStudies />
-
-      {/* Badges and Trophies cabinet */}
-      <div>
-        <div className="flex justify-between items-center mb-4 border-b border-[#E5E2DE] pb-2">
-          <span className="text-xs text-[#95A5A6] font-bold tracking-widest font-mono">EARNED BADGES</span>
-          <h3 className="text-xl font-serif font-bold text-[#2C3E50] text-right">خزانة أوسمتك ودروعك الكيميائية</h3>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {badges.map((badge) => {
-            // A badge is earned if the unit exam score is >= 80% or unit lessons are completed
-            const isEarned = (quizScores[badge.unit.replace("الوحدة ", "")] >= 80) || completedLessons.some(l => l.startsWith(`u${badge.unit.replace("الوحدة ", "")}`));
             return (
               <div
-                key={badge.id}
-                className={`p-4 rounded border text-right transition-all flex gap-4 items-center ${
-                  isEarned
-                    ? "bg-white border-[#E5E2DE] shadow-sm"
-                    : "bg-[#F9F8F6]/60 border-[#E5E2DE]/50 opacity-40 select-none grayscale"
-                }`}
+                key={unit.id}
+                onClick={() => handleOpenUnit(unit.id)}
+                className="group relative bg-white dark:bg-[#1E1E24] border border-slate-200 dark:border-slate-800 hover:border-[#047857] dark:hover:border-emerald-500 rounded-2xl p-5 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between"
               >
-                <div className="flex-1 space-y-1">
-                  <div className="flex items-center gap-1.5 justify-end">
-                    <span className="text-[10px] bg-[#F9F8F6] text-[#7F8C8D] px-1.5 py-0.5 rounded border border-[#E5E2DE] font-mono font-bold">
-                      {badge.unit}
+                <div className="space-y-3">
+                  {/* Top Bar: Unit Number & Badge */}
+                  <div className="flex items-center justify-between">
+                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-full border ${badge.bg} ${badge.color} ${badge.borderColor} flex items-center gap-1.5`}>
+                      <span>{badge.icon}</span>
+                      <span>الوحدة {unit.number}</span>
                     </span>
-                    <span className="font-bold text-sm text-[#2C3E50]">{badge.title}</span>
+
+                    <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400 font-bold">
+                      {unit.lessons.length} دروس
+                    </span>
                   </div>
-                  <p className="text-xs text-[#7F8C8D] leading-relaxed">{badge.desc}</p>
-                  {isEarned && (
-                    <span className="inline-block text-[10px] text-emerald-600 font-bold font-sans mt-1">✓ تم الحصول عليه</span>
-                  )}
+
+                  {/* Title & Tag */}
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-[#047857] dark:group-hover:text-emerald-400 transition-colors font-sans leading-snug">
+                      {unit.title}
+                    </h3>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-sans line-clamp-2">
+                      {unit.lessons.map(l => l.title.replace(/^الدرس \d+:\s*/, "")).slice(0, 3).join(" • ")}
+                    </p>
+                  </div>
                 </div>
-                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${badge.color} flex items-center justify-center text-3xl shadow-sm shrink-0`}>
-                  {badge.icon}
+
+                {/* Bottom: Progress Bar and Action */}
+                <div className="pt-4 mt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-slate-500 dark:text-slate-400 font-sans">
+                      {isFinished ? (
+                        <span className="text-emerald-600 font-bold flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          اكتملت الوحدة بالكامل
+                        </span>
+                      ) : (
+                        <span>الإنجاز: {unitCompletedCount} من {unit.lessons.length} دروس</span>
+                      )}
+                    </span>
+                    <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
+                      {unitPercentage}%
+                    </span>
+                  </div>
+
+                  <div className="w-full bg-slate-100 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                    <div
+                      style={{ width: `${unitPercentage}%` }}
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        isFinished ? "bg-emerald-500" : "bg-[#047857]"
+                      }`}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] font-bold text-[#047857] dark:text-emerald-400 group-hover:translate-x-[-3px] transition-transform flex items-center gap-1">
+                      <span>ادخل إلى دروس الوحدة</span>
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
       </div>
+
+      {/* ⚗️ 3. Quick Interactive Virtual Lab Highlights */}
+      <div className="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <FlaskConical className="w-5 h-5 text-[#E67E22]" />
+            <div>
+              <h3 className="text-base font-bold text-slate-900 dark:text-white font-sans">
+                تجارب مميزة في معمل الكيمياء الافتراضي
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                محاكاة تفاعلية خطوة بخطوة لأهم تجارب كتاب الكيمياء المدرسي مع المشاهدة والاستنتاج
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => activeTabSetter("lab")}
+            className="px-4 py-2 bg-[#E67E22] hover:bg-[#d35400] text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-colors shrink-0 font-sans cursor-pointer"
+          >
+            <span>جميع التجارب الـ 21</span>
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+          {/* Highlight 1: Methane */}
+          <div 
+            onClick={() => activeTabSetter("lab")}
+            className="p-4 bg-white dark:bg-[#1E1E24] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-[#E67E22] transition-colors cursor-pointer space-y-2"
+          >
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 inline-block font-sans">
+              الوحدة 3 • الكيمياء العضوية
+            </span>
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 font-sans">
+              تحضير غاز الميثان بالتقطير الجاف
+            </h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-sans">
+              تسخين خلات الصوديوم اللامائية مع الجير الصودي وجمع الغاز بإزاحة الماء لأسفل.
+            </p>
+          </div>
+
+          {/* Highlight 2: Ethene & Bromine Water */}
+          <div 
+            onClick={() => activeTabSetter("lab")}
+            className="p-4 bg-white dark:bg-[#1E1E24] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-[#E67E22] transition-colors cursor-pointer space-y-2"
+          >
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 inline-block font-sans">
+              الوحدة 3 • تفاعلات الإضافة
+            </span>
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 font-sans">
+              كشف عدم التشبع بماء البروم الأحمر
+            </h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-sans">
+              التمييز العملي بين غاز الإيثين والإيثان، وزوال اللون الأحمر السريع في الإيثين.
+            </p>
+          </div>
+
+          {/* Highlight 3: Ammonia Fountain */}
+          <div 
+            onClick={() => activeTabSetter("lab")}
+            className="p-4 bg-white dark:bg-[#1E1E24] rounded-xl border border-slate-200 dark:border-slate-800 hover:border-[#E67E22] transition-colors cursor-pointer space-y-2"
+          >
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 inline-block font-sans">
+              الوحدة 4 • النشادر
+            </span>
+            <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100 font-sans">
+              تجربة نافورة النشادر ومحلول دوار الشمس
+            </h4>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-sans">
+              إثبات الشراهة الفائقة لذوبان غاز الأمونيا في الماء وخواصه القاعدية القوية.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 🇸🇩 4. Real-world Case Studies: Chemistry in Sudan */}
+      <SudanCaseStudies />
     </div>
   );
 };
