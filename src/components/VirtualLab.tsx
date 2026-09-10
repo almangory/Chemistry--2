@@ -31,6 +31,7 @@ import { PeriodicTableTool } from "./PeriodicTableTool";
 import { MolecularSimulator } from "./MolecularSimulator";
 import { Lab3DScene } from "./Lab3DScene";
 import { getExperimentReflection, LAB_REFLECTIONS } from "../data/labReflections";
+import { getStepGuidance, isToolMatchingStep, StepGuidance } from "../data/labGuidance";
 
 interface LabStep {
   text: string;
@@ -797,81 +798,70 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
   const handleToolClick = (toolName: string) => {
     setUsedTools(prev => prev.includes(toolName) ? prev : [...prev, toolName]);
     
+    // Map tool click directly to handleActionTrigger for interactive progression
     if (toolName.includes("حوض زجاجي")) {
-      setChamberStatus("تم تجهيز وتثبيت الحوض الزجاجي الكبير على طاولة المعمل");
-      setToolToast("🥣 تم تجهيز الحوض الزجاجي الكبير على طاولة المعمل");
+      handleActionTrigger("pour_water");
+      return;
     } else if (toolName.includes("سكين") || toolName.includes("ورق ترشيح")) {
-      setIsCutAndDried(true);
-      setChamberStatus("تم استخراج فلز الصوديوم وقطعه بالسكين الحاد وتجفيفه بورق الترشيح لإزالة الكيروسين وإظهار بريقه الفضي");
-      setToolToast("🔪 تم قطع الفلز بحجم حبة العدس وتجفيفه بالسكين والورق");
+      handleActionTrigger("cut_metal");
+      return;
     } else if (toolName.includes("ملقط")) {
-      if (selectedExp.id === "u2_l1") {
-        if (activeAlkali === "none") {
-          setActiveAlkali("na");
-          setAddedChemicals(prev => prev.includes("قطعة صوديوم Na") ? prev : [...prev, "قطعة صوديوم Na"]);
-          setChamberStatus("التقاط قطعة الصوديوم Na بالملقط وإسقاطها في الحوض - انصهار فوري واشتعال بلهب أصفر ساطع وفرقعات حادة!");
-          setToolToast("🥢 تم التقاط قطعة الصوديوم بالملقط وإسقاطها في الحوض");
-        } else if (activeAlkali === "na") {
-          setActiveAlkali("k");
-          setAddedChemicals(prev => prev.includes("قطعة بوتاسيوم K") ? prev : [...prev, "قطعة بوتاسيوم K"]);
-          setChamberStatus("التقاط قطعة البوتاسيوم K بالملقط وإسقاطها - اشتعال فوري عنيف بلهب بنفسجي ليلكي رائع وفرقعة!");
-          setToolToast("🥢 تم التقاط قطعة البوتاسيوم بالملقط وإسقاطها في الحوض");
-        }
-      } else {
-        setChamberStatus(`استخدام ${toolName} لتثبيت وتحريك مكونات التجربة بأمان`);
-        setToolToast(`🥢 تم استخدام ${toolName} بأمان`);
-      }
-    } else if (toolName.includes("موقد") || toolName.includes("بنزين")) {
-      setManualHeating(prev => !prev);
-      setChamberStatus("تشغيل موقد بنزن لتسخين المتفاعلات");
-      setToolToast("🔥 تم تفعيل موقد التسخين");
+      handleActionTrigger(activeAlkali === "na" ? "drop_potassium" : "drop_sodium");
+      return;
+    } else if (toolName.includes("موقد") || toolName.includes("بنزين") || toolName.includes("لهب")) {
+      handleActionTrigger("toggle_heat");
+      return;
+    } else if (toolName.includes("قطارة") || toolName.includes("ماصة")) {
+      handleActionTrigger("use_pipette");
+      return;
+    } else if (toolName.includes("ساق") || toolName.includes("ملعقة") || toolName.includes("رج")) {
+      handleActionTrigger("stir_rod");
+      return;
+    } else if (toolName.includes("قمع") || toolName.includes("ترشيح")) {
+      handleActionTrigger("filter_funnel");
+      return;
     } else {
-      setChamberStatus(`تم تجهيز واستخدام ${toolName} في التجربة`);
-      setToolToast(`⚡ تم استخدام ${toolName}`);
+      handleActionTrigger("add_reagent_1");
+      return;
     }
   };
 
   const handleChemicalClick = (chemName: string) => {
     setAddedChemicals(prev => prev.includes(chemName) ? prev : [...prev, chemName]);
 
+    // Map chemical click directly to handleActionTrigger
     if (chemName.includes("ماء مقطر")) {
-      setHasWater(true);
-      setChamberStatus("تم ملء الحوض بالماء المقطر النقي كوسط للتفاعل");
-      setToolToast("💧 تم صب الماء المقطر في وعاء التفاعل");
+      handleActionTrigger("pour_water");
+      return;
     } else if (chemName.includes("صوديوم") || chemName.includes("Na")) {
-      setActiveAlkali("na");
-      setManualBubbling(true);
-      setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
-      setChamberStatus("إضافة قطعة الصوديوم Na: انصهار إلى كرة فضية تسبح بسرعة فوق سطح الماء مع اشتعال لهب أصفر ساطع وفرقعات!");
-      setToolToast("🟡 انصهار الصوديوم واشتعاله بلهب أصفر ساطع!");
+      handleActionTrigger("drop_sodium");
+      return;
     } else if (chemName.includes("بوتاسيوم") || chemName.includes("K")) {
-      setActiveAlkali("k");
-      setManualBubbling(true);
-      setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
-      setChamberStatus("إضافة قطعة البوتاسيوم K: اشتعال فوري عنيف بلهب بنفسجي ليلكي رائع وفرقعات قوية!");
-      setToolToast("🟣 اشتعال عنيف للبوتاسيوم بلهب بنفسجي ليلكي!");
+      handleActionTrigger("drop_potassium");
+      return;
     } else if (chemName.includes("فينول") || chemName.includes("كاشف") || chemName.includes("دليل")) {
-      setIsIndicatorAdded(true);
-      if (activeAlkali !== "none" || currentStep >= 3) {
-        setChamberStatus("إضافة قطرات دليل الفينول فثالين: تلون المحلول بالوردي الأرجواني دلالة على تكوّن الهيدروكسيد القلوي!");
-        setToolToast("🌸 تلون المحلول بالوردي الأرجواني (وسط قلوي)");
-      } else {
-        setChamberStatus("إضافة دليل الفينول فثالين للماء المقطر: يظل المحلول عديم اللون وشفافاً تماماً (وسط متعادل)");
-        setToolToast("💧 كاشف الفينول فثالين مضاف (عديم اللون في الوسط المتعادل)");
-      }
+      handleActionTrigger("add_indicator");
+      return;
+    } else if (selectedExp.chemicals[0] === chemName) {
+      handleActionTrigger("add_reagent_1");
+      return;
+    } else if (selectedExp.chemicals[1] === chemName) {
+      handleActionTrigger("add_reagent_2");
+      return;
     } else {
-      setManualBubbling(true);
-      setTimeout(() => setManualBubbling(false), 3000);
-      setChamberStatus(`تمت إضافة ${chemName} إلى وسط التفاعل وملاحظة التغير`);
-      setToolToast(`🧪 تمت إضافة ${chemName}`);
+      handleActionTrigger("use_pipette");
+      return;
     }
   };
 
   const handleActionTrigger = (action: string) => {
+    // 1. تشغيل المؤثرات التفاعلية للأداة
     if (action === "toggle_heat") {
       setManualHeating(prev => !prev);
+      setToolToast("🔥 تم تشغيل موقد بنسن لتسخين التفاعل");
     } else if (action === "toggle_magnet") {
       setManualMagnet(prev => !prev);
+      setToolToast("⚡ تم تشغيل المغناطيس الكهربائي");
     } else if (action === "add_reagent_1" || action === "add_reagent_2" || action === "add_reagent" || action === "use_pipette") {
       setManualBubbling(true);
       setTimeout(() => setManualBubbling(false), 4000);
@@ -910,6 +900,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       setActiveAlkali("na");
       setAddedChemicals(prev => prev.includes("قطعة صوديوم Na") ? prev : [...prev, "قطعة صوديوم Na"]);
       setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
+      setManualBubbling(true);
       if (isIndicatorAdded) {
         setChamberStatus("إسقاط الصوديوم Na بالملقط: تكوّن كرة منصهرة تسبح بلهب أصفر ساطع وفرقعة وتلون المحلول بالوردي!");
         setToolToast("🟡 انصهار واشتعال الصوديوم + تلون المحلول بالوردي");
@@ -921,6 +912,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       setActiveAlkali("k");
       setAddedChemicals(prev => prev.includes("قطعة بوتاسيوم K") ? prev : [...prev, "قطعة بوتاسيوم K"]);
       setUsedTools(prev => prev.includes("ملقط معدني") ? prev : [...prev, "ملقط معدني"]);
+      setManualBubbling(true);
       if (isIndicatorAdded) {
         setChamberStatus("إسقاط البوتاسيوم K بالملقط: اشتعال فوري عنيف بلهب بنفسجي ليلكي خاطف وتلون المحلول بالوردي البنفسجي!");
         setToolToast("🟣 اشتعال عنيف للبوتاسيوم بلهب ليلكي + تلون وردي");
@@ -948,6 +940,20 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       setChamberStatus("تم تفريغ الحوض وغسيله وتعبئته بماء مقطر نقي جديد");
       setToolToast("🔄 تم غسيل وتفريغ الحوض");
     }
+
+    // 2. ⚡ التفاعل التلقائي والتقدم بالخطوة بقيادة الأداة (Tool-Driven Step Progression)
+    // بعد تنفيذ الأداة بفاصل زمني طبيعي للتفاعل (750ms)، تتقدم التجربة لتظهر النتائج المخبرية فوراً
+    setTimeout(() => {
+      if (currentStep < selectedExp.steps.length - 1) {
+        handleNextStep();
+        setToolToast("✨ تفاعل ناجح! تم التقدم للخطوة التالية ومشاهدة النتيجة المخبرية.");
+      } else {
+        setIsCompleted(true);
+        setChamberStatus("🎉 اكتملت كافة خطوات التجربة بنجاح تام! يمكنك مراجعة المشاهدة والاستنتاج.");
+        setToolToast("🏆 أحسنت! اكتملت التجربة بنجاح.");
+        if (onLabComplete) onLabComplete(selectedExp.id);
+      }
+    }, 750);
   };
 
   // 🧪 High-precision 3D Laboratory State calculation for all 21 lessons
@@ -1316,6 +1322,9 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
                     </span>
                     <div className="flex items-center gap-1.5">
                       <span className="font-semibold text-[11px]">{app}</span>
+                      <span className="w-4 h-4 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold flex items-center justify-center">
+                        {idx + 1}
+                      </span>
                       {getToolIcon(app)}
                     </div>
                   </button>
@@ -1357,6 +1366,9 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
                     </span>
                     <div className="flex items-center gap-1.5">
                       <span className="font-semibold text-[11px] text-[#E67E22]">{chem}</span>
+                      <span className="w-4 h-4 rounded-full bg-amber-200 text-amber-900 text-[10px] font-bold flex items-center justify-center">
+                        {idx + 1}
+                      </span>
                       {getChemIcon(chem)}
                     </div>
                   </button>
@@ -1402,11 +1414,20 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
               const lab3D = get3DLabState();
               const expReflection = getExperimentReflection(selectedExp.id);
               const currentStepReflection = expReflection?.steps[currentStep];
+              const stepGuidance = getStepGuidance(
+                selectedExp.id,
+                currentStep,
+                selectedExp.steps[currentStep]?.text,
+                selectedExp.chemicals,
+                expReflection?.apparatusType || lab3D.apparatusType
+              );
 
               return (
                 <Lab3DScene
                   experimentId={selectedExp.id}
                   stepIndex={currentStep}
+                  stepGuidance={stepGuidance}
+                  activeToolId={stepGuidance.targetActionId}
                   apparatusType={expReflection?.apparatusType || lab3D.apparatusType}
                   liquidColor={currentStepReflection?.telemetry.liquidColor || lab3D.liquidColor}
                   liquidHeight={currentStepReflection?.telemetry.liquidHeight || lab3D.liquidHeight}

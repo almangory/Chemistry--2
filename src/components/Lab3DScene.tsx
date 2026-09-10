@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
+import { getStepGuidance, getUniversalTools, getBasinTools, StepGuidance } from "../data/labGuidance";
 import { 
   Flame, 
   Droplet, 
@@ -62,6 +63,47 @@ export interface Lab3DProps {
   onPrevStep?: () => void;
   onReset?: () => void;
   onActionTrigger?: (action: string) => void;
+  activeToolId?: string;
+  stepGuidance?: StepGuidance;
+}
+
+
+// 🎨 Helper: Create crisp 3D canvas number badge billboard sprite
+function createToolBadge(badgeText: string): THREE.Sprite {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  if (ctx) {
+    ctx.clearRect(0, 0, 128, 128);
+    // Outer circle
+    ctx.beginPath();
+    ctx.arc(64, 64, 52, 0, Math.PI * 2);
+    ctx.fillStyle = "#0f172a";
+    ctx.fill();
+    ctx.lineWidth = 8;
+    ctx.strokeStyle = "#38bdf8";
+    ctx.stroke();
+
+    // Inner glowing ring
+    ctx.beginPath();
+    ctx.arc(64, 64, 44, 0, Math.PI * 2);
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "#94a3b8";
+    ctx.stroke();
+
+    // Text symbol e.g. "①", "②", "③", "④", "⑤", "⑥"
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 64px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(badgeText, 64, 66);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  const mat = new THREE.SpriteMaterial({ map: texture, transparent: true, depthTest: false });
+  const sprite = new THREE.Sprite(mat);
+  sprite.scale.set(0.44, 0.44, 1);
+  return sprite;
 }
 
 export const Lab3DScene: React.FC<Lab3DProps> = ({
@@ -98,7 +140,9 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   onNextStep,
   onPrevStep,
   onReset,
-  onActionTrigger
+  onActionTrigger,
+  activeToolId,
+  stepGuidance
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const mountRef = useRef<HTMLDivElement>(null);
@@ -149,6 +193,23 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   const pinchDistanceRef = useRef<number | null>(null);
 
   // Orbit rotation controls
+
+  // 🧭 Compute Step Guidance & Required Tool for Current Step
+  const currentGuidance = stepGuidance || getStepGuidance(
+    experimentId,
+    stepIndex,
+    currentStepTitle,
+    chemicals,
+    apparatusType
+  );
+  const currentActiveToolId = activeToolId || currentGuidance.targetActionId;
+  const activeToolIdRef = useRef<string>(currentActiveToolId);
+  const activeToolRingRef = useRef<THREE.Mesh | null>(null);
+
+  useEffect(() => {
+    activeToolIdRef.current = currentActiveToolId;
+  }, [currentActiveToolId]);
+
   const isDraggingCameraRef = useRef<boolean>(false);
   const isDraggingToolRef = useRef<boolean>(false);
   const prevMousePosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -1398,11 +1459,18 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       bottleAGroup.add(labelA);
 
       const beaconA = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.7 })
+        new THREE.SphereGeometry(0.11, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 })
       );
       beaconA.position.set(0, 1.35, 0);
       bottleAGroup.add(beaconA);
+
+      const badgeA = createToolBadge("①");
+      badgeA.position.set(0, 1.62, 0);
+      bottleAGroup.add(badgeA);
+      bottleAGroup.userData.badgeSprite = badgeA;
+      bottleAGroup.userData.beaconMesh = beaconA;
+      bottleAGroup.userData.toolNumber = 1;
 
       appGroup.add(bottleAGroup);
       draggableToolsRef.current.push(bottleAGroup);
@@ -1440,11 +1508,18 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       bottleBGroup.add(labelB);
 
       const beaconB = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.7 })
+        new THREE.SphereGeometry(0.11, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.75 })
       );
       beaconB.position.set(0, 1.35, 0);
       bottleBGroup.add(beaconB);
+
+      const badgeB = createToolBadge("②");
+      badgeB.position.set(0, 1.62, 0);
+      bottleBGroup.add(badgeB);
+      bottleBGroup.userData.badgeSprite = badgeB;
+      bottleBGroup.userData.beaconMesh = beaconB;
+      bottleBGroup.userData.toolNumber = 2;
 
       appGroup.add(bottleBGroup);
       draggableToolsRef.current.push(bottleBGroup);
@@ -1478,6 +1553,12 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       pipDrop.position.set(0, -0.15, 0);
       pipetteGroup.add(pipDrop);
 
+      const badgeC = createToolBadge("③");
+      badgeC.position.set(0, 1.32, 0);
+      pipetteGroup.add(badgeC);
+      pipetteGroup.userData.badgeSprite = badgeC;
+      pipetteGroup.userData.toolNumber = 3;
+
       appGroup.add(pipetteGroup);
       draggableToolsRef.current.push(pipetteGroup);
 
@@ -1505,6 +1586,12 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       );
       bladeSpat.position.set(0, -0.15, 0);
       spatulaGroup.add(bladeSpat);
+
+      const badgeD = createToolBadge("④");
+      badgeD.position.set(0, 1.32, 0);
+      spatulaGroup.add(badgeD);
+      spatulaGroup.userData.badgeSprite = badgeD;
+      spatulaGroup.userData.toolNumber = 4;
 
       appGroup.add(spatulaGroup);
       draggableToolsRef.current.push(spatulaGroup);
@@ -1539,6 +1626,12 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       filterPaperCone.position.set(0, 0.52, 0);
       funnelGroup.add(filterPaperCone);
 
+      const badgeE = createToolBadge("⑤");
+      badgeE.position.set(0, 0.95, 0);
+      funnelGroup.add(badgeE);
+      funnelGroup.userData.badgeSprite = badgeE;
+      funnelGroup.userData.toolNumber = 5;
+
       appGroup.add(funnelGroup);
       draggableToolsRef.current.push(funnelGroup);
 
@@ -1569,14 +1662,32 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       igniterGroup.add(ignTip);
 
       const sparkGlow = new THREE.Mesh(
-        new THREE.SphereGeometry(0.08, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.8 })
+        new THREE.SphereGeometry(0.09, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.85 })
       );
       sparkGlow.position.set(0.6, 0.05, 0);
       igniterGroup.add(sparkGlow);
 
+      const badgeF = createToolBadge("⑥");
+      badgeF.position.set(0.3, 0.45, 0);
+      igniterGroup.add(badgeF);
+      igniterGroup.userData.badgeSprite = badgeF;
+      igniterGroup.userData.beaconMesh = sparkGlow;
+      igniterGroup.userData.toolNumber = 6;
+
       appGroup.add(igniterGroup);
       draggableToolsRef.current.push(igniterGroup);
+
+      // 🌟 Active Tool Selection Halo on the Tray
+      const activeToolHalo = new THREE.Mesh(
+        new THREE.RingGeometry(0.38, 0.48, 32),
+        new THREE.MeshBasicMaterial({ color: 0xf59e0b, side: THREE.DoubleSide, transparent: true, opacity: 0.85 })
+      );
+      activeToolHalo.rotation.x = -Math.PI / 2;
+      activeToolHalo.position.set(0, 0.09, 0);
+      activeToolHalo.visible = false;
+      appGroup.add(activeToolHalo);
+      activeToolRingRef.current = activeToolHalo;
 
       benchTrayGroup.add(trayBase);
       appGroup.add(benchTrayGroup);
@@ -1760,6 +1871,54 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
             tool.rotation.z = THREE.MathUtils.lerp(tool.rotation.z, 0, 0.12);
           }
         });
+      }
+
+
+      // 🌟 Active Tool Beacon & Selection Ring Animation
+      const curTargetId = activeToolIdRef.current;
+      let haloPlaced = false;
+
+      draggableToolsRef.current.forEach((tool) => {
+        const isTarget = tool.userData && tool.userData.id === curTargetId;
+
+        // Beacon pulsation
+        if (tool.userData && tool.userData.beaconMesh) {
+          const bMesh = tool.userData.beaconMesh as THREE.Mesh;
+          if (isTarget) {
+            const pScale = 1.0 + Math.sin(elapsedTime * 6) * 0.28;
+            bMesh.scale.set(pScale, pScale, pScale);
+            (bMesh.material as THREE.MeshBasicMaterial).color.setHex(
+              Math.sin(elapsedTime * 5) > 0 ? 0xfbbf24 : 0x10b981
+            );
+          } else {
+            bMesh.scale.set(1.0, 1.0, 1.0);
+          }
+        }
+
+        // Badge sprite pulsation
+        if (tool.userData && tool.userData.badgeSprite) {
+          const sprite = tool.userData.badgeSprite as THREE.Sprite;
+          if (isTarget) {
+            const bScale = 0.52 + Math.sin(elapsedTime * 5) * 0.06;
+            sprite.scale.set(bScale, bScale, 1);
+          } else {
+            sprite.scale.set(0.42, 0.42, 1);
+          }
+        }
+
+        // Position halo ring beneath the target tool
+        if (isTarget && activeToolRingRef.current) {
+          haloPlaced = true;
+          activeToolRingRef.current.visible = true;
+          activeToolRingRef.current.position.x = tool.position.x;
+          activeToolRingRef.current.position.z = tool.position.z;
+          const hScale = 1.0 + Math.sin(elapsedTime * 6) * 0.08;
+          activeToolRingRef.current.scale.set(hScale, hScale, hScale);
+        }
+      });
+
+      if (!haloPlaced && activeToolRingRef.current) {
+        activeToolRingRef.current.visible = false;
       }
 
       // Pulsing Drop Zone Ring
@@ -2294,6 +2453,44 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           </div>
         )}
 
+
+        {/* 🎯 Interactive Mission Step Guidance Banner */}
+        {currentGuidance && (
+          <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20 w-[94%] max-w-lg">
+            <div className="bg-slate-900/95 backdrop-blur-md px-3.5 py-2.5 rounded-xl border border-amber-500/70 shadow-2xl flex items-center justify-between gap-2.5">
+              <div className="flex items-center gap-2.5 text-right flex-1 min-w-0">
+                <span className="w-8 h-8 rounded-full bg-amber-500 text-slate-950 font-bold text-sm flex items-center justify-center shrink-0 shadow-md animate-bounce">
+                  {currentGuidance.badgeSymbol}
+                </span>
+                <div className="flex flex-col min-w-0">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] text-amber-400 font-bold">
+                      المهمة المطلوبة (خطوة {stepIndex + 1}/{totalSteps}):
+                    </span>
+                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-bold border border-emerald-500/40 animate-pulse">
+                      اسحب الأداة أو انقر عليها ⚡
+                    </span>
+                  </div>
+                  <p className="text-xs text-white font-bold font-sans truncate leading-tight mt-0.5">
+                    {currentGuidance.hintText}
+                  </p>
+                </div>
+              </div>
+              {onActionTrigger && (
+                <button
+                  type="button"
+                  onClick={() => onActionTrigger(currentGuidance.targetActionId)}
+                  className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-lg text-xs font-bold flex items-center gap-1 shrink-0 transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+                  title="تنفيذ الإجراء المطلوب بالخطوة"
+                >
+                  <span>تنفيذ</span>
+                  <Sparkles className="w-3.5 h-3.5 text-slate-950" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* 🔬 Live Chemical State & Note Badge (Desktop / Fullscreen only) */}
         {chemicalNote && (
           <div className={(isFullView ? "block" : "hidden md:block") + " absolute bottom-16 left-1/2 transform -translate-x-1/2 z-20 max-w-lg w-[92%] bg-slate-900/95 backdrop-blur-md px-4 py-2.5 rounded-xl border border-emerald-500/40 text-center shadow-2xl"}>
@@ -2384,36 +2581,38 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                     <span>{magneticFieldOn ? "إيقاف المغناطيس" : "تشغيل المغناطيس ⚡"}</span>
                   </button>
                 ) : (
-                  <>
-                    <button
-                      onClick={() => onActionTrigger("add_reagent")}
-                      className="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
-                    >
-                      <Droplet className="w-3 h-3" />
-                      <span>إضافة كاشف</span>
-                    </button>
 
-                    <button
-                      onClick={() => onActionTrigger("toggle_heat")}
-                      className={
-                        "px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm " +
-                        (isHeating
-                          ? "bg-rose-600 text-white hover:bg-rose-500"
-                          : "bg-amber-600 text-white hover:bg-amber-500")
-                      }
-                    >
-                      <Flame className="w-3 h-3" />
-                      <span>{isHeating ? "إطفاء الموقد" : "إشعال بنسن"}</span>
-                    </button>
+                  <div className="flex flex-wrap items-center gap-1">
+                    {getUniversalTools(chemicals).map((tool) => {
+                      const isTarget = tool.id === currentActiveToolId;
+                      return (
+                        <button
+                          key={tool.id}
+                          type="button"
+                          onClick={() => onActionTrigger(tool.id)}
+                          title={tool.label}
+                          className={"px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer shadow-sm " + (
+                            isTarget
+                              ? "bg-amber-500 text-slate-950 ring-2 ring-amber-300 shadow-md font-extrabold scale-105"
+                              : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                          )}
+                        >
+                          <span className={"w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold " + (
+                            isTarget ? "bg-slate-950 text-amber-300" : "bg-slate-700 text-sky-300"
+                          )}>
+                            {tool.badge}
+                          </span>
+                          <span>{tool.label}</span>
+                          {isTarget && (
+                            <span className="text-[9px] bg-slate-950/80 text-amber-300 px-1 rounded animate-pulse">
+                              مطلوب 👈
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
 
-                    <button
-                      onClick={() => onActionTrigger("stir")}
-                      className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-bold flex items-center gap-1 transition-colors cursor-pointer shadow-sm"
-                    >
-                      <Sparkles className="w-3 h-3 text-amber-400" />
-                      <span>رج المحلول</span>
-                    </button>
-                  </>
                 )}
               </>
             )}
@@ -2619,36 +2818,39 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                   </button>
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-1.5">
-                  <button
-                    onClick={() => onActionTrigger("add_reagent")}
-                    className="px-2 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-sm"
-                  >
-                    <Droplet className="w-3 h-3" />
-                    <span>كاشف</span>
-                  </button>
 
-                  <button
-                    onClick={() => onActionTrigger("toggle_heat")}
-                    className={
-                      "px-2 py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-sm " +
-                      (isHeating
-                        ? "bg-rose-600 text-white hover:bg-rose-500"
-                        : "bg-amber-600 text-white hover:bg-amber-500")
-                    }
-                  >
-                    <Flame className="w-3 h-3" />
-                    <span>{isHeating ? "إطفاء" : "إشعال"}</span>
-                  </button>
-
-                  <button
-                    onClick={() => onActionTrigger("stir")}
-                    className="px-2 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 rounded-lg text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer shadow-sm"
-                  >
-                    <Sparkles className="w-3 h-3 text-amber-400" />
-                    <span>رج</span>
-                  </button>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {getUniversalTools(chemicals).map((tool) => {
+                    const isTarget = tool.id === currentActiveToolId;
+                    return (
+                      <button
+                        key={tool.id}
+                        type="button"
+                        onClick={() => onActionTrigger(tool.id)}
+                        className={"p-2 rounded-lg text-xs font-bold flex items-center justify-between gap-1 transition-all cursor-pointer shadow-sm " + (
+                          isTarget
+                            ? "bg-amber-500 text-slate-950 ring-2 ring-amber-300 font-extrabold shadow-md"
+                            : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                        )}
+                      >
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <span className={"w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 " + (
+                            isTarget ? "bg-slate-950 text-amber-300" : "bg-slate-700 text-sky-300"
+                          )}>
+                            {tool.badge}
+                          </span>
+                          <span className="truncate">{tool.label}</span>
+                        </div>
+                        {isTarget && (
+                          <span className="text-[9px] bg-slate-950 text-amber-300 px-1 py-0.5 rounded font-bold shrink-0 animate-pulse">
+                            مطلوب 👈
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+
               )}
             </div>
           )}
