@@ -872,11 +872,25 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       setManualHeating(prev => !prev);
     } else if (action === "toggle_magnet") {
       setManualMagnet(prev => !prev);
-    } else if (action === "add_reagent") {
+    } else if (action === "add_reagent_1" || action === "add_reagent_2" || action === "add_reagent" || action === "use_pipette") {
       setManualBubbling(true);
       setTimeout(() => setManualBubbling(false), 4000);
-    } else if (action === "stir") {
-      setChamberStatus("تم رج وتقليب المحلول وتجانس المتفاعلات");
+      const chemName = action === "add_reagent_1"
+        ? (selectedExp.chemicals[0] || "المتفاعل الأول")
+        : action === "add_reagent_2"
+        ? (selectedExp.chemicals[1] || "المتفاعل الثاني")
+        : action === "use_pipette"
+        ? "الكاشف بالماصة المخبرية"
+        : "المحلول الكيميائي";
+      setAddedChemicals(prev => prev.includes(chemName) ? prev : [...prev, chemName]);
+      setChamberStatus(`تم سكب وإضافة ${chemName} بنجاح وبدء التفاعل الكيميائي الملحوظ`);
+      setToolToast(`🧪 تم سكب وإضافة: ${chemName}`);
+    } else if (action === "stir_rod" || action === "stir") {
+      setChamberStatus("تم تقليب ورج المحلول بالساق الزجاجي لضمان تجانس وتفاعل الجزيئات");
+      setToolToast("🥄 تم تقليب ورج المحلول لزيادة سرعة التفاعل");
+    } else if (action === "filter_funnel") {
+      setChamberStatus("تم استخدام قمع وورق الترشيح لفصل الراسب والحصول على الراشح الصافي النقي");
+      setToolToast("⚗️ تم ترشيح المحلول وفصل المواد الصلبة غير الذائبة");
     } else if (action === "pour_water") {
       setHasWater(true);
       setAddedChemicals(prev => prev.includes("ماء مقطر") ? prev : [...prev, "ماء مقطر"]);
@@ -1001,7 +1015,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
         apparatusType = "beaker";
         liquidColor = currentStep >= 2 ? "#f8fafc" : "#e0f2fe";
         isHeating = currentStep >= 2;
-        isPrecipitating = currentStep === 1;
+        isPrecipitating = currentStep === 0 || currentStep === 1 || currentStep === 3;
         temperature = currentStep >= 2 ? 110 : 25;
         break;
       case "u3_l2": // IUPAC
@@ -1417,6 +1431,10 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
                   experimentTitle={selectedExp.title}
                   unitName={selectedExp.unit}
                   totalSteps={selectedExp.steps.length}
+                  chemicals={selectedExp.chemicals}
+                  apparatusList={selectedExp.apparatus}
+                  currentStepTitle={selectedExp.steps[currentStep]?.text}
+                  precipitateColor={currentStepReflection?.telemetry.precipitateColor}
                   onNextStep={currentStep < selectedExp.steps.length - 1 ? handleNextStep : undefined}
                   onPrevStep={currentStep > 0 ? () => setCurrentStep(prev => prev - 1) : undefined}
                   onReset={handleReset}

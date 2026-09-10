@@ -54,6 +54,10 @@ export interface Lab3DProps {
   experimentTitle?: string;
   unitName?: string;
   totalSteps?: number;
+  chemicals?: string[];
+  apparatusList?: string[];
+  currentStepTitle?: string;
+  precipitateColor?: string;
   onNextStep?: () => void;
   onPrevStep?: () => void;
   onReset?: () => void;
@@ -87,6 +91,10 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   experimentTitle,
   unitName,
   totalSteps = 4,
+  chemicals = [],
+  apparatusList = [],
+  currentStepTitle,
+  precipitateColor,
   onNextStep,
   onPrevStep,
   onReset,
@@ -120,6 +128,13 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   const balanceBeamRef = useRef<THREE.Mesh | null>(null);
   const alkaliBallRef = useRef<THREE.Group | null>(null);
   const dropZoneRingRef = useRef<THREE.Mesh | null>(null);
+  const precipitateMeshRef = useRef<THREE.Mesh | null>(null);
+  const precipitateFlakesRef = useRef<THREE.Points | null>(null);
+  const crystalsGroupRef = useRef<THREE.Group | null>(null);
+  const dropZoneTargetRef = useRef<{ position: THREE.Vector3; radius: number }>({
+    position: new THREE.Vector3(0, 3.32, 0),
+    radius: 1.5
+  });
 
   // Draggable tool groups and physics references
   const draggableToolsRef = useRef<THREE.Group[]>([]);
@@ -541,6 +556,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       dropZoneMesh.position.set(0.6, basinHeight + 0.1, 0);
       dropZoneMesh.visible = false;
       dropZoneRingRef.current = dropZoneMesh;
+      dropZoneTargetRef.current = { position: new THREE.Vector3(0.6, basinHeight + 0.1, 0), radius: 2.1 };
       basinGroup.add(dropZoneMesh);
 
       const waterHeight = hasWater !== false ? Math.max(0.4, liquidHeight * 1.1) : 0.05;
@@ -963,23 +979,128 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       beakerBottom.position.set(0, 1.53, 0);
       appGroup.add(beakerBottom);
 
+      // 🎯 Glowing Drop Zone Target Ring for Beaker
+      const dropZoneGeo = new THREE.TorusGeometry(beakerRadius * 1.02, 0.045, 16, 48);
+      const dropZoneMat = new THREE.MeshBasicMaterial({
+        color: 0x10b981,
+        transparent: true,
+        opacity: 0.85,
+        blending: THREE.AdditiveBlending
+      });
+      const dropZoneMesh = new THREE.Mesh(dropZoneGeo, dropZoneMat);
+      dropZoneMesh.rotation.x = Math.PI / 2;
+      dropZoneMesh.position.set(0, 1.52 + beakerHeight + 0.06, 0);
+      dropZoneMesh.visible = false;
+      dropZoneRingRef.current = dropZoneMesh;
+      dropZoneTargetRef.current = { position: new THREE.Vector3(0, 1.52 + beakerHeight, 0), radius: 1.5 };
+      appGroup.add(dropZoneMesh);
+
+      // 🧪 Chemical Rule for Physical Precipitate Color
+      const effPrecipitateColor = precipitateColor 
+        || (experimentId === "u3_l1" ? "#ffffff" : undefined)
+        || (experimentId === "u4_l4" ? "#ffffff" : undefined)
+        || (experimentId === "u5_l1" ? "#fef08a" : undefined)
+        || (liquidColor?.toLowerCase().includes("0284c7") || activeSubstance === "CuSO4" ? "#38bdf8" : undefined)
+        || "#f8fafc";
+
       const realLiquidHeight = Math.max(0.1, liquidHeight * 1.5);
       const liquidGeo = new THREE.CylinderGeometry(beakerRadius * 0.93, beakerRadius * 0.93, realLiquidHeight, 32);
       liquidGeo.translate(0, realLiquidHeight / 2, 0);
       const isClearWater = !liquidColor || liquidColor === "#f0f9ff" || liquidColor === "#e0f2fe" || liquidColor === "#f8fafc";
+      
+      // When isPrecipitating is true, create thick milky turbidity (colloidal suspension)
       const liquidMat = new THREE.MeshPhysicalMaterial({
         color: new THREE.Color(liquidColor),
         transparent: true,
-        opacity: isClearWater ? 0.22 : 0.75,
-        roughness: isClearWater ? 0.05 : 0.1,
-        metalness: isClearWater ? 0.05 : 0.1,
-        transmission: isClearWater ? 0.95 : 0.72,
+        opacity: isPrecipitating ? 0.88 : (isClearWater ? 0.22 : 0.75),
+        roughness: isPrecipitating ? 0.70 : (isClearWater ? 0.05 : 0.1),
+        metalness: isPrecipitating ? 0.02 : (isClearWater ? 0.05 : 0.1),
+        transmission: isPrecipitating ? 0.18 : (isClearWater ? 0.95 : 0.72),
         ior: 1.333
       });
+
+      if (isPrecipitating) {
+        liquidMat.color.lerp(new THREE.Color(effPrecipitateColor), 0.65);
+      }
+
       const liquidMesh = new THREE.Mesh(liquidGeo, liquidMat);
       liquidMesh.position.set(0, 1.54, 0);
       liquidMeshRef.current = liquidMesh;
       appGroup.add(liquidMesh);
+
+      // ⚪ Solid Chalky Sediment Layer at Bottom of Vessel
+      if (isPrecipitating) {
+        const precipBedHeight = 0.28;
+        const precipGeo = new THREE.CylinderGeometry(beakerRadius * 0.92, beakerRadius * 0.92, precipBedHeight, 32);
+        precipGeo.translate(0, precipBedHeight / 2, 0);
+        const precipMat = new THREE.MeshStandardMaterial({
+          color: new THREE.Color(effPrecipitateColor),
+          roughness: 0.95,
+          metalness: 0.05
+        });
+        const precipMesh = new THREE.Mesh(precipGeo, precipMat);
+        precipMesh.position.set(0, 1.54, 0);
+        precipMesh.castShadow = true;
+        precipMesh.receiveShadow = true;
+        appGroup.add(precipMesh);
+        precipitateMeshRef.current = precipMesh;
+
+        // Undulating textured curd cap on the sediment
+        const capGeo = new THREE.CylinderGeometry(beakerRadius * 0.90, beakerRadius * 0.92, 0.04, 32);
+        const capMesh = new THREE.Mesh(capGeo, precipMat);
+        capMesh.position.set(0, 1.54 + precipBedHeight, 0);
+        appGroup.add(capMesh);
+
+        // Volumetric Suspended Precipitate Flakes (drifting downward with Brownian motion)
+        const flakeCount = 55;
+        const flakeGeo = new THREE.BufferGeometry();
+        const flakePos = new Float32Array(flakeCount * 3);
+        const flakeSpeeds = new Float32Array(flakeCount);
+        for (let f = 0; f < flakeCount; f++) {
+          const r = Math.random() * (beakerRadius * 0.82);
+          const theta = Math.random() * Math.PI * 2;
+          flakePos[f * 3] = Math.cos(theta) * r;
+          flakePos[f * 3 + 1] = 1.54 + precipBedHeight + Math.random() * Math.max(0.1, realLiquidHeight - precipBedHeight);
+          flakePos[f * 3 + 2] = Math.sin(theta) * r;
+          flakeSpeeds[f] = 0.005 + Math.random() * 0.012;
+        }
+        flakeGeo.setAttribute("position", new THREE.BufferAttribute(flakePos, 3));
+        flakeGeo.setAttribute("speed", new THREE.BufferAttribute(flakeSpeeds, 1));
+        const flakes = new THREE.Points(
+          flakeGeo,
+          new THREE.PointsMaterial({
+            color: new THREE.Color(effPrecipitateColor),
+            size: 0.08,
+            transparent: true,
+            opacity: 0.85
+          })
+        );
+        flakes.visible = true;
+        precipitateFlakesRef.current = flakes;
+        appGroup.add(flakes);
+      }
+
+      // ✨ Sparkling Urea Crystals Cluster in Step 4 of Wohler Synthesis (or dry crystallization)
+      if (experimentId === "u3_l1" && (stepIndex === 3 || (isPrecipitating && liquidHeight <= 0.2))) {
+        const crystalGroup = new THREE.Group();
+        crystalGroup.position.set(0, 1.54, 0);
+        const crystalMat = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          roughness: 0.15,
+          metalness: 0.1
+        });
+        for (let c = 0; c < 28; c++) {
+          const cGeo = new THREE.ConeGeometry(0.045, 0.22 + Math.random() * 0.18, 6);
+          const cMesh = new THREE.Mesh(cGeo, crystalMat);
+          const r = Math.random() * (beakerRadius * 0.75);
+          const theta = Math.random() * Math.PI * 2;
+          cMesh.position.set(Math.cos(theta) * r, 0.04 + Math.random() * 0.06, Math.sin(theta) * r);
+          cMesh.rotation.set((Math.random() - 0.5) * 0.5, Math.random() * Math.PI, (Math.random() - 0.5) * 0.5);
+          crystalGroup.add(cMesh);
+        }
+        appGroup.add(crystalGroup);
+        crystalsGroupRef.current = crystalGroup;
+      }
 
       const bubbleGeo = new THREE.BufferGeometry();
       const bubbleCount = 35;
@@ -1090,11 +1211,282 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           rackGroup.add(tubeGroup);
         }
         appGroup.add(rackGroup);
+        dropZoneTargetRef.current = { position: new THREE.Vector3(2.4, 1.8, 0), radius: 1.6 };
       }
+
+      // ==============================================================
+      // 🧫 UNIVERSAL LABORATORY WORKBENCH REAGENTS & TOOLS STATION
+      // ==============================================================
+      const benchTrayGroup = new THREE.Group();
+      const trayX = apparatusType === "test_tubes" ? -2.4 : 2.2;
+      const trayZ = 0.3;
+      benchTrayGroup.position.set(trayX, 0, trayZ);
+
+      // Slate Laboratory Bench Organizer Tray
+      const trayBase = new THREE.Mesh(
+        new THREE.BoxGeometry(2.4, 0.08, 2.8),
+        new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.35, metalness: 0.2 })
+      );
+      trayBase.position.set(0, 0.04, 0);
+      trayBase.castShadow = true;
+      benchTrayGroup.add(trayBase);
+
+      const benchRimMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 });
+      const rimF = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.12, 0.05), benchRimMat);
+      rimF.position.set(0, 0.08, 1.375);
+      benchTrayGroup.add(rimF);
+      const rimB = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.12, 0.05), benchRimMat);
+      rimB.position.set(0, 0.08, -1.375);
+      benchTrayGroup.add(rimB);
+      const rimL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 2.8), benchRimMat);
+      rimL.position.set(-1.175, 0.08, 0);
+      benchTrayGroup.add(rimL);
+      const rimR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.12, 2.8), benchRimMat);
+      rimR.position.set(1.175, 0.08, 0);
+      benchTrayGroup.add(rimR);
+
+      // Resolve chemical names
+      const chemA = (chemicals && chemicals[0]) ? chemicals[0] : "المتفاعل الأول A";
+      const chemB = (chemicals && chemicals[1]) ? chemicals[1] : "المتفاعل الثاني B";
+
+      // 🖐️ DRAGGABLE TOOL A: Primary Reagent Bottle (قارورة الكاشف A)
+      const bottleAGroup = new THREE.Group();
+      const bAHome = new THREE.Vector3(trayX - 0.55, 0.08, trayZ - 0.65);
+      bottleAGroup.position.copy(bAHome);
+      bottleAGroup.userData = {
+        id: "add_reagent_1",
+        label: chemA + " 🧪",
+        homePos: bAHome.clone()
+      };
+
+      const bABody = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.24, 0.26, 0.8, 24),
+        new THREE.MeshPhysicalMaterial({ color: 0x1e3a5f, transparent: true, opacity: 0.82, roughness: 0.15 })
+      );
+      bABody.position.set(0, 0.4, 0);
+      bottleAGroup.add(bABody);
+
+      const bANeck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.22, 24), glassMaterial);
+      bANeck.position.set(0, 0.9, 0);
+      bottleAGroup.add(bANeck);
+
+      const bACap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.14, 24), darkIronMat);
+      bACap.position.set(0, 1.05, 0);
+      bottleAGroup.add(bACap);
+
+      const labelA = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.265, 0.265, 0.35, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 })
+      );
+      labelA.position.set(0, 0.4, 0);
+      bottleAGroup.add(labelA);
+
+      const beaconA = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.7 })
+      );
+      beaconA.position.set(0, 1.35, 0);
+      bottleAGroup.add(beaconA);
+
+      appGroup.add(bottleAGroup);
+      draggableToolsRef.current.push(bottleAGroup);
+
+      // 🖐️ DRAGGABLE TOOL B: Secondary Reagent Bottle (قارورة الكاشف B)
+      const bottleBGroup = new THREE.Group();
+      const bBHome = new THREE.Vector3(trayX + 0.55, 0.08, trayZ - 0.65);
+      bottleBGroup.position.copy(bBHome);
+      bottleBGroup.userData = {
+        id: "add_reagent_2",
+        label: chemB + " 🧪",
+        homePos: bBHome.clone()
+      };
+
+      const bBBody = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.24, 0.26, 0.8, 24),
+        new THREE.MeshPhysicalMaterial({ color: 0x78350f, transparent: true, opacity: 0.82, roughness: 0.15 })
+      );
+      bBBody.position.set(0, 0.4, 0);
+      bottleBGroup.add(bBBody);
+
+      const bBNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.22, 24), glassMaterial);
+      bBNeck.position.set(0, 0.9, 0);
+      bottleBGroup.add(bBNeck);
+
+      const bBCap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.14, 24), darkIronMat);
+      bBCap.position.set(0, 1.05, 0);
+      bottleBGroup.add(bBCap);
+
+      const labelB = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.265, 0.265, 0.35, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 })
+      );
+      labelB.position.set(0, 0.4, 0);
+      bottleBGroup.add(labelB);
+
+      const beaconB = new THREE.Mesh(
+        new THREE.SphereGeometry(0.1, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.7 })
+      );
+      beaconB.position.set(0, 1.35, 0);
+      bottleBGroup.add(beaconB);
+
+      appGroup.add(bottleBGroup);
+      draggableToolsRef.current.push(bottleBGroup);
+
+      // 🖐️ DRAGGABLE TOOL C: Precision Chemical Pipette / Dropper (ماصة وقطارة كيميائية)
+      const pipetteGroup = new THREE.Group();
+      const pipHome = new THREE.Vector3(trayX - 0.5, 0.12, trayZ + 0.2);
+      pipetteGroup.position.copy(pipHome);
+      pipetteGroup.rotation.x = Math.PI / 2;
+      pipetteGroup.userData = {
+        id: "use_pipette",
+        label: "ماصة وقطارة كيميائية 💧",
+        homePos: pipHome.clone()
+      };
+
+      const pipStem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.015, 1.0, 16), glassMaterial);
+      pipStem.position.set(0, 0.4, 0);
+      pipetteGroup.add(pipStem);
+
+      const pipBulb = new THREE.Mesh(
+        new THREE.SphereGeometry(0.12, 16, 16),
+        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.6 })
+      );
+      pipBulb.position.set(0, 1.0, 0);
+      pipetteGroup.add(pipBulb);
+
+      const pipDrop = new THREE.Mesh(
+        new THREE.SphereGeometry(0.04, 12, 12),
+        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+      );
+      pipDrop.position.set(0, -0.15, 0);
+      pipetteGroup.add(pipDrop);
+
+      appGroup.add(pipetteGroup);
+      draggableToolsRef.current.push(pipetteGroup);
+
+      // 🖐️ DRAGGABLE TOOL D: Stainless Steel Spatula / Stirring Rod (ملعقة وساق تحريك)
+      const spatulaGroup = new THREE.Group();
+      const spatHome = new THREE.Vector3(trayX + 0.5, 0.12, trayZ + 0.2);
+      spatulaGroup.position.copy(spatHome);
+      spatulaGroup.rotation.x = Math.PI / 2;
+      spatulaGroup.userData = {
+        id: "stir_rod",
+        label: "ملعقة وساق تقليب زجاجي 🥄",
+        homePos: spatHome.clone()
+      };
+
+      const rod = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.025, 0.025, 1.1, 16),
+        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.15 })
+      );
+      rod.position.set(0, 0.45, 0);
+      spatulaGroup.add(rod);
+
+      const bladeSpat = new THREE.Mesh(
+        new THREE.BoxGeometry(0.08, 0.015, 0.28),
+        new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.1 })
+      );
+      bladeSpat.position.set(0, -0.15, 0);
+      spatulaGroup.add(bladeSpat);
+
+      appGroup.add(spatulaGroup);
+      draggableToolsRef.current.push(spatulaGroup);
+
+      // 🖐️ DRAGGABLE TOOL E: Filter Funnel with Paper (قمع وورق ترشيح)
+      const funnelGroup = new THREE.Group();
+      const funHome = new THREE.Vector3(trayX + 0.4, 0.14, trayZ + 0.95);
+      funnelGroup.position.copy(funHome);
+      funnelGroup.userData = {
+        id: "filter_funnel",
+        label: "قمع وورق ترشيح لفصل الراسب ⚗️",
+        homePos: funHome.clone()
+      };
+
+      const funnelCone = new THREE.Mesh(
+        new THREE.ConeGeometry(0.28, 0.45, 24, 1, true),
+        glassMaterial
+      );
+      funnelCone.rotation.x = Math.PI;
+      funnelCone.position.set(0, 0.5, 0);
+      funnelGroup.add(funnelCone);
+
+      const funnelStem = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.03, 0.45, 16), glassMaterial);
+      funnelStem.position.set(0, 0.15, 0);
+      funnelGroup.add(funnelStem);
+
+      const filterPaperCone = new THREE.Mesh(
+        new THREE.ConeGeometry(0.26, 0.4, 24, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, side: THREE.DoubleSide })
+      );
+      filterPaperCone.rotation.x = Math.PI;
+      filterPaperCone.position.set(0, 0.52, 0);
+      funnelGroup.add(filterPaperCone);
+
+      appGroup.add(funnelGroup);
+      draggableToolsRef.current.push(funnelGroup);
+
+      // 🖐️ DRAGGABLE TOOL F: Burner Igniter / Match (مشعل الموقد)
+      const igniterGroup = new THREE.Group();
+      const ignHome = new THREE.Vector3(trayX - 0.4, 0.1, trayZ + 0.95);
+      igniterGroup.position.copy(ignHome);
+      igniterGroup.userData = {
+        id: "toggle_heat",
+        label: "مشعل الموقد الحراري 🔥",
+        homePos: ignHome.clone()
+      };
+
+      const ignHandle = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.05, 0.05, 0.5, 16),
+        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 })
+      );
+      ignHandle.rotation.z = Math.PI / 2;
+      ignHandle.position.set(0, 0.05, 0);
+      igniterGroup.add(ignHandle);
+
+      const ignTip = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.02, 0.02, 0.4, 16),
+        new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9 })
+      );
+      ignTip.rotation.z = Math.PI / 2;
+      ignTip.position.set(0.35, 0.05, 0);
+      igniterGroup.add(ignTip);
+
+      const sparkGlow = new THREE.Mesh(
+        new THREE.SphereGeometry(0.08, 16, 16),
+        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.8 })
+      );
+      sparkGlow.position.set(0.6, 0.05, 0);
+      igniterGroup.add(sparkGlow);
+
+      appGroup.add(igniterGroup);
+      draggableToolsRef.current.push(igniterGroup);
+
+      benchTrayGroup.add(trayBase);
+      appGroup.add(benchTrayGroup);
     }
 
     scene.add(appGroup);
-  }, [apparatusType, liquidColor, liquidHeight, flameColor, isHeating, isBubbling, isSmoking, magneticFieldOn, activeSubstance, activeAlkali, hasWater, isIndicatorAdded, isCutAndDried, stepIndex]);
+  }, [
+    apparatusType, 
+    liquidColor, 
+    liquidHeight, 
+    flameColor, 
+    isHeating, 
+    isBubbling, 
+    isPrecipitating,
+    precipitateColor,
+    chemicals,
+    apparatusList,
+    isSmoking, 
+    magneticFieldOn, 
+    activeSubstance, 
+    activeAlkali, 
+    hasWater, 
+    isIndicatorAdded, 
+    isCutAndDried, 
+    stepIndex
+  ]);
 
   // 3. Dynamic Animation Loop
   useEffect(() => {
@@ -1217,6 +1609,28 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         smokeGroupRef.current.geometry.attributes.position.needsUpdate = true;
       }
 
+      // Precipitate flakes drifting & downward settling animation
+      if (precipitateFlakesRef.current && precipitateFlakesRef.current.visible) {
+        const fPos = precipitateFlakesRef.current.geometry.attributes.position.array as Float32Array;
+        const fSpeeds = precipitateFlakesRef.current.geometry.attributes.speed.array as Float32Array;
+        const fCount = fPos.length / 3;
+        for (let f = 0; f < fCount; f++) {
+          fPos[f * 3 + 1] -= fSpeeds[f];
+          fPos[f * 3] += Math.sin(elapsedTime * 2.5 + f) * 0.0015;
+          fPos[f * 3 + 2] += Math.cos(elapsedTime * 2.5 + f) * 0.0015;
+          if (fPos[f * 3 + 1] < 1.68) {
+            fPos[f * 3 + 1] = 1.54 + Math.max(0.2, liquidHeight * 1.5) - Math.random() * 0.15;
+          }
+        }
+        precipitateFlakesRef.current.geometry.attributes.position.needsUpdate = true;
+      }
+
+      // Crystals subtle specular oscillation
+      if (crystalsGroupRef.current && crystalsGroupRef.current.visible) {
+        const pulse = 1.0 + Math.sin(elapsedTime * 4) * 0.02;
+        crystalsGroupRef.current.scale.set(pulse, pulse, pulse);
+      }
+
       // Render Scene
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
         rendererRef.current.render(sceneRef.current, cameraRef.current);
@@ -1274,7 +1688,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           dropZoneRingRef.current.visible = true;
         }
 
-        setDragFeedback("🎯 اسحب " + hitTool.userData.label + " وأفلتها فوق الحوض للسكب والتفاعل!");
+        setDragFeedback("🎯 اسحب " + hitTool.userData.label + " نحو الوعاء للتفاعل، أو انقر للإضافة المباشرة!");
         return;
       }
     }
@@ -1300,25 +1714,34 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         draggedObjectRef.current.position.x = planeIntersect.x + dragOffsetRef.current.x;
         draggedObjectRef.current.position.z = planeIntersect.z + dragOffsetRef.current.z;
 
-        if (draggedObjectRef.current.userData.id === "add_indicator") {
+        if (draggedObjectRef.current.userData.id === "use_pipette") {
+          draggedObjectRef.current.rotation.z = -0.5;
+        } else if (draggedObjectRef.current.userData.id?.startsWith("add_reagent")) {
+          draggedObjectRef.current.rotation.z = 0.45;
+        } else if (draggedObjectRef.current.userData.id === "add_indicator") {
           draggedObjectRef.current.rotation.z = -0.4;
         } else if (draggedObjectRef.current.userData.id === "drop_sodium") {
           draggedObjectRef.current.rotation.x = 0.2;
         }
 
-        const distToBasin = Math.hypot(draggedObjectRef.current.position.x - 0.6, draggedObjectRef.current.position.z - 0);
-        const isOverBasin = distToBasin < 2.1;
+        const target = dropZoneTargetRef.current;
+        const distToTarget = Math.hypot(
+          draggedObjectRef.current.position.x - target.position.x,
+          draggedObjectRef.current.position.z - target.position.z
+        );
+        const isOverTarget = distToTarget < target.radius;
+        const targetLabel = apparatusType === "glass_basin" ? "الحوض الكبير" : apparatusType === "test_tubes" ? "أنبوبة الاختبار" : "الكأس المخبري";
 
-        if (isOverBasin) {
+        if (isOverTarget) {
           if (dropZoneRingRef.current) {
             (dropZoneRingRef.current.material as THREE.MeshBasicMaterial).color.setHex(0x22c55e);
           }
-          setDragFeedback("✨ حرر الآن لسكب وإسقاط " + draggedObjectRef.current.userData.label + " في الحوض!");
+          setDragFeedback("✨ حرر الآن لسكب وإضافة " + draggedObjectRef.current.userData.label + " في " + targetLabel + "!");
         } else {
           if (dropZoneRingRef.current) {
             (dropZoneRingRef.current.material as THREE.MeshBasicMaterial).color.setHex(0x38bdf8);
           }
-          setDragFeedback("🎯 اسحب " + draggedObjectRef.current.userData.label + " نحو الحوض الكبير");
+          setDragFeedback("🎯 اسحب " + draggedObjectRef.current.userData.label + " نحو " + targetLabel);
         }
       }
       return;
@@ -1340,13 +1763,17 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     if (isDraggingToolRef.current && draggedObjectRef.current) {
       const tool = draggedObjectRef.current;
       const actionId = tool.userData.id as string;
-      const distToBasin = Math.hypot(tool.position.x - 0.6, tool.position.z - 0);
-      const isOverBasin = distToBasin < 2.1;
+      const target = dropZoneTargetRef.current;
+      const distToTarget = Math.hypot(
+        tool.position.x - target.position.x,
+        tool.position.z - target.position.z
+      );
+      const isOverTarget = distToTarget < target.radius;
 
       const dragDistance = Math.hypot(e.clientX - pointerDownPosRef.current.x, e.clientY - pointerDownPosRef.current.y);
-      const isQuickClick = dragDistance < 10;
+      const isQuickClick = dragDistance < 12;
 
-      if (isOverBasin || isQuickClick) {
+      if (isOverTarget || isQuickClick) {
         if (onActionTrigger) {
           onActionTrigger(actionId);
         }

@@ -18,6 +18,7 @@ export interface StepReflectionItem {
     isHeating: boolean;
     isBubbling: boolean;
     isPrecipitating: boolean;
+    precipitateColor?: string;
     isSmoking: boolean;
     flameColor?: string;
     magneticFieldOn?: boolean;
