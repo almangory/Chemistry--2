@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { PeriodicTableTool } from "./PeriodicTableTool";
 import { MolecularSimulator } from "./MolecularSimulator";
+import { Lab3DScene } from "./Lab3DScene";
 
 interface LabStep {
   text: string;
@@ -734,733 +735,207 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
     ? experiments
     : experiments.filter((exp) => exp.unitId === selectedUnitFilter);
 
-  const renderSimulation = () => {
-    switch (selectedExp.id) {
-      case "u1_l1": // Dobereiner's triads
-        return (
-          <div className="flex flex-col items-center gap-4 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full justify-center">
-            <span className="text-[10px] font-bold text-slate-400 font-sans">ميزان رقمي وحاسبة معملية</span>
-            <div className="w-40 h-20 bg-slate-100 border border-slate-300 rounded-lg flex flex-col items-center justify-center relative shadow-sm">
-              <span className="text-[10px] text-slate-500 font-bold">ميزان الكتل الذرية</span>
-              <span className="text-xl font-mono font-bold text-[#2C3E50] mt-1">
-                {currentStep === 0 ? "40.0 g" :
-                 currentStep === 1 ? "137.3 g" :
-                 currentStep === 2 ? "88.65 g" : "87.6 g"}
-              </span>
-              <span className="text-[9px] text-[#E67E22] font-semibold mt-0.5">
-                {currentStep === 0 ? "عنصر الكالسيوم Ca" :
-                 currentStep === 1 ? "عنصر الباريوم Ba" :
-                 currentStep === 2 ? "متوسط الحساب (Ca+Ba)/2" : "عنصر الاسترونشيوم Sr"}
-              </span>
-            </div>
-            {/* Calculation details formula */}
-            <div className="text-center p-2 bg-[#2C3E50]/5 border border-[#2C3E50]/10 rounded w-full">
-              <p className="text-[10px] text-[#2C3E50] leading-normal font-sans">
-                {currentStep >= 2 ? (
-                  <>
-                    <strong className="block text-indigo-700">المعادلة الحسابية:</strong>
-                    (40.0 + 137.3) / 2 = 88.65
-                    {currentStep === 3 && <span className="block text-emerald-700 font-bold mt-1">متقاربة جداً مع وزن Sr الفعلي (87.6)!</span>}
-                  </>
-                ) : (
-                  "ضع العينات على الميزان لملاحظة حسابات ثلاثيات دوبرينر بدقة."
-                )}
-              </p>
-            </div>
-          </div>
-        );
-      case "u1_l2": // s, p, d, f blocks
-        return (
-          <div className="flex flex-col items-center gap-4 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full justify-center">
-            <span className="text-[10px] font-bold text-slate-400 font-sans">جهاز فحص الخواص الفيزيائية للفئات</span>
-            <div className="flex flex-col items-center gap-2">
-              {/* Device output screen */}
-              <div className="p-3 rounded-lg border text-center w-40 bg-[#2C3E50]/5 border-[#2C3E50]/10">
-                <span className="text-[10px] font-bold text-indigo-700">النتيجة المعملية:</span>
-                <span className="block text-xs font-bold text-[#2C3E50] mt-1">
-                  {currentStep === 0 ? "🔌 ناقلية فائقة 💡" :
-                   currentStep === 1 ? "❌ عزل كهربائي تام" :
-                   currentStep === 2 ? "🎨 طيف لوني أزرق مميز" :
-                   currentStep === 3 ? "🧲 جاذبية مغناطيسية متقدمة" : "حدد خطوة للفحص"}
-                </span>
-                <span className="block text-[10px] text-slate-500 font-mono mt-0.5">
-                  {currentStep === 0 ? "عنصر Na (فئة s)" :
-                   currentStep === 1 ? "غاز Cl (فئة p)" :
-                   currentStep === 2 ? "أيون Cu²⁺ (فئة d)" :
-                   currentStep === 3 ? "عنصر Eu (فئة f)" : "-"}
-                </span>
-              </div>
-              {/* Visual bulb or magnet graphic */}
-              <div className="flex items-center justify-center gap-4 mt-2">
-                {currentStep === 0 && (
-                  <motion.div animate={{ scale: [1, 1.15, 1] }} transition={{ repeat: Infinity, duration: 1 }} className="p-2 bg-yellow-100 rounded-full text-yellow-600 border border-yellow-300 shadow-sm text-lg">
-                    💡
-                  </motion.div>
-                )}
-                {currentStep === 1 && (
-                  <div className="p-2 bg-red-100 rounded-full text-red-600 border border-red-300 text-lg">
-                    🔌🚫
-                  </div>
-                )}
-                {currentStep === 2 && (
-                  <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 10, ease: "linear" }} className="p-2 bg-cyan-100 rounded-full text-cyan-600 border border-cyan-300 text-lg">
-                    🌈
-                  </motion.div>
-                )}
-                {currentStep === 3 && (
-                  <motion.div animate={{ x: [-5, 5, -5] }} transition={{ repeat: Infinity, duration: 0.8 }} className="p-2 bg-purple-100 rounded-full text-purple-600 border border-purple-300 text-lg">
-                    🧲
-                  </motion.div>
-                )}
-              </div>
-            </div>
-          </div>
-        );
-      case "u1_l3": // Period 3 trends
-        return (
-          <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            {/* Tube 1: Sodium */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95, rotate: [-3, 3, -3, 3, 0], x: [-3, 3, -3, 3, 0] }}
-              className="flex flex-col items-center cursor-pointer select-none"
-            >
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">الأنبوب 1 (Na)</span>
-              <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className={`absolute bottom-0 w-full transition-all duration-700 ${currentStep >= 1 ? "h-[60%] bg-fuchsia-300/60" : "h-[10%] bg-blue-100"}`} />
-                {currentStep === 1 && (
-                  <motion.div animate={{ y: [-10, -50], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} className="absolute text-lg bottom-6">💥</motion.div>
-                )}
-              </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">{currentStep >= 1 ? "تفاعل عنيف + قلوي" : "ماء مقطر"}</span>
-            </motion.div>
-            {/* Tube 2: Magnesium */}
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95, rotate: [-3, 3, -3, 3, 0], x: [-3, 3, -3, 3, 0] }}
-              className="flex flex-col items-center cursor-pointer select-none"
-            >
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">الأنبوب 2 (Mg)</span>
-              <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className={`absolute bottom-0 w-full transition-all duration-1000 ${
-                  currentStep === 3 ? "h-[60%] bg-pink-200/50" : currentStep >= 1 ? "h-[10%] bg-blue-100" : "h-[10%] bg-blue-100"
-                }`} />
-                {currentStep === 3 && (
-                  <motion.div animate={{ y: [-5, -40] }} transition={{ repeat: Infinity }} className="absolute bottom-10"><Thermometer className="w-4 h-4 text-orange-600" /></motion.div>
-                )}
-              </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep === 3 ? "تفاعل بطئ بالتسخين" : currentStep >= 2 ? "لا تفاعل على البارد" : "ماء مقطر"}
-              </span>
-            </motion.div>
-          </div>
-        );
-      case "u3_l2": // IUPAC branching & naming
-        return (
-          <div className="flex flex-col items-center justify-center gap-3 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تطبيق قواعد IUPAC وبناء السلاسل المتفرعة</span>
-            <div className="flex items-center justify-center h-28 w-full relative">
-              {currentStep === 0 && (
-                <motion.div initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="flex flex-col items-center">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <div key={n} className="flex items-center">
-                        <div className="flex flex-col items-center">
-                          <span className="text-[8px] text-indigo-600 font-bold mb-0.5">{n}</span>
-                          <div className="w-7 h-7 rounded-full bg-slate-800 text-white flex items-center justify-center text-[10px] font-bold shadow-xs">C</div>
-                        </div>
-                        {n < 5 && <div className="w-3 h-1 bg-amber-500 mt-2" />}
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-[#2C3E50] font-bold mt-2">سلسلة البنتان الأم (5 ذرات كربون)</span>
-                </motion.div>
-              )}
-              {currentStep === 1 && (
-                <motion.div initial={{ y: 5 }} animate={{ y: 0 }} className="flex flex-col items-center">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <div key={n} className="flex items-center">
-                        <div className="flex flex-col items-center relative">
-                          <span className="text-[8px] text-indigo-600 font-bold mb-0.5">{n}</span>
-                          <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-[10px] font-bold shadow-xs ${n === 2 ? "bg-amber-600 ring-2 ring-amber-400" : "bg-slate-800"}`}>C</div>
-                          {n === 2 && (
-                            <div className="absolute top-10 flex flex-col items-center">
-                              <div className="w-1 h-2 bg-amber-500" />
-                              <div className="w-7 h-6 rounded bg-[#E67E22] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">CH₃</div>
-                            </div>
-                          )}
-                        </div>
-                        {n < 5 && <div className="w-3 h-1 bg-amber-500 mt-2" />}
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-amber-700 font-bold mt-8">2-ميثيل بنتان (الترقيم من اليمين الأقرب للفرع)</span>
-                </motion.div>
-              )}
-              {currentStep === 2 && (
-                <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="flex flex-col items-center">
-                  <div className="flex items-center gap-1">
-                    {[1, 2, 3, 4, 5].map((n) => (
-                      <div key={n} className="flex items-center">
-                        <div className="flex flex-col items-center relative">
-                          <span className="text-[8px] text-indigo-600 font-bold mb-0.5">{n}</span>
-                          <div className={`w-7 h-7 rounded-full text-white flex items-center justify-center text-[10px] font-bold shadow-xs ${n === 2 || n === 4 ? "bg-amber-600 ring-2 ring-amber-400" : "bg-slate-800"}`}>C</div>
-                          {(n === 2 || n === 4) && (
-                            <div className="absolute top-10 flex flex-col items-center">
-                              <div className="w-1 h-2 bg-amber-500" />
-                              <div className="w-7 h-6 rounded bg-[#E67E22] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">CH₃</div>
-                            </div>
-                          )}
-                        </div>
-                        {n < 5 && <div className="w-3 h-1 bg-amber-500 mt-2" />}
-                      </div>
-                    ))}
-                  </div>
-                  <span className="text-[10px] text-amber-800 font-bold mt-8">2,4-ثنائي ميثيل بنتان (استخدام سابقة ثنائي)</span>
-                </motion.div>
-              )}
-            </div>
-            <div className="text-center p-1.5 bg-amber-50 border border-amber-100 rounded w-full">
-              <span className="text-[10px] text-[#2C3E50] font-bold block">
-                {currentStep === 0 ? "تحديد أطول سلسلة مستمرة = بنتان (5 ذرات كربون)" :
-                 currentStep === 1 ? "إضافة فرع ميثيل على الذرة رقم 2 والترقيم من الأقرب للفرع" :
-                 "إضافة فرع ثانٍ على الذرة 4 وتسميته 2,4-ثنائي ميثيل بنتان"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u3_l3": // Classification & Homologous / Metqabila
-        return (
-          <div className="flex flex-col items-center justify-center gap-3 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">فحص أقسام الهيدروكربونات والمركبات المتقابلة</span>
-            <div className="flex items-center justify-center h-28 w-full">
-              {currentStep === 0 && (
-                <div className="flex items-center gap-2">
-                  <div className="flex flex-col items-center p-1.5 bg-blue-50 border border-blue-200 rounded text-center">
-                    <span className="text-[9px] font-bold text-blue-800">إيثان C₂H₆</span>
-                    <span className="text-[8px] text-slate-500">ألكان مشبع (أحادي)</span>
-                  </div>
-                  <span className="text-xs font-bold text-slate-400">↔</span>
-                  <div className="flex flex-col items-center p-1.5 bg-amber-50 border border-amber-200 rounded text-center">
-                    <span className="text-[9px] font-bold text-amber-800">إيثين C₂H₄</span>
-                    <span className="text-[8px] text-slate-500">ألكين (رابطة ثنائية)</span>
-                  </div>
-                  <span className="text-xs font-bold text-slate-400">↔</span>
-                  <div className="flex flex-col items-center p-1.5 bg-purple-50 border border-purple-200 rounded text-center">
-                    <span className="text-[9px] font-bold text-purple-800">إيثاين C₂H₂</span>
-                    <span className="text-[8px] text-slate-500">ألكاين (رابطة ثلاثية)</span>
-                  </div>
-                </div>
-              )}
-              {currentStep === 1 && (
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-1">
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
-                    <div className="w-6 h-1.5 bg-blue-500 rounded flex items-center justify-center"><span className="text-[7px] text-white font-bold">σ</span></div>
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
-                  </div>
-                  <span className="text-[10px] text-blue-700 font-bold mt-2">رابطة سيجما (σ) تساهمية أحادية قوية ومستقرة</span>
-                </div>
-              )}
-              {currentStep === 2 && (
-                <div className="flex flex-col items-center">
-                  <div className="flex items-center gap-1">
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
-                    <div className="flex flex-col gap-1">
-                      <div className="w-6 h-1 bg-blue-500 rounded" />
-                      <div className="w-6 h-1 bg-amber-500 rounded animate-pulse" />
-                    </div>
-                    <div className="w-8 h-8 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-bold">C</div>
-                  </div>
-                  <span className="text-[10px] text-amber-700 font-bold mt-2">رابطة ثنائية (سيجما قوية + باي π ضعيفة سريعة الكسر)</span>
-                </div>
-              )}
-              {currentStep === 3 && (
-                <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 20, ease: "linear" }} className="w-20 h-20 border-2 border-dashed border-emerald-500 rounded-full flex items-center justify-center relative">
-                  {[0, 1, 2].map((idx) => {
-                    const angle = (idx * 2 * Math.PI) / 3 - Math.PI / 2;
-                    const x = 28 * Math.cos(angle);
-                    const y = 28 * Math.sin(angle);
-                    return (
-                      <div key={idx} style={{ transform: `translate(${x}px, ${y}px)` }} className="absolute w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center text-[8px] font-bold">
-                        CH₂
-                      </div>
-                    );
-                  })}
-                  <span className="text-[8px] font-bold text-emerald-800">بروبان حلقي</span>
-                </motion.div>
-              )}
-            </div>
-            <div className="text-center p-1.5 bg-slate-50 border border-slate-200 rounded w-full">
-              <span className="text-[10px] text-[#2C3E50] font-bold block">
-                {currentStep === 0 ? "مركبات متقابلة: تتساوى في ذرات الكربون وتختلف في نوع الرابطة" :
-                 currentStep === 1 ? "الإيثان: ألكان مشبع برابطة سيجما قوية خاملة كيميائياً" :
-                 currentStep === 2 ? "الإيثين: ألكين غير مشبع يمتلك رابطة باي ضعيفة سهلة الكسر" :
-                 "البروبان الحلقي C₃H₆: هيدروكربون أليفاتي حلقي مشبع ذو زاوية 60° متوترة"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u3_l4": // Methane dry distillation
-        return (
-          <div className="flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full relative overflow-hidden">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تحضير غاز الميثان بالتقطير الجاف</span>
-            <div className="w-full flex items-center justify-around h-36 relative mt-1">
-              {/* Test Tube with CH3COONa + Soda Lime */}
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] font-bold text-slate-500 mb-0.5">أنبوبة التفاعل</span>
-                <div className="w-8 h-24 border-2 border-slate-400 rounded-b-lg relative bg-slate-50 flex flex-col justify-end p-0.5 overflow-hidden">
-                  <div className="w-full h-10 bg-amber-100/80 rounded-b border-t border-amber-300 flex items-center justify-center text-[7px] text-amber-900 font-bold text-center leading-tight">
-                    خلات صوديوم + جير صودي
-                  </div>
-                  {currentStep >= 2 && (
-                    <motion.div animate={{ opacity: [0.3, 1, 0.3] }} transition={{ repeat: Infinity, duration: 0.8 }} className="absolute inset-0 bg-orange-400/20" />
-                  )}
-                </div>
-                {/* Burner Flame */}
-                {currentStep >= 2 && (
-                  <motion.div animate={{ scaleY: [1, 1.3, 1], scaleX: [1, 0.9, 1] }} transition={{ repeat: Infinity, duration: 0.4 }} className="text-sm mt-0.5">
-                    🔥
-                  </motion.div>
-                )}
-              </div>
-              {/* Delivery Tube */}
-              <div className="w-16 h-1 border-t-2 border-slate-400 relative">
-                {currentStep >= 2 && (
-                  <motion.div animate={{ x: [0, 50] }} transition={{ repeat: Infinity, duration: 1 }} className="w-2 h-1 bg-sky-400 rounded-full" />
-                )}
-              </div>
-              {/* Collection Jar inverted in Water Trough */}
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] font-bold text-slate-500 mb-0.5">مخبار التجميع (إزاحة الماء)</span>
-                <div className="w-12 h-24 border-2 border-b-0 border-slate-400 rounded-t-lg relative bg-sky-100/50 flex flex-col justify-between items-center overflow-hidden">
-                  {/* Gas collecting at top */}
-                  <div className={`w-full transition-all duration-1000 flex items-center justify-center ${currentStep >= 2 ? "h-12 bg-sky-200/60" : "h-2 bg-transparent"}`}>
-                    {currentStep >= 2 && <span className="text-[8px] font-bold text-sky-800">CH₄ غاز</span>}
-                  </div>
-                  {/* Rising bubbles */}
-                  {currentStep === 2 && (
-                    <motion.div animate={{ y: [20, -10], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.7 }} className="text-xs">🫧</motion.div>
-                  )}
-                  {/* Water level */}
-                  <div className={`w-full bg-blue-300/60 transition-all duration-1000 ${currentStep >= 3 ? "h-6" : "h-14"}`} />
-                </div>
-                <div className="w-18 h-4 border-2 border-t-0 border-slate-400 rounded-b bg-blue-200/50 flex items-center justify-center">
-                  <span className="text-[7px] text-blue-800">حوض الماء</span>
-                </div>
-              </div>
-            </div>
-            <div className="text-center p-1 bg-sky-50 border border-sky-100 rounded w-full mt-1">
-              <span className="text-[9px] text-[#2C3E50] font-bold block">
-                {currentStep === 0 ? "خلط خلات الصوديوم اللامائية مع الجير الصودي (NaOH + CaO)" :
-                 currentStep === 1 ? "توصيل أنبوب التسليم بحوض الماء ومخبار التجميع المقلوب" :
-                 currentStep === 2 ? "تسخين الخليط وتصاعد فقاعات غاز الميثان بإزاحة الماء لأسفل" :
-                 "امتلاء المخبار بغاز الميثان واشتعاله بلهب أزرق باهت نظيف"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u3_l5": // Bromine water test for unsaturation
-        return (
-          <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            {/* Tube 1: Ethane */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">أنبوب 1: إيثان (مشبع)</span>
-              <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className={`absolute bottom-0 w-full transition-all duration-700 ${currentStep >= 1 ? "h-[60%] bg-orange-600/75" : "h-[10%] bg-blue-100"}`} />
-              </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">{currentStep >= 1 ? "بقاء اللون الأحمر 🔴 (لا تفاعل)" : "غاز إيثان"}</span>
-            </div>
-            {/* Tube 2: Ethene */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">أنبوب 2: إيثين (غير مشبع)</span>
-              <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className={`absolute bottom-0 w-full transition-all duration-1000 ${
-                  currentStep >= 3 ? "h-[60%] bg-blue-50/10 border-t border-blue-200" : currentStep >= 2 ? "h-[60%] bg-orange-600/75" : "h-[10%] bg-blue-100"
-                }`} />
-                {currentStep === 3 && (
-                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute text-[8px] font-bold text-emerald-700 text-center bottom-8 px-1">
-                    1,2-ثنائي برومو إيثان عديم اللون
-                  </motion.div>
-                )}
-              </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep >= 3 ? "زوال لون البروم ⚪ (تفاعل إضافة)" : currentStep >= 2 ? "إضافة ماء البروم" : "غاز إيثين"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u3_l6": // Ethyne from CaC2
-        return (
-          <div className="flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full relative overflow-hidden">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تحضير غاز الإيثاين بتنقيط الماء على كاربيد الكالسيوم</span>
-            <div className="w-full flex items-center justify-around h-36 relative mt-1">
-              {/* Conical flask with CaC2 and dropping funnel */}
-              <div className="flex flex-col items-center">
-                {/* Dropping funnel */}
-                <div className="w-4 h-8 border border-slate-400 rounded-t bg-blue-100/60 relative flex flex-col items-center">
-                  {currentStep >= 1 && (
-                    <motion.div animate={{ y: [0, 10], opacity: [1, 0] }} transition={{ repeat: Infinity, duration: 0.5 }} className="w-1 h-1 bg-blue-500 rounded-full" />
-                  )}
-                </div>
-                <div className="w-1 h-3 bg-slate-400" />
-                {/* Flask */}
-                <div className="w-14 h-16 border-2 border-slate-400 rounded-b-xl relative bg-slate-50 flex flex-col justify-end p-1 overflow-hidden">
-                  <div className="flex gap-1 justify-center mb-1">
-                    <div className="w-3 h-2 bg-slate-600 rounded-xs" />
-                    <div className="w-3 h-2 bg-slate-700 rounded-xs" />
-                  </div>
-                  {currentStep >= 1 && (
-                    <motion.div animate={{ y: [-2, -10], opacity: [0, 1, 0] }} transition={{ repeat: Infinity, duration: 0.4 }} className="absolute text-xs bottom-3 text-center w-full">🫧</motion.div>
-                  )}
-                  <span className="text-[6px] text-slate-600 text-center font-bold">CaC₂ صلب</span>
-                </div>
-              </div>
-              {/* Wash bottle with acidified CuSO4 */}
-              <div className="flex flex-col items-center">
-                <span className="text-[7px] font-bold text-blue-700">غسيل بـ CuSO₄</span>
-                <div className="w-10 h-16 border-2 border-slate-400 rounded-b relative bg-blue-100 flex flex-col justify-end overflow-hidden">
-                  <div className="w-full h-8 bg-blue-500/40 flex items-center justify-center text-[6px] text-blue-900 font-bold text-center">
-                    تنقية من PH₃ و H₂S
-                  </div>
-                </div>
-              </div>
-              {/* Flame / Collector */}
-              <div className="flex flex-col items-center">
-                <span className="text-[8px] font-bold text-amber-700">احتراق الإيثاين</span>
-                <div className="w-10 h-16 border border-slate-300 rounded flex flex-col items-center justify-center bg-slate-50">
-                  {currentStep >= 3 ? (
-                    <motion.div animate={{ scale: [1, 1.2, 1] }} transition={{ repeat: Infinity, duration: 0.5 }} className="flex flex-col items-center">
-                      <span className="text-xl">🔥</span>
-                      <span className="text-[7px] text-red-600 font-bold">لهب مدخن 3000°C</span>
-                    </motion.div>
-                  ) : (
-                    <span className="text-[8px] text-slate-400">جمع الغاز</span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="text-center p-1 bg-amber-50 border border-amber-100 rounded w-full mt-1">
-              <span className="text-[9px] text-[#2C3E50] font-bold block">
-                {currentStep === 0 ? "وضع قطع كاربيد الكالسيوم الصلبة CaC₂ في الدورق" :
-                 currentStep === 1 ? "تنقيط الماء وفوران شديد وتصاعد غاز الإيثاين C₂H₂" :
-                 currentStep === 2 ? "تمرير الغاز عبر محلول كبريتات النحاس لتنقيته من الشوائب" :
-                 "احتراق الإيثاين بلهب مدخن وفي الأكسجين بلهب الأكسي-أستلين الحارق"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u3_l7": // Benzene resonance vs Hexene oxidation
-        return (
-          <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            {/* Tube 1: Hexene */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">هكسين (أكسدة)</span>
-              <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className={`absolute bottom-0 w-full transition-all duration-700 ${
-                  currentStep === 1 ? "h-[60%] bg-purple-600/60" : currentStep >= 2 ? "h-[60%] bg-amber-800/40" : "h-[10%] bg-blue-100"
-                }`} />
-              </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep === 1 ? "محلول بنفسجي" : currentStep >= 2 ? "زوال البنفسجي 🟤 (تأكسد)" : "قبل الكاشف"}
-              </span>
-            </div>
-            {/* Tube 2: Benzene */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">بنزين (رنين)</span>
-              <div className="w-12 h-36 border-2 border-t-0 border-[#BDC3C7] rounded-b-xl relative flex items-end justify-center overflow-hidden bg-slate-50">
-                <div className={`absolute bottom-0 w-full transition-all duration-700 ${currentStep >= 1 ? "h-[60%] bg-purple-600/80" : "h-[10%] bg-blue-100"}`} />
-              </div>
-              <span className="text-[9px] text-[#7F8C8D] mt-1">
-                {currentStep >= 1 ? "ثبات اللون البنفسجي 🟣 (مقاومة الرنين)" : "قبل الكاشف"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u3_l8": // Chain isomerism C5H12 & C3H6 differentiation
-        return (
-          <div className="flex flex-col items-center justify-center gap-2 bg-white p-3 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">التماكب السلسلي والتمييز المخبري لمتماكبات C₃H₆</span>
-            <div className="flex items-center justify-center h-28 w-full">
-              {currentStep === 0 && (
-                <div className="flex flex-col items-center gap-1.5">
-                  <span className="text-[9px] font-bold text-indigo-700">متماكبات البنتان C₅H₁₂ الثلاثة:</span>
-                  <div className="flex items-center gap-2 text-center">
-                    <div className="p-1.5 bg-slate-100 rounded border border-slate-300 text-[8px]">
-                      <strong className="block text-slate-800">بنتان عادي</strong>
-                      <span>سلسلة مستقيمة (5 ذرات)</span>
-                    </div>
-                    <div className="p-1.5 bg-amber-50 rounded border border-amber-300 text-[8px]">
-                      <strong className="block text-amber-800">2-ميثيل بيوتان</strong>
-                      <span>سلسلة من 4 + تفرع ميثيل</span>
-                    </div>
-                    <div className="p-1.5 bg-purple-50 rounded border border-purple-300 text-[8px]">
-                      <strong className="block text-purple-800">2,2-ثنائي ميثيل بروبان</strong>
-                      <span>سلسلة من 3 + تفرعان</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-              {currentStep >= 1 && (
-                <div className="flex items-center justify-center gap-6">
-                  {/* Tube 1: Propene */}
-                  <div className="flex flex-col items-center">
-                    <span className="text-[8px] font-bold text-[#2C3E50] mb-0.5">البروبين (ألكين غير مشبع)</span>
-                    <div className="w-10 h-24 border-2 border-t-0 border-slate-400 rounded-b-lg relative flex items-end justify-center overflow-hidden bg-slate-50">
-                      <div className={`absolute bottom-0 w-full transition-all duration-700 ${
-                        currentStep >= 2 ? "h-[60%] bg-blue-50/10" : "h-[60%] bg-orange-600/75"
-                      }`} />
-                    </div>
-                    <span className="text-[8px] text-emerald-700 font-bold mt-1">
-                      {currentStep >= 2 ? "زوال لون البروم ⚪" : "أحمر برومي 🔴"}
-                    </span>
-                  </div>
-                  {/* Tube 2: Cyclopropane */}
-                  <div className="flex flex-col items-center">
-                    <span className="text-[8px] font-bold text-[#2C3E50] mb-0.5">بروبان حلقي (مشبع)</span>
-                    <div className="w-10 h-24 border-2 border-t-0 border-slate-400 rounded-b-lg relative flex items-end justify-center overflow-hidden bg-slate-50">
-                      <div className={`absolute bottom-0 w-full transition-all duration-700 ${
-                        currentStep >= 1 ? "h-[60%] bg-orange-600/75" : "h-[10%] bg-blue-100"
-                      }`} />
-                    </div>
-                    <span className="text-[8px] text-amber-800 font-bold mt-1">
-                      {currentStep >= 3 ? "بقاء اللون الأحمر 🔴 (في الظلام)" : currentStep >= 1 ? "إضافة البروم" : "بروبان حلقي"}
-                    </span>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="text-center p-1 bg-amber-50 border border-amber-100 rounded w-full">
-              <span className="text-[9px] text-[#2C3E50] font-bold block">
-                {currentStep === 0 ? "متماكبات البنتان C₅H₁₂ تتفق في الصيغة الجزيئية وتختلف في بنية السلسلة الكربونية" :
-                 currentStep === 1 ? "تجهيز متماكبي الصيغة C₃H₆: البروبين المفتوح والبروبان الحلقي المشبع" :
-                 currentStep === 2 ? "إضافة ماء البروم الأحمر: يزول لونه فوراً مع البروبين لتفاعل الإضافة بالرابطة الثنائية" :
-                 "يبقى لون ماء البروم ثابتاً مع البروبان الحلقي المشبع في الظلام، كدليل قاطع للتمييز بينهما"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u4_l1": // Phosphorus allotropy
-        return (
-          <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            {/* Spoon 1: Red Phosphorus */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">فوسفور أحمر</span>
-              <div className="w-12 h-20 bg-slate-100 border border-slate-300 rounded-md relative flex items-center justify-center shadow-xs">
-                {currentStep === 0 ? (
-                  <motion.div animate={{ scale: [1, 1.2, 1] }} className="text-red-600 font-bold animate-pulse">🔥 بطئ</motion.div>
-                ) : (
-                  <span className="text-[10px] text-slate-400">ملعقة احتراق</span>
-                )}
-              </div>
-              <span className="text-[9px] text-slate-500 mt-1">يشتعل عند 240°C</span>
-            </div>
-            {/* Spoon 2: White Phosphorus */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">فوسفور أبيض</span>
-              <div className="w-12 h-20 bg-slate-100 border border-slate-300 rounded-md relative flex items-center justify-center shadow-xs">
-                {currentStep >= 2 ? (
-                  <motion.div animate={{ scale: [1, 1.4, 1] }} className="text-yellow-500 font-bold">💥 تلقائي</motion.div>
-                ) : (
-                  <span className="text-[10px] text-blue-500 font-bold">تحت الماء 💧</span>
-                )}
-              </div>
-              <span className="text-[9px] text-red-600 font-bold mt-1">
-                {currentStep >= 2 ? "وميض مفرقع عند 30°C!" : "آمن تحت الماء"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u4_l3": // Ammonia fountain
-        return (
-          <div className="flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full relative overflow-hidden">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">تجهيز نافورة النشادر القلوية</span>
-            <div className="w-full flex items-center justify-center h-44 relative mt-2">
-              {/* Round Bottom Flask (Upside Down) */}
-              <div className="w-24 h-24 rounded-full border-4 border-[#BDC3C7] relative flex items-center justify-center bg-slate-50/50 shadow-sm z-10">
-                <div className={`absolute inset-0 rounded-full transition-colors duration-1000 ${
-                  currentStep === 3 ? "bg-blue-600/40" : "bg-transparent"
-                }`} />
-                {currentStep === 3 && (
-                  <motion.div
-                    animate={{ y: [20, -20, 20], opacity: [0.3, 0.9, 0.3] }}
-                    transition={{ repeat: Infinity, duration: 1.5 }}
-                    className="text-xs text-blue-700 font-bold text-center"
-                  >
-                    ⛲ نافورة زرقاء
-                  </motion.div>
-                )}
-                {currentStep < 3 && <span className="text-[8px] text-slate-400 text-center font-bold">غاز NH₃ جاف</span>}
-              </div>
-              {/* Stand / Tube extending down */}
-              <div className="absolute w-2 h-20 bg-slate-400 bottom-4 z-0 flex items-end">
-                {currentStep === 3 && <div className="w-2 h-full bg-blue-500" />}
-              </div>
-              {/* Basin at the bottom */}
-              <div className="absolute bottom-0 w-32 h-6 border-2 border-t-0 border-[#BDC3C7] rounded-b-md bg-blue-200/50 flex items-center justify-center">
-                <span className="text-[8px] text-rose-600 font-bold">{currentStep >= 1 ? "كاشف أحمر 🔴" : "ماء مقطر"}</span>
-              </div>
-            </div>
-          </div>
-        );
-      case "u5_l3": // Chlorine bleaching
-        return (
-          <div className="flex items-center justify-center gap-6 bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            {/* Jar 1: Dry Chlorine */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">كلور جاف</span>
-              <div className="w-14 h-28 border-2 border-slate-400 rounded-md relative flex flex-col items-center justify-center bg-yellow-50/20">
-                <span className="text-xl">🌹</span>
-                <span className="text-[8px] text-red-600 font-bold mt-1 bg-white px-1 rounded">محافظة على لونها</span>
-              </div>
-              <span className="text-[9px] text-slate-500 mt-1">لا يوجد ماء</span>
-            </div>
-            {/* Jar 2: Wet Chlorine */}
-            <div className="flex flex-col items-center">
-              <span className="text-[9px] font-bold text-[#2C3E50] mb-1">كلور رطب</span>
-              <div className="w-14 h-28 border-2 border-slate-400 rounded-md relative flex flex-col items-center justify-center bg-yellow-100/30">
-                <span className="text-xl transition-all duration-1000">
-                  {currentStep >= 2 ? "🪷" : "🌹"}
-                </span>
-                <span className={`text-[8px] font-bold mt-1 bg-white px-1 rounded ${currentStep >= 2 ? "text-slate-400" : "text-red-600"}`}>
-                  {currentStep >= 2 ? "زوال الألوان تماماً ⚪" : "وردة مبللة"}
-                </span>
-              </div>
-              <span className="text-[9px] text-emerald-700 font-bold mt-1">
-                {currentStep >= 2 ? "تبييض بفعل [O] 🧪" : "كاشف رطب"}
-              </span>
-            </div>
-          </div>
-        );
-      case "u6_l1": // Gouy Balance for Transition metals
-        return (
-          <div className="flex flex-col items-center justify-center bg-white p-4 rounded-xl border border-[#E5E2DE] shadow-inner w-full h-full">
-            <span className="text-[10px] font-bold text-[#7F8C8D] font-sans">ميزان غوي الحساس (الخواص المغناطيسية)</span>
-            <div className="flex items-center gap-4 mt-2">
-              <div className="flex flex-col items-center">
-                {/* Scale dial */}
-                <div className="p-2 bg-slate-100 border border-slate-300 rounded text-center w-28">
-                  <span className="text-[9px] block text-slate-500">الوزن الظاهري:</span>
-                  <span className="text-xs font-mono font-bold text-[#2C3E50]">
-                    {currentStep === 0 ? "5.00 g" :
-                     currentStep === 1 ? "5.45 g (انجذاب) 🟢" :
-                     currentStep === 2 ? "5.15 g (انجذاب خفيف)" :
-                     "4.98 g (تنافر دايامغناطيسي) 🔴"}
-                  </span>
-                </div>
-                {/* Visual balance suspension */}
-                <div className="h-16 w-1 bg-slate-300 relative mt-2 flex justify-center">
-                  <motion.div
-                    animate={{
-                      y: currentStep === 1 ? 10 : currentStep === 2 ? 4 : currentStep === 3 ? -2 : 0
-                    }}
-                    className={`absolute bottom-0 w-6 h-8 rounded border flex items-center justify-center text-[10px] font-bold text-white ${
-                      currentStep === 1 ? "bg-emerald-600" : currentStep === 2 ? "bg-cyan-600" : currentStep === 3 ? "bg-slate-400" : "bg-[#2C3E50]"
-                    }`}
-                  >
-                    {currentStep === 0 ? "Fe²⁺" :
-                     currentStep === 1 ? "Fe²⁺" :
-                     currentStep === 2 ? "Cu²⁺" : "Zn²⁺"}
-                  </motion.div>
-                </div>
-                {/* Electromagnet poles */}
-                <div className="flex gap-8 border-t-2 border-slate-400 w-20 justify-between px-1 text-[8px] text-slate-500 mt-0.5">
-                  <span>S قطب</span>
-                  <span>N قطب</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      default:
-        // Render fallback Standard Beaker for standard experiments
-        return (
-          <div className="w-44 h-60 border-4 border-t-0 border-[#BDC3C7] rounded-b-3xl relative flex items-end justify-center overflow-hidden bg-white shadow-sm">
-            {/* Colored Fluid state */}
-            <motion.div
-              animate={{
-                height: currentStep > 0 ? "48%" : "5%"
-              }}
-              className={`absolute bottom-0 w-full transition-colors duration-1000 ${beakerWaterColor}`}
-            />
+  const [manualHeating, setManualHeating] = useState<boolean>(false);
+  const [manualBubbling, setManualBubbling] = useState<boolean>(false);
 
-            {/* Gas Bubbles popping up */}
-            {bubbleActive && (
-              <>
-                <motion.div
-                  animate={{ y: [-10, -110], x: [-15, 5, -10], opacity: [0, 1, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.1 }}
-                  className="absolute w-2.5 h-2.5 bg-blue-300 rounded-full bottom-12"
-                />
-                <motion.div
-                  animate={{ y: [-15, -120], x: [10, -5, 15], opacity: [0, 1, 0] }}
-                  transition={{ repeat: Infinity, duration: 0.9, delay: 0.2 }}
-                  className="absolute w-2 h-2 bg-blue-300 rounded-full bottom-12"
-                />
-              </>
-            )}
-
-            {/* Fire Flame effects */}
-            {(fizzleType === "violent_fizz" || fizzleType === "flame_methane" || fizzleType === "flame_heavy_smoke" || fizzleType === "flame_yellow" || fizzleType === "flame_purple" || fizzleType === "flame_crimson" || fizzleType === "white_p_spontaneous") && (
-              <motion.div
-                animate={{ scale: [1, 1.35, 1], rotate: [-10, 10, -10] }}
-                transition={{ repeat: Infinity, duration: 0.35 }}
-                className="absolute bottom-20 z-20 flex flex-col items-center"
-              >
-                <Flame className={`w-14 h-14 ${
-                  fizzleType === "flame_purple" ? "text-purple-500 fill-purple-500" :
-                  fizzleType === "flame_crimson" ? "text-red-500 fill-red-500" :
-                  fizzleType === "flame_methane" ? "text-sky-400 fill-sky-300" :
-                  fizzleType === "white_p_spontaneous" ? "text-yellow-300 fill-yellow-200" :
-                  "text-orange-500 fill-orange-500"
-                }`} />
-                <span className="text-[8px] bg-red-600 text-white px-1 py-0.5 rounded-sm font-bold uppercase animate-pulse">تفاعل نشط!</span>
-              </motion.div>
-            )}
-
-            {/* Heating Indicators */}
-            {(fizzleType === "heating" || fizzleType === "heat_active") && (
-              <motion.div
-                animate={{ y: [-5, 5, -5] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                className="absolute bottom-16 z-10 flex flex-col items-center gap-1 text-orange-600"
-              >
-                <Thermometer className="w-8 h-8 animate-bounce text-orange-600" />
-                <span className="text-[8px] bg-orange-100 border border-orange-200 text-orange-800 px-1 rounded-sm font-bold">تسخين...</span>
-              </motion.div>
-            )}
-
-            {/* Precipitate white blocks */}
-            {(fizzleType === "white_precipitate" || fizzleType === "crystals") && (
-              <div className="absolute bottom-2 flex flex-wrap gap-1 justify-center px-4 w-full">
-                <span className="w-2.5 h-2.5 bg-slate-100 border border-slate-300 rounded-xs animate-pulse" />
-                <span className="w-3 h-3 bg-slate-100 border border-slate-300 rounded-xs animate-pulse" />
-                <span className="w-2 h-2 bg-slate-200 border border-slate-300 rounded-xs animate-pulse" />
-              </div>
-            )}
-
-            {/* Melt gold effect */}
-            {fizzleType === "melting" && (
-              <motion.div
-                animate={{ opacity: [1, 0.4, 1] }}
-                transition={{ repeat: Infinity, duration: 0.8 }}
-                className="absolute bottom-12 z-20 flex flex-col items-center"
-              >
-                <Beaker className="w-10 h-10 text-[#E67E22] animate-bounce" />
-                <span className="text-[9px] bg-[#E67E22] text-white px-1.5 py-0.5 rounded font-bold">إذابة تامة...</span>
-              </motion.div>
-            )}
-
-            {/* Indicators texts */}
-            {fizzleType === "finished" && (
-              <div className="absolute bottom-4 text-[10px] font-bold text-[#E67E22] font-sans bg-white/90 px-2 py-0.5 rounded border border-[#E5E2DE] animate-pulse">
-                تغير كيميائي كامل
-              </div>
-            )}
-          </div>
-        );
+  const handleActionTrigger = (action: string) => {
+    if (action === "toggle_heat") {
+      setManualHeating(prev => !prev);
+    } else if (action === "add_reagent") {
+      setManualBubbling(true);
+      setTimeout(() => setManualBubbling(false), 3000);
+    } else if (action === "stir") {
+      setManualBubbling(true);
+      setTimeout(() => setManualBubbling(false), 2000);
     }
+  };
+
+  // 🧪 High-precision 3D Laboratory State calculation for all 21 lessons
+  const get3DLabState = () => {
+    let apparatusType: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" = "beaker";
+    let liquidColor = "#38bdf8";
+    let liquidHeight = 0.45;
+    let isHeating = false;
+    let isBubbling = false;
+    let isPrecipitating = false;
+    let isSmoking = false;
+    let flameColor = "#3b82f6";
+    let temperature = 25;
+    let phValue = 7.0;
+    let gasVolume = 0;
+
+    switch (selectedExp.id) {
+      // UNIT 1: Classification & Periodicity
+      case "u1_l1": // Dobereiner's triads
+        apparatusType = "beaker";
+        liquidColor = currentStep >= 2 ? "#a5f3fc" : "#e0f2fe";
+        liquidHeight = 0.35 + currentStep * 0.08;
+        temperature = 25;
+        phValue = 7.0;
+        break;
+      case "u1_l2": // s, p, d, f blocks
+        apparatusType = "test_tubes";
+        liquidColor = currentStep === 2 ? "#0284c7" : currentStep === 0 ? "#cbd5e1" : "#f1f5f9";
+        isBubbling = currentStep === 0;
+        break;
+      case "u1_l3": // Period 3 trends
+        apparatusType = "test_tubes";
+        liquidColor = currentStep >= 1 ? "#f43f5e" : "#e0f2fe";
+        isBubbling = currentStep >= 1;
+        isHeating = currentStep === 3;
+        temperature = currentStep === 3 ? 85 : 25;
+        phValue = currentStep >= 1 ? 12.5 : 7.0;
+        break;
+
+      // UNIT 2: Alkali & Alkaline Earth Metals
+      case "u2_l1": // Alkali metals in water
+        apparatusType = "beaker";
+        liquidColor = currentStep >= 1 ? "#ec4899" : "#e0f2fe";
+        isBubbling = currentStep >= 1;
+        isSmoking = currentStep >= 2;
+        isHeating = currentStep >= 1;
+        flameColor = currentStep === 1 ? "#eab308" : "#a855f7";
+        temperature = currentStep >= 1 ? 95 : 25;
+        phValue = currentStep >= 1 ? 13.8 : 7.0;
+        gasVolume = currentStep >= 1 ? 180 : 0;
+        break;
+      case "u2_l2": // Flame tests
+        apparatusType = "test_tubes";
+        isHeating = true;
+        flameColor = currentStep === 1 ? "#eab308" : currentStep === 2 ? "#a855f7" : currentStep === 3 ? "#e11d48" : "#3b82f6";
+        temperature = 650;
+        break;
+
+      // UNIT 3: Organic Chemistry
+      case "u3_l1": // Wohler synthesis of Urea
+        apparatusType = "beaker";
+        liquidColor = currentStep >= 2 ? "#f8fafc" : "#e0f2fe";
+        isHeating = currentStep >= 2;
+        isPrecipitating = currentStep === 1;
+        temperature = currentStep >= 2 ? 110 : 25;
+        break;
+      case "u3_l2": // IUPAC
+        apparatusType = "beaker";
+        liquidColor = "#fed7aa";
+        liquidHeight = 0.5;
+        break;
+      case "u3_l3": // Hydrocarbon comparison
+        apparatusType = "test_tubes";
+        liquidColor = "#e0f2fe";
+        break;
+      case "u3_l4": // Methane prep
+        apparatusType = "gas_prep";
+        liquidColor = "#94a3b8";
+        isHeating = currentStep >= 1;
+        isBubbling = currentStep >= 2;
+        temperature = currentStep >= 1 ? 250 : 25;
+        gasVolume = currentStep >= 2 ? 220 : 0;
+        flameColor = "#3b82f6";
+        break;
+      case "u3_l5": // Ethene & Bromine
+        apparatusType = "beaker";
+        liquidColor = currentStep === 2 ? "#f8fafc" : "#ea580c";
+        isHeating = currentStep === 1;
+        temperature = currentStep === 1 ? 180 : 25;
+        isBubbling = currentStep >= 1;
+        break;
+      case "u3_l6": // Ethyne oxy-acetylene
+        apparatusType = "gas_prep";
+        liquidColor = "#cbd5e1";
+        isBubbling = currentStep >= 1;
+        isHeating = currentStep >= 2;
+        isSmoking = currentStep === 2;
+        temperature = currentStep === 3 ? 3000 : 25;
+        gasVolume = currentStep >= 1 ? 240 : 0;
+        break;
+      case "u3_l7": // Benzene vs Hexene
+        apparatusType = "test_tubes";
+        liquidColor = currentStep >= 2 ? "#7e22ce" : "#e0f2fe";
+        break;
+      case "u3_l8": // Isomers
+        apparatusType = "test_tubes";
+        liquidColor = currentStep === 2 ? "#ea580c" : "#f8fafc";
+        break;
+
+      // UNIT 4: Group 5 Elements (Nitrogen & Phosphorus)
+      case "u4_l1": // Phosphorus allotropes
+        apparatusType = "beaker";
+        isHeating = currentStep >= 2;
+        isSmoking = currentStep >= 1;
+        temperature = currentStep === 1 ? 35 : 240;
+        flameColor = "#facc15";
+        break;
+      case "u4_l2": // Nitrogen prep
+        apparatusType = "gas_prep";
+        liquidColor = "#e0f2fe";
+        isHeating = currentStep >= 1;
+        isBubbling = currentStep >= 2;
+        temperature = currentStep >= 1 ? 85 : 25;
+        gasVolume = currentStep >= 2 ? 200 : 0;
+        break;
+      case "u4_l3": // Ammonia fountain
+        apparatusType = "gas_prep";
+        liquidColor = currentStep >= 1 ? "#1d4ed8" : "#e0f2fe";
+        isBubbling = currentStep >= 1;
+        phValue = 11.5;
+        break;
+      case "u4_l4": // Ammonium sulfate
+        apparatusType = "beaker";
+        liquidColor = "#f8fafc";
+        isPrecipitating = currentStep >= 2;
+        isHeating = currentStep === 1;
+        phValue = 10.0;
+        break;
+
+      // UNIT 5: Halogens
+      case "u5_l1": // Halogen displacement
+        apparatusType = "test_tubes";
+        liquidColor = currentStep === 1 ? "#ea580c" : currentStep === 2 ? "#581c87" : "#e0f2fe";
+        break;
+      case "u5_l2": // Chlorine prep
+        apparatusType = "gas_prep";
+        liquidColor = currentStep >= 1 ? "#84cc16" : "#475569";
+        isHeating = currentStep >= 1;
+        isBubbling = currentStep >= 1;
+        isSmoking = currentStep >= 2;
+        temperature = currentStep >= 1 ? 90 : 25;
+        gasVolume = currentStep >= 1 ? 190 : 0;
+        break;
+      case "u5_l3": // Bleaching
+        apparatusType = "beaker";
+        liquidColor = "#bef264";
+        isSmoking = true;
+        break;
+
+      // UNIT 6: Transition Elements
+      case "u6_l1": // Transition magnetism & color
+        apparatusType = "test_tubes";
+        liquidColor = currentStep === 0 ? "#10b981" : currentStep === 1 ? "#0284c7" : "#e2e8f0";
+        break;
+      case "u6_l2": // Aqua Regia gold dissolution
+        apparatusType = "beaker";
+        liquidColor = currentStep >= 2 ? "#eab308" : "#fed7aa";
+        isHeating = currentStep >= 2;
+        isBubbling = currentStep >= 2;
+        isSmoking = currentStep >= 2;
+        temperature = currentStep >= 2 ? 80 : 25;
+        phValue = 0.5;
+        break;
+    }
+
+    return {
+      apparatusType,
+      liquidColor,
+      liquidHeight,
+      isHeating,
+      isBubbling,
+      isPrecipitating,
+      isSmoking,
+      flameColor,
+      temperature,
+      phValue,
+      gasVolume
+    };
   };
 
   return (
@@ -1566,10 +1041,10 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       </AnimatePresence>
 
       {/* Main Sandbox Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start border-t border-[#E5E2DE] pt-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start border-t border-[#E5E2DE] pt-6">
         
         {/* Left Side: Apparatus & Chemicals Panel */}
-        <div className="lg:col-span-1 bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded-lg space-y-5 shadow-sm">
+        <div className="lg:col-span-3 bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded-xl space-y-5 shadow-sm">
           <div>
             <span className="text-[10px] font-bold text-[#7F8C8D] block border-b border-[#E5E2DE] pb-2 mb-3 text-right font-sans uppercase tracking-wider">بيانات تجربة الدرس</span>
             <div className="space-y-2 text-right">
@@ -1618,15 +1093,36 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
         </div>
 
         {/* Center: Live Simulation Chamber */}
-        <div className="lg:col-span-1 bg-[#F9F8F6] border border-[#E5E2DE] p-6 rounded-lg flex flex-col items-center justify-between min-h-[420px] relative overflow-hidden shadow-sm">
+        <div className="lg:col-span-6 bg-[#F9F8F6] border border-[#E5E2DE] p-3 sm:p-4 rounded-xl flex flex-col items-center justify-between min-h-[490px] relative overflow-hidden shadow-sm">
           <div className="absolute top-4 left-4 flex gap-1.5 items-center bg-white/80 px-2 py-0.5 rounded-full border border-[#E5E2DE]">
             <Shield className="w-3.5 h-3.5 text-emerald-600" />
             <span className="text-[10px] text-emerald-700 font-bold font-sans">نظام الأمان النشط مفعل</span>
           </div>
 
-          {/* Chamber Graphic Area */}
-          <div className="flex-1 w-full flex items-center justify-center relative my-6 text-right">
-            {renderSimulation()}
+          {/* 3D WebGL Virtual Laboratory Chamber */}
+          <div className="w-full flex-1 my-2">
+            {(() => {
+              const lab3D = get3DLabState();
+              return (
+                <Lab3DScene
+                  experimentId={selectedExp.id}
+                  stepIndex={currentStep}
+                  apparatusType={lab3D.apparatusType}
+                  liquidColor={lab3D.liquidColor}
+                  liquidHeight={lab3D.liquidHeight}
+                  isHeating={lab3D.isHeating || manualHeating}
+                  isBubbling={lab3D.isBubbling || manualBubbling}
+                  isPrecipitating={lab3D.isPrecipitating}
+                  isSmoking={lab3D.isSmoking}
+                  flameColor={lab3D.flameColor}
+                  temperature={lab3D.temperature}
+                  phValue={lab3D.phValue}
+                  gasVolume={lab3D.gasVolume}
+                  chemicalNote={selectedExp.steps[currentStep]?.chemicalChange}
+                  onActionTrigger={handleActionTrigger}
+                />
+              );
+            })()}
           </div>
 
           <div className="w-full flex justify-between items-center border-t border-[#E5E2DE] pt-4 mt-2">
@@ -1636,7 +1132,7 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
         </div>
 
         {/* Right Side: Step Instructions & Logs */}
-        <div className="lg:col-span-1 bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded-lg flex flex-col justify-between min-h-[420px] shadow-sm">
+        <div className="lg:col-span-3 bg-[#F9F8F6] border border-[#E5E2DE] p-5 rounded-xl flex flex-col justify-between min-h-[490px] shadow-sm">
           <div className="space-y-4">
             <span className="text-[10px] font-bold text-[#7F8C8D] block border-b border-[#E5E2DE] pb-2 mb-2 text-right font-sans uppercase tracking-wider">خطوات التنفيذ التفاعلية</span>
             

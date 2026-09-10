@@ -183,3 +183,94 @@
 .dark ::-webkit-scrollbar-thumb:hover {
   background: #475569 !important;
 }
+
+/* ==========================================
+   وضع القراءة المريح الورقي الدافئ (Warm Reading Mode)
+   ========================================== */
+.reading-theme-warm {
+  background-color: #FAF7F0 !important;
+  color: #292524 !important;
+}
+
+.reading-theme-warm .reader-container {
+  background-color: #FDFBF7 !important;
+  border-color: #E7E0D3 !important;
+}
+
+.reading-theme-warm p,
+.reading-theme-warm div {
+  color: #292524 !important;
+}
+
+/* ==========================================
+   أقلام التظليل الذكية للدروس (Smart Lesson Highlighters)
+   ========================================== */
+mark.hl-concept {
+  background: linear-gradient(120deg, rgba(254, 240, 138, 0.75) 0%, rgba(253, 224, 71, 0.85) 100%);
+  color: #451a03;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  border-bottom: 2px solid #eab308;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+mark.hl-reason {
+  background: linear-gradient(120deg, rgba(243, 232, 255, 0.8) 0%, rgba(233, 213, 255, 0.85) 100%);
+  color: #581c87;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  border-bottom: 2px solid #a855f7;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+mark.hl-equation {
+  background: linear-gradient(120deg, rgba(209, 250, 229, 0.85) 0%, rgba(167, 243, 208, 0.9) 100%);
+  color: #064e3b;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  border-bottom: 2px solid #10b981;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+mark.hl-tip {
+  background: linear-gradient(120deg, rgba(224, 242, 254, 0.85) 0%, rgba(186, 230, 253, 0.9) 100%);
+  color: #0c4a6e;
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-weight: 700;
+  border-bottom: 2px solid #0284c7;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* Dark mode glow adjustments for highlighters */
+.dark mark.hl-concept {
+  background: rgba(234, 179, 8, 0.25);
+  color: #fef08a;
+  border-bottom-color: #eab308;
+}
+
+.dark mark.hl-reason {
+  background: rgba(168, 85, 247, 0.25);
+  color: #f3e8ff;
+  border-bottom-color: #a855f7;
+}
+
+.dark mark.hl-equation {
+  background: rgba(16, 185, 129, 0.25);
+  color: #a7f3d0;
+  border-bottom-color: #10b981;
+}
+
+.dark mark.hl-tip {
+  background: rgba(2, 132, 199, 0.25);
+  color: #bae6fd;
+  border-bottom-color: #38bdf8;
+}
+

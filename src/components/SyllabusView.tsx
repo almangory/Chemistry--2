@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { curriculumData } from "../data/curriculum";
 import { InteractiveDiagram } from "./InteractiveDiagram";
+import { applySmartHighlights } from "../utils/textHighlighter";
 import { 
   BookOpen, 
   CheckSquare, 
@@ -16,7 +17,12 @@ import {
   Sparkles,
   Layers,
   ArrowRight,
-  X
+  X,
+  Highlighter,
+  Sun,
+  Moon,
+  ScrollText,
+  Type
 } from "lucide-react";
 import { Unit, Lesson } from "../types";
 
@@ -48,6 +54,9 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
   const [showSummary, setShowSummary] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"reader" | "grid">("reader");
   const [expandedImage, setExpandedImage] = useState<string | null>(null);
+  const [readingTheme, setReadingTheme] = useState<"warm" | "day" | "night">("warm");
+  const [fontSize, setFontSize] = useState<"sm" | "base" | "lg" | "xl">("base");
+  const [isSmartHighlight, setIsSmartHighlight] = useState<boolean>(true);
 
   // Sync when selectedLessonId is passed externally (e.g. from Dashboard)
   useEffect(() => {
@@ -263,9 +272,15 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
 
       {/* 📖 View Mode: Distraction-Free Lesson Reader */}
       {viewMode === "reader" && (
-        <div className="bg-white border border-slate-200 p-4 sm:p-6 md:p-8 rounded-2xl space-y-5 shadow-xs w-full">
+        <div className={`border p-4 sm:p-6 md:p-8 rounded-2xl space-y-5 shadow-xs w-full transition-all duration-300 ${
+          readingTheme === "warm" 
+            ? "reading-theme-warm bg-[#FAF7F0] border-[#E7E0D3] text-[#292524]" 
+            : readingTheme === "night" 
+            ? "bg-slate-900 border-slate-800 text-slate-100" 
+            : "bg-white border-slate-200 text-slate-800"
+        }`}>
           {/* Header containing Actions and Lesson Titles */}
-          <div className="border-b border-slate-100 pb-4 space-y-3.5">
+          <div className={`border-b pb-4 space-y-3.5 ${readingTheme === "warm" ? "border-amber-200/60" : readingTheme === "night" ? "border-slate-800" : "border-slate-100"}`}>
             {/* Quick unit pill and back to grid button */}
             <div className="flex items-center justify-between flex-wrap gap-2">
               <div className="flex items-center gap-2">
@@ -288,11 +303,15 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
 
             {/* Lesson Title & Subtitle */}
             <div className="text-right space-y-1">
-              <h2 className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-slate-800 tracking-tight leading-snug">
+              <h2 className={`text-lg sm:text-xl md:text-2xl font-serif font-bold tracking-tight leading-snug ${
+                readingTheme === "warm" ? "text-[#292524]" : readingTheme === "night" ? "text-slate-100" : "text-slate-800"
+              }`}>
                 {selectedLesson.title}
               </h2>
               {selectedLesson.subtitle && (
-                <p className="text-xs sm:text-sm text-slate-500 font-sans leading-relaxed">
+                <p className={`text-xs sm:text-sm font-sans leading-relaxed ${
+                  readingTheme === "warm" ? "text-[#78716c]" : readingTheme === "night" ? "text-slate-400" : "text-slate-500"
+                }`}>
                   {selectedLesson.subtitle}
                 </p>
               )}
@@ -327,10 +346,10 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
               <button
                 onClick={() => onNavigateToLab(selectedLesson.id)}
                 className="px-3 py-1.5 bg-amber-50 hover:bg-amber-100/80 text-amber-800 border border-amber-200 rounded-xl text-xs font-bold font-sans transition-all flex items-center gap-1.5 cursor-pointer"
-                title="تخطى مباشرة للمعمل التفاعلي لتجربة هذا الدرس"
+                title="تخطى مباشرة للمعمل التفاعلي ثلاثي الأبعاد لتجربة هذا الدرس"
               >
                 <FlaskConical className="w-3.5 h-3.5 text-amber-600" />
-                <span>المعمل الافتراضي 🧪</span>
+                <span>المعمل الافتراضي 3D 🧪</span>
               </button>
 
               <button
@@ -338,7 +357,7 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold font-sans border transition-all cursor-pointer ${
                   showSummary
                     ? "bg-[#047857] text-white border-[#047857]"
-                    : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                    : "bg-slate-50 text-slate-700 border border-slate-200 hover:bg-slate-100"
                 }`}
               >
                 {showSummary ? "عرض شرح الدرس" : "ملخص النقاط الذهبية"}
@@ -357,6 +376,137 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
                 <span>{isFocusReading ? "إنهاء التركيز" : "توسيع الشاشة"}</span>
               </button>
             </div>
+
+            {/* 🎨 شريط أدوات وضع القراءة المريح والتظليل الذكي للأشياء الهامة */}
+            <div className={`p-3 rounded-2xl border transition-all flex flex-wrap items-center justify-between gap-3 ${
+              readingTheme === "warm" 
+                ? "bg-amber-50/70 border-amber-200/80 text-amber-950" 
+                : readingTheme === "night" 
+                ? "bg-slate-800/80 border-slate-700 text-slate-200" 
+                : "bg-slate-50 border-slate-200 text-slate-800"
+            }`}>
+              {/* Right: Theme Selector */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="text-[11px] font-bold ml-1 font-sans flex items-center gap-1">
+                  <ScrollText className="w-3.5 h-3.5 text-amber-700" />
+                  <span>وضع القراءة:</span>
+                </span>
+                <button
+                  onClick={() => setReadingTheme("warm")}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    readingTheme === "warm"
+                      ? "bg-amber-100 text-amber-950 border border-amber-300 shadow-2xs"
+                      : "hover:bg-amber-100/50 text-slate-600 border border-transparent"
+                  }`}
+                  title="نمط ورقي دافئ مريح للعينين ومخصص للمذاكرة الممتدة"
+                >
+                  <span>📜</span>
+                  <span>ورقي مريح</span>
+                </button>
+                <button
+                  onClick={() => setReadingTheme("day")}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    readingTheme === "day"
+                      ? "bg-white text-slate-900 border border-slate-300 shadow-2xs"
+                      : "hover:bg-slate-200/50 text-slate-600 border border-transparent"
+                  }`}
+                >
+                  <Sun className="w-3.5 h-3.5 text-amber-500" />
+                  <span>نهاري</span>
+                </button>
+                <button
+                  onClick={() => setReadingTheme("night")}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                    readingTheme === "night"
+                      ? "bg-slate-950 text-slate-100 border border-slate-600 shadow-2xs"
+                      : "hover:bg-slate-200/50 text-slate-600 border border-transparent"
+                  }`}
+                >
+                  <Moon className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>ليلي هادئ</span>
+                </button>
+              </div>
+
+              {/* Center: Font Size Controls */}
+              <div className="flex items-center gap-1">
+                <Type className="w-3.5 h-3.5 text-slate-500 ml-1" />
+                <button
+                  onClick={() => setFontSize("sm")}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${fontSize === "sm" ? "bg-white border border-slate-300 shadow-2xs text-[#047857]" : "text-slate-500 hover:text-slate-800"}`}
+                  title="خط صغير"
+                >
+                  A-
+                </button>
+                <button
+                  onClick={() => setFontSize("base")}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${fontSize === "base" ? "bg-white border border-slate-300 shadow-2xs text-[#047857]" : "text-slate-500 hover:text-slate-800"}`}
+                  title="خط قياسي مريح"
+                >
+                  A
+                </button>
+                <button
+                  onClick={() => setFontSize("lg")}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${fontSize === "lg" ? "bg-white border border-slate-300 shadow-2xs text-[#047857]" : "text-slate-500 hover:text-slate-800"}`}
+                  title="خط كبير وواضح"
+                >
+                  A+
+                </button>
+                <button
+                  onClick={() => setFontSize("xl")}
+                  className={`px-2 py-0.5 rounded-lg text-xs font-bold cursor-pointer transition-colors ${fontSize === "xl" ? "bg-white border border-slate-300 shadow-2xs text-[#047857]" : "text-slate-500 hover:text-slate-800"}`}
+                  title="خط فسيح جداً"
+                >
+                  A++
+                </button>
+              </div>
+
+              {/* Left: Smart Highlighter Toggle */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsSmartHighlight(!isSmartHighlight)}
+                  className={`px-3 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs ${
+                    isSmartHighlight
+                      ? "bg-amber-400 text-amber-950 ring-2 ring-amber-300 font-extrabold"
+                      : "bg-slate-200/80 text-slate-600 hover:bg-slate-300"
+                  }`}
+                  title="تظليل المفاهيم الأساسية، التعليلات الوزارية، والمعادلات بأقلام التمييز الجامعية"
+                >
+                  <Highlighter className="w-3.5 h-3.5" />
+                  <span>{isSmartHighlight ? "التظليل الذكي (مفعّل ✓)" : "تفعيل التظليل الذكي 🖍️"}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 💡 دليل أقلام التظليل الذكية (Highlighter Legend) */}
+            {isSmartHighlight && (
+              <motion.div
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 px-3.5 py-2 rounded-xl flex flex-wrap items-center justify-between gap-2 text-[11px]"
+              >
+                <span className="font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                  <span>🖍️ دليل التظليل والتركيز الوزاري:</span>
+                </span>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <span className="flex items-center gap-1 text-amber-900 bg-amber-100 px-2 py-0.5 rounded-md font-bold text-[10px]">
+                    <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" />
+                    <span>مفاهيم وقوانين أساسية</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-purple-900 bg-purple-100 px-2 py-0.5 rounded-md font-bold text-[10px]">
+                    <span className="w-2 h-2 rounded-full bg-purple-500 inline-block" />
+                    <span>تعليلات وزارية (علل)</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-emerald-900 bg-emerald-100 px-2 py-0.5 rounded-md font-bold text-[10px]">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" />
+                    <span>معادلات وشروط التفاعل</span>
+                  </span>
+                  <span className="flex items-center gap-1 text-sky-900 bg-sky-100 px-2 py-0.5 rounded-md font-bold text-[10px]">
+                    <span className="w-2 h-2 rounded-full bg-sky-500 inline-block" />
+                    <span>تنبيهات وملاحظات امتحانية</span>
+                  </span>
+                </div>
+              </motion.div>
+            )}
           </div>
 
           {/* 🔬 Featured Educational Diagram (Nano Banana Generated) */}
@@ -416,33 +566,49 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
                 exit={{ opacity: 0, y: -6 }}
                 className="space-y-4 text-slate-800 leading-relaxed text-sm text-right"
               >
-                {/* Paragraphs with Chemical Formatting */}
+                {/* Paragraphs with Chemical Formatting & Smart Highlighting */}
                 {selectedLesson.content.map((para, idx) => (
                   <div
                     key={idx}
-                    className="font-sans text-slate-800 leading-relaxed text-sm sm:text-[15px]"
-                    dangerouslySetInnerHTML={{ __html: para }}
+                    className={`font-sans transition-all duration-200 ${
+                      fontSize === "sm"
+                        ? "text-sm leading-relaxed"
+                        : fontSize === "base"
+                        ? "text-[15px] sm:text-[16px] leading-[1.85]"
+                        : fontSize === "lg"
+                        ? "text-[17px] sm:text-[18px] leading-[1.95]"
+                        : "text-[19px] sm:text-[21px] leading-[2.15]"
+                    } ${readingTheme === "warm" ? "text-[#292524]" : readingTheme === "night" ? "text-slate-100" : "text-slate-800"}`}
+                    dangerouslySetInnerHTML={{ __html: applySmartHighlights(para, isSmartHighlight) }}
                   />
                 ))}
 
                 {/* Render Explanatory Illustrations if defined */}
                 {selectedLesson.illustrations && selectedLesson.illustrations.length > 0 && (
-                  <div className="border-t border-slate-100 pt-5 mt-5 space-y-4">
-                    <div className="border-b border-slate-100 pb-2 mb-3">
+                  <div className={`border-t pt-5 mt-5 space-y-4 ${readingTheme === "warm" ? "border-amber-200/60" : readingTheme === "night" ? "border-slate-800" : "border-slate-100"}`}>
+                    <div className={`border-b pb-2 mb-3 ${readingTheme === "warm" ? "border-amber-200/60" : readingTheme === "night" ? "border-slate-800" : "border-slate-100"}`}>
                       <span className="text-[10px] text-[#047857] font-bold font-mono uppercase tracking-wider">
                         VISUAL CHEMICAL MODELS
                       </span>
-                      <h3 className="text-sm sm:text-base font-serif font-bold text-slate-800 mt-0.5">
+                      <h3 className={`text-sm sm:text-base font-serif font-bold mt-0.5 ${readingTheme === "warm" ? "text-[#292524]" : readingTheme === "night" ? "text-slate-100" : "text-slate-800"}`}>
                         الرسومات والأشكال التوضيحية التفاعلية للدرس
                       </h3>
                     </div>
 
                     {selectedLesson.illustrations.map((ill, idx) => (
-                      <div key={idx} className="space-y-2.5 bg-slate-50/80 p-4 rounded-2xl border border-slate-200">
+                      <div key={idx} className={`space-y-2.5 p-4 rounded-2xl border ${
+                        readingTheme === "warm"
+                          ? "bg-amber-50/40 border-amber-200/70"
+                          : readingTheme === "night"
+                          ? "bg-slate-800/60 border-slate-700"
+                          : "bg-slate-50/80 border-slate-200"
+                      }`}>
                         <span className="font-bold text-xs sm:text-sm text-[#047857] font-sans block">
                           {ill.title}
                         </span>
-                        <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed max-w-2xl">
+                        <p className={`text-[11px] sm:text-xs leading-relaxed max-w-2xl ${
+                          readingTheme === "warm" ? "text-[#78716c]" : readingTheme === "night" ? "text-slate-400" : "text-slate-600"
+                        }`}>
                           {ill.description}
                         </p>
                         <InteractiveDiagram type={ill.svgType} />
@@ -462,7 +628,7 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
                 <div className="bg-emerald-50/70 border border-emerald-100 p-3.5 rounded-2xl flex items-start gap-2.5">
                   <div className="flex-1 space-y-0.5">
                     <span className="font-bold text-xs sm:text-sm text-emerald-950 block font-sans">
-                      ملخص النقاط الذهبية للدرس
+                      ملخص النقاط الذهبية للدرس (مع التظليل الذكي)
                     </span>
                     <p className="text-[11px] text-emerald-800 leading-relaxed">
                       ملخص موجز مصمم للمراجعة السريعة وتثبيت القوانين والمعادلات الكيميائية الأساسية قبل الامتحانات.
@@ -473,14 +639,23 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
                   {selectedLesson.summary.map((point, idx) => (
-                    <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-1">
+                    <div key={idx} className={`p-3.5 border rounded-xl space-y-1 ${
+                      readingTheme === "warm"
+                        ? "bg-white/80 border-amber-200/70 text-[#292524]"
+                        : readingTheme === "night"
+                        ? "bg-slate-800 border-slate-700 text-slate-100"
+                        : "bg-slate-50 border-slate-200/80 text-slate-700"
+                    }`}>
                       <div className="flex items-center gap-1.5">
                         <Award className="w-3.5 h-3.5 text-amber-600 shrink-0" />
                         <span className="font-bold text-xs text-slate-700 font-sans">
                           نقطة تثبيت {idx + 1}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-700 leading-relaxed font-sans">{point}</p>
+                      <p 
+                        className={`text-xs leading-relaxed font-sans ${readingTheme === "warm" ? "text-[#292524]" : readingTheme === "night" ? "text-slate-200" : "text-slate-700"}`}
+                        dangerouslySetInnerHTML={{ __html: applySmartHighlights(point, isSmartHighlight) }}
+                      />
                     </div>
                   ))}
                 </div>

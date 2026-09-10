@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { Play, RotateCcw, Droplets, Thermometer, Flame } from "lucide-react";
+import { 
+  Play, 
+  RotateCcw, 
+  Droplets, 
+  Thermometer, 
+  Flame,
+  CheckCircle2, 
+  Sparkles, 
+  Layers, 
+  Zap, 
+  Plus, 
+  Minus, 
+  Atom 
+} from "lucide-react";
 
 interface DiagramProps {
   type: string;
@@ -14,6 +27,9 @@ export const InteractiveDiagram: React.FC<DiagramProps> = ({ type }) => {
   const [reactionLog, setReactionLog] = useState<string[]>([]);
   const [beakerColor, setBeakerColor] = useState<string>("bg-blue-100/40");
   const [fizzleState, setFactorState] = useState<"idle" | "fizzing" | "popping" | "explosion">("idle");
+  const [carbonCount, setCarbonCount] = useState<number>(5);
+  const [branchPos, setBranchPos] = useState<number>(2);
+  const [branchType, setBranchType] = useState<"methyl" | "ethyl">("methyl");
 
   // Reset when diagram type changes
   useEffect(() => {
@@ -533,6 +549,481 @@ export const InteractiveDiagram: React.FC<DiagramProps> = ({ type }) => {
               )}
             </div>
           </div>
+        </div>
+      );
+
+    case "mendeleev_table":
+      const missingElements = [
+        { name: "إيكا-ألومنيوم", predicted: "الكتلة 68، كثافة 5.9، ينصهر بحرارة اليد", actual: "الجاليوم (Ga 1875م)", match: "الكتلة 69.7، كثافة 5.91، ينصهر عند 29.8°م!" },
+        { name: "إيكا-سيليكون", predicted: "الكتلة 72، كثافة 5.5، لونه رمادي داكن", actual: "الجرمانيوم (Ge 1886م)", match: "الكتلة 72.6، كثافة 5.35، رمادي فلزي!" }
+      ];
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">عبقرية مندلييف: التنبؤ بالعناصر الشاغرة قبل اكتشافها</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {missingElements.map((el, idx) => (
+              <div key={idx} className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1.5">
+                <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 block">{el.name} (تنبؤ مندلييف 1869)</span>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400">{el.predicted}</p>
+                <div className="pt-1.5 border-t border-slate-100 dark:border-slate-700 text-xs">
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">الاكتشاف الفعلي: {el.actual}</span>
+                  <p className="text-[10px] text-slate-500 mt-0.5">{el.match}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+
+    case "all_trends_summary":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">ملخص التدرج الدوري لخواص العناصر (الدورات والمجموعات)</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-center">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-blue-600 block mb-1">طاقة التأين</span>
+              <span className="text-[10px] text-slate-500 block">تزداد عبر الدورة ➔</span>
+              <span className="text-[10px] text-slate-500 block">تقل لأسفل المجموعة ⬇</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-emerald-600 block mb-1">الكهروسالبية</span>
+              <span className="text-[10px] text-slate-500 block">الفلور F أعلاها (4.0)</span>
+              <span className="text-[10px] text-slate-500 block">تزداد باتجاه الهالوجينات ➔</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-amber-600 block mb-1">الخاصية الفلزية</span>
+              <span className="text-[10px] text-slate-500 block">تقل عبر الدورة ➔</span>
+              <span className="text-[10px] text-slate-500 block">تزداد لأسفل المجموعة ⬇</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "downs_cell":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">خلية داونز (Downs Cell) لاستخلاص الصوديوم من مصهور NaCl</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <span className="font-bold text-rose-600 block">المصعد (الأنود - كربون جرافيت):</span>
+              <p className="text-slate-600 dark:text-slate-400">تتأكسد أيونات الكلوريد ليتصاعد غاز الكلور Cl2:</p>
+              <code className="text-[10px] font-mono font-bold block bg-slate-100 dark:bg-slate-900 p-1 rounded">2Cl⁻ ⟶ Cl₂↑ + 2e⁻</code>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <span className="font-bold text-blue-600 block">المهبط (الكاثود - أسطوانة حديد):</span>
+              <p className="text-slate-600 dark:text-slate-400">تختزل أيونات الصوديوم لمصهور فلز الصوديوم ويطفو:</p>
+              <code className="text-[10px] font-mono font-bold block bg-slate-100 dark:bg-slate-900 p-1 rounded">Na⁺ + e⁻ ⟶ Na (مصهور)</code>
+            </div>
+          </div>
+          <div className="p-2 bg-amber-50 dark:bg-amber-950/30 rounded border border-amber-200 text-[11px] text-amber-900 dark:text-amber-200">
+            <strong>ملاحظة هامة:</strong> يضاف كلوريد الكالسيوم CaCl2 لخفض درجة انصهار ملح الطعام من 800°م إلى 600°م لتوفير الطاقة وحماية الخلية.
+          </div>
+        </div>
+      );
+
+    case "ionic_conductivity":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">التوصيل الكهربائي لمركبات الأقلاء (صلبة vs مصهورة vs محاليل)</span>
+          <div className="grid grid-cols-3 gap-2 text-center text-xs">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-lg block">❌💡</span>
+              <span className="font-bold block mt-1">بلورة NaCl صلبة</span>
+              <span className="text-[10px] text-slate-500">لا توصل لتقييد الأيونات</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-lg block">💡✨</span>
+              <span className="font-bold block mt-1">مصهور NaCl</span>
+              <span className="text-[10px] text-emerald-600 font-bold">ناقل ممتاز (أيونات حرة)</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="text-lg block">💡⚡</span>
+              <span className="font-bold block mt-1">محلول NaCl مائي</span>
+              <span className="text-[10px] text-emerald-600 font-bold">ناقل فائق للتيار</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "wohler_experiment":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">تجربة فوهلر التاريخية 1828م (دحض نظرية القوة الحيوية)</span>
+            <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold">أول مركب عضوي مصنع</span>
+          </div>
+          <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-center font-mono text-xs font-bold text-slate-800 dark:text-slate-200 space-y-2">
+            <div>NH4CNO (سيانات الأمونيوم غير العضوية) + حرارة △</div>
+            <div className="text-amber-600">⇓ إعادة ترتيب الذرات (تماكب حراري) ⇓</div>
+            <div className="text-emerald-600">H2N-CO-NH2 (اليوريا / البولينا - مركب عضوي)</div>
+          </div>
+        </div>
+      );
+
+    case "iupac_steps":
+      const alkaneNames = ["ميثان", "إيثان", "بروبان", "بيوتان", "بنتان", "هكسان", "هبتان"];
+      const parentName = alkaneNames[carbonCount - 1] || "بنتان";
+      const branchName = branchType === "methyl" ? "ميثيل" : "إيثيل";
+      const calculatedIupacName = `${branchPos}-${branchName} ${parentName}`;
+
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">أداة بناء سلاسل الكربون وتسمية IUPAC التفاعلية</span>
+            <span className="text-[11px] font-bold text-[#047857] font-mono">{calculatedIupacName}</span>
+          </div>
+
+          {/* Carbon Chain Controls */}
+          <div className="flex flex-wrap items-center justify-between gap-3 text-xs bg-white dark:bg-slate-800 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-600 dark:text-slate-300">أطول سلسلة (C):</span>
+              <button
+                onClick={() => setCarbonCount(Math.max(4, carbonCount - 1))}
+                className="w-6 h-6 rounded bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold flex items-center justify-center cursor-pointer"
+              >
+                -
+              </button>
+              <span className="font-mono font-bold text-emerald-600 px-2">{carbonCount} ذرات</span>
+              <button
+                onClick={() => setCarbonCount(Math.min(7, carbonCount + 1))}
+                className="w-6 h-6 rounded bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold flex items-center justify-center cursor-pointer"
+              >
+                +
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-600 dark:text-slate-300">موقع التفرع:</span>
+              <select
+                value={branchPos}
+                onChange={(e) => setBranchPos(Number(e.target.value))}
+                className="bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-200 px-2 py-1 rounded text-xs font-bold"
+              >
+                {Array.from({ length: carbonCount - 2 }, (_, i) => i + 2).map((num) => (
+                  <option key={num} value={num}>ذرة كربون رقم {num}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setBranchType("methyl")}
+                className={`px-2 py-1 rounded text-xs font-bold cursor-pointer ${branchType === "methyl" ? "bg-emerald-700 text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-600"}`}
+              >
+                ميثيل (CH3)
+              </button>
+              <button
+                onClick={() => setBranchType("ethyl")}
+                className={`px-2 py-1 rounded text-xs font-bold cursor-pointer ${branchType === "ethyl" ? "bg-emerald-700 text-white" : "bg-slate-100 dark:bg-slate-700 text-slate-600"}`}
+              >
+                إيثيل (C2H5)
+              </button>
+            </div>
+          </div>
+
+          {/* Visual Carbon Nodes Chain */}
+          <div className="flex items-center justify-center gap-2 py-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-x-auto">
+            {Array.from({ length: carbonCount }, (_, i) => {
+              const cNum = i + 1;
+              const hasBranch = cNum === branchPos;
+              return (
+                <div key={cNum} className="flex flex-col items-center relative">
+                  {hasBranch && (
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      className="absolute -top-10 px-2 py-0.5 bg-amber-500 text-white text-[9px] font-bold rounded-md shadow-sm"
+                    >
+                      {branchType === "methyl" ? "-CH3" : "-C2H5"}
+                    </motion.div>
+                  )}
+                  <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs shadow-sm ${
+                    hasBranch ? "bg-amber-600 text-white ring-2 ring-amber-300" : "bg-emerald-700 text-white"
+                  }`}>
+                    C{cNum}
+                  </div>
+                  <span className="text-[9px] text-slate-400 mt-1">C#{cNum}</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      );
+
+    case "hydrocarbon_tree":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">شجرة تصنيف الهيدروكربونات والمركبات المتقابلة</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-center">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-emerald-700 block mb-1">ألكانات مشبعة (إيثان C2H6)</span>
+              <span className="text-[10px] text-slate-500 block">روابط أحادية سيجما σ فقط</span>
+              <span className="text-[10px] text-slate-400 mt-1 block">خاملة نسبياً تجاه الكواشف</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-amber-600 block mb-1">ألكينات غير مشبعة (إيثين C2H4)</span>
+              <span className="text-[10px] text-slate-500 block">رابطة ثنائية (واحدة سيجما + واحدة باي π)</span>
+              <span className="text-[10px] text-emerald-600 font-bold mt-1 block">تزيل لون ماء البروم</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-rose-600 block mb-1">ألكاينات (إيثاين C2H2)</span>
+              <span className="text-[10px] text-slate-500 block">رابطة ثلاثية (واحدة سيجما + اثنتان باي π)</span>
+              <span className="text-[10px] text-rose-600 font-bold mt-1 block">لهب الأكسي-أسيتلين 3000°م</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "methane_chlorination":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">تفاعل استبدال الميثان بالكلور (في ضوء الشمس غير المباشر UV)</span>
+          <div className="space-y-2 text-xs font-mono">
+            <div className="p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+              CH4 + Cl2 ⟶ <strong>CH3Cl (كلوريد الميثيل)</strong> + HCl
+            </div>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+              CH3Cl + Cl2 ⟶ <strong>CH2Cl2 (ثنائي كلورو ميثان)</strong> + HCl
+            </div>
+            <div className="p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700">
+              CH2Cl2 + Cl2 ⟶ <strong>CHCl3 (الكلوروفورم - مخدر)</strong> + HCl
+            </div>
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded border border-emerald-200 dark:border-emerald-800 font-bold text-emerald-800 dark:text-emerald-300">
+              CHCl3 + Cl2 ⟶ <strong>CCl4 (رابع كلوريد الكربون - مذيب ومطفأة حريق)</strong> + HCl
+            </div>
+          </div>
+        </div>
+      );
+
+    case "markovnikov_rule":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">قاعدة ماركونيكوف في تفاعلات الإضافة غير المتماثلة</span>
+          <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs space-y-2">
+            <div className="font-mono text-center font-bold text-slate-800 dark:text-slate-200">
+              CH3-CH=CH2 (بروبين) + H-Br (كاشف غير متماثل)
+            </div>
+            <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 rounded border border-emerald-300 text-emerald-900 dark:text-emerald-200 leading-relaxed font-sans">
+              <strong>نص القاعدة المنهجي:</strong> عند إضافة متفاعل غير متماثل إلى ألكين غير متماثل، فإن الشق الموجب (الهيدروجين H+) يضاف إلى ذرة الكربون غير المشبعة التي تحمل <strong>عدداً أكبر من ذرات الهيدروجين</strong> (الغني يزداد غنى)، مما ينتج:
+              <span className="block font-mono font-bold mt-1 text-center">CH3-CH(Br)-CH3 (2-برومو بروبان) وليس 1-برومو بروبان!</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "acetylene_torch":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-slate-800 dark:text-slate-100">لهب الأكسي-أسيتلين (Oxy-Acetylene Flame)</span>
+            <span className="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded font-bold font-mono">3000°C</span>
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+            عند احتراق الإيثاين C2H2 في وفرة من غاز الأكسجين النقي، ينتج احتراق تام يولد لهباً أزرق ناصعاً تصل حرارته إلى 3000°م كافية لصهر الفولاذ وقطع ولحام المعادن.
+          </p>
+          <div className="p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 font-mono text-xs text-center font-bold text-slate-800 dark:text-slate-200">
+            2C2H2 + 5O2 ⟶ 4CO2 + 2H2O + طاقة حرارية هائلة (3000°C)
+          </div>
+        </div>
+      );
+
+    case "bond_strain":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">توتر زوايا الروابط (Bond Strain) في الألكانات الحلقية</span>
+          <div className="grid grid-cols-2 gap-3 text-xs text-center">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-rose-600 block">البروبان الحلقي (C3H6)</span>
+              <span className="text-[11px] text-slate-500 block">الزاوية: 60° (انحراف شديد عن 109.5°)</span>
+              <span className="text-[10px] text-rose-700 font-bold mt-1 block">توتر شديد ➔ نشاط كيميائي عالي وسهولة كسر الحلقة</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-emerald-600 block">الهكسان الحلقي (C6H12)</span>
+              <span className="text-[11px] text-slate-500 block">الزاوية: 109.5° (زاوية مجسمة مستقرة)</span>
+              <span className="text-[10px] text-emerald-700 font-bold mt-1 block">استقرار وثبات كيميائي فائق</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "pentane_isomers":
+      const isomers = [
+        { name: "بنتان عادي (n-pentane)", formula: "CH3-CH2-CH2-CH2-CH3", bp: "36.1°C", shape: "سلسلة مستقيمة بدون تفرع" },
+        { name: "2-ميثيل بيوتان (isopentane)", formula: "CH3-CH(CH3)-CH2-CH3", bp: "27.8°C", shape: "تفرع ميثيل واحد" },
+        { name: "2,2-ثنائي ميثيل بروبان (neopentane)", formula: "C(CH3)4", bp: "9.5°C (غاز)", shape: "تفرعان - شكل كروي مضغوط" }
+      ];
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">المتماكبات السلسلية الثلاثة للبنتان C5H12 وتدرج درجات الغليان</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+            {isomers.map((iso, idx) => (
+              <div key={idx} className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+                <span className="font-bold text-slate-800 dark:text-slate-100 block">{iso.name}</span>
+                <code className="text-[10px] font-mono text-emerald-600 block">{iso.formula}</code>
+                <span className="text-[10px] text-amber-600 font-bold block">درجة الغليان: {iso.bp}</span>
+                <span className="text-[10px] text-slate-400 block">{iso.shape}</span>
+              </div>
+            ))}
+          </div>
+          <p className="text-[10px] text-slate-500">
+            <strong>القاعدة:</strong> زيادة التفرع تجعل الجزيء أكثر كروية فتقل مساحة التلامس وقوى فاندرفالز، مما يخفض درجة الغليان.
+          </p>
+        </div>
+      );
+
+    case "phosphorus_allotropes":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">ظاهرة التأصل: الفوسفور الأبيض vs الفوسفور الأحمر</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 text-amber-950 dark:text-amber-200 space-y-1">
+              <span className="font-bold text-sm block">الفوسفور الأبيض (P4)</span>
+              <p>جزيء رباعي الأوجه مجهد الزوايا (60°). شديد السمية ويشتعل تلقائياً في الهواء عند 30°م، لذا يحفظ تحت الماء.</p>
+            </div>
+            <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 text-rose-950 dark:text-rose-200 space-y-1">
+              <span className="font-bold text-sm block">الفوسفور الأحمر (Pn)</span>
+              <p>سلسلة بوليمرية مستقرة غير سامة. لا يشتعل تلقائياً إلا بالتسخين إلى 240°م، ويستخدم في صناعة أعواد الثقاب الآمنة.</p>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "nitrogen_prep_lab":
+    case "ammonia_prep":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">التحضير المخبري لغاز النيتروجين والنشادر</span>
+          <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-mono space-y-2">
+            <div>
+              <span className="text-slate-500 block font-sans text-[10px]">1. تحضير النيتروجين النقي بتسخين نتريت الأمونيوم:</span>
+              <strong>NaNO2 + NH4Cl ⟶ NaCl + NH4NO2 ⟶ N2↑ + 2H2O</strong>
+            </div>
+            <div className="pt-2 border-t border-slate-100 dark:border-slate-700">
+              <span className="text-slate-500 block font-sans text-[10px]">2. تحضير النشادر بتسخين ملح الأمونيوم مع الجير المطفأ:</span>
+              <strong>2NH4Cl + Ca(OH)2 ⟶ CaCl2 + 2H2O + 2NH3↑</strong>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "nitrogen_cycle":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">دورة النيتروجين في الطبيعة وتثبيته حيوياً</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-xs">
+            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-blue-600 block">1. تثبيت جوي</span>
+              <p className="text-[10px] text-slate-500 mt-1">طاقة البرق تدمج N2 مع O2 لتكوين أكاسيد النيتروجين وأمطار النيتريك.</p>
+            </div>
+            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-emerald-600 block">2. تثبيت بكتيري</span>
+              <p className="text-[10px] text-slate-500 mt-1">بكتيريا العقد الجذرية (الريزوبيوم) في البقوليات تثبت النيتروجين مباشرة.</p>
+            </div>
+            <div className="p-2.5 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+              <span className="font-bold text-amber-600 block">3. دورة التحلل</span>
+              <p className="text-[10px] text-slate-500 mt-1">بكتيريا نزع النتروجين تعيد إطلاق الغاز للغلاف الجوي (78%).</p>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "superphosphate_prep":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">صناعة سماد السوبر فوسفات الذائب للزراعة</span>
+          <p className="text-xs text-slate-600 dark:text-slate-400">
+            صخر الفوسفات Ca3(PO4)2 غير قابل للذوبان في الماء فلا تمتصه جذور النباتات. لمعالجته يتم مفاعلته مع حمض الكبريتيك المركز لتحويله لسماد فوسفاتي ذائب:
+          </p>
+          <div className="p-2 bg-white dark:bg-slate-800 rounded border border-slate-200 dark:border-slate-700 font-mono text-xs text-center font-bold">
+            Ca3(PO4)2 + 2H2SO4 ⟶ Ca(H2PO4)2 (سوبر فوسفات ذائب) + 2CaSO4
+          </div>
+        </div>
+      );
+
+    case "halogens_tubes":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">إزاحة الهالوجينات وتدرج النشاط (Cl2 ➔ Br2 ➔ I2)</span>
+          <div className="grid grid-cols-2 gap-3 text-xs">
+            <div className="p-3 bg-orange-50 dark:bg-orange-950/30 rounded-xl border border-orange-200 space-y-1">
+              <span className="font-bold text-orange-800 dark:text-orange-300 block">الكلور يزيح البروم:</span>
+              <code className="text-[10px] font-mono block">Cl2 + 2KBr ⟶ 2KCl + Br2</code>
+              <span className="text-[10px] text-orange-700">تلون المحلول بالبرتقالي لظهور البروم.</span>
+            </div>
+            <div className="p-3 bg-purple-50 dark:bg-purple-950/30 rounded-xl border border-purple-200 space-y-1">
+              <span className="font-bold text-purple-800 dark:text-purple-300 block">البروم يزيح اليود:</span>
+              <code className="text-[10px] font-mono block">Br2 + 2KI ⟶ 2KBr + I2</code>
+              <span className="text-[10px] text-purple-700">تلون الطبقة العضوية بالبنفسجي لليود.</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "chlorine_prep_lab":
+    case "mercury_cathode_cell":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">تحضير غاز الكلور في المختبر والتحليل الكهربائي الصناعي</span>
+          <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-mono space-y-1.5">
+            <div><strong>أكسدة HCl بـ MnO2 الأسود مع التسخين:</strong></div>
+            <div className="text-emerald-600 font-bold">MnO2 + 4HCl ⟶ MnCl2 + 2H2O + Cl2↑ (غاز أصفر مخضر نفاذ)</div>
+            <p className="text-[10px] text-slate-500 font-sans pt-1">
+              يمرر الغاز في الماء لامتصاص HCl ثم حمض الكبريتيك المركز لتجفيفه، ويجمع بإزاحة الهواء للأعلى لأنه أثقل منه.
+            </p>
+          </div>
+        </div>
+      );
+
+    case "turpentine_experiment":
+    case "bleaching_mechanism":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">آلية قصر الألوان وتفاعل زيت التربنتين مع الكلور</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <span className="font-bold text-emerald-700 block">تبييض الألوان بالكلور الرطب:</span>
+              <p className="text-slate-600 dark:text-slate-400">
+                الكلور الجاف لا يقصر الألوان، بل يتفاعل مع الماء لتكوين حمض الهيبوكلوروز الذي يطلق الأكسجين الذري الوليد [O]:
+              </p>
+              <code className="text-[10px] font-mono block text-emerald-700 font-bold">HClO ⟶ HCl + [O] (مؤكسد الصباغ)</code>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <span className="font-bold text-rose-700 block">اشتعال زيت التربنتين:</span>
+              <p className="text-slate-600 dark:text-slate-400">
+                شراهة الكلور للهيدروجين تجعله ينتزع هيدروجين التربنتين مسبباً اشتعالاً فورياً ودخاناً أسود كثيفاً من الكربون (السخام).
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "transition_exceptions":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">شذوذ التوزيع الإلكتروني للكروم (Cr) والنحاس (Cu)</span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <span className="font-bold text-amber-600 block font-sans">الكروم Cr (العدد الذري 24):</span>
+              <div>التوزيع الفعلي: [Ar] 4s1 3d5</div>
+              <span className="text-[10px] text-slate-500 font-sans block">نصف ممتلئ (3d5) يعطي استقراراً إضافياً للذرة.</span>
+            </div>
+            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 space-y-1">
+              <span className="font-bold text-amber-600 block font-sans">النحاس Cu (العدد الذري 29):</span>
+              <div>التوزيع الفعلي: [Ar] 4s1 3d10</div>
+              <span className="text-[10px] text-slate-500 font-sans block">تام الامتلاء (3d10) يعطي أقصى درجات الثبات.</span>
+            </div>
+          </div>
+        </div>
+      );
+
+    case "protective_oxide":
+      return (
+        <div className="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 text-right space-y-3">
+          <span className="text-xs font-bold text-slate-800 dark:text-slate-100 block">ظاهرة خمول الحديد في حمض النيتريك المركز (Passivation)</span>
+          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+            عند غمس قطعة من الحديد في حمض النيتريك المركز HNO3، يتوقف التفاعل فوراً ولا يتصاعد غاز.
+            <strong>السبب الوزاري (علل):</strong> تكوّن طبقة ميكروسكوبية رقيقة وغير مسامية من أكسيد الحديد المغناطيسي (Fe3O4) تعزل الفلز تماماً عن استمرار التفاعل.
+          </p>
         </div>
       );
 
