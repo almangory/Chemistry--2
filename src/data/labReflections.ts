@@ -324,7 +324,7 @@ export const LAB_REFLECTIONS: Record<string, ExperimentReflection> = {
         colorState: "لهب أزرق باهت غير مضيء",
         chemicalProperty: "إزالة الشوائب الفلزية العالقة",
         equationOrFormula: "Pt wire cleaned with conc. HCl",
-        telemetry: { temp: 600, ph: 7.0, gas: 0, liquidColor: "#f0f9ff", liquidHeight: 0.4, isHeating: true, isBubbling: false, isPrecipitating: false, isSmoking: false, flameColor: "#3b82f6" }
+        telemetry: { temp: 25, ph: 7.0, gas: 0, liquidColor: "#f0f9ff", liquidHeight: 0.4, isHeating: false, isBubbling: false, isPrecipitating: false, isSmoking: false, flameColor: "#3b82f6" }
       },
       {
         stepNumber: 2,
@@ -386,7 +386,7 @@ export const LAB_REFLECTIONS: Record<string, ExperimentReflection> = {
         colorState: "أبيض حليبي معلق",
         chemicalProperty: "تفاعل تبادل مزدوج غير عضوي",
         equationOrFormula: "NH4Cl + AgCNO ⟶ NH4CNO + AgCl↓",
-        telemetry: { temp: 25, ph: 7.0, gas: 0, liquidColor: "#f1f5f9", liquidHeight: 0.45, isHeating: false, isBubbling: false, isPrecipitating: true, isSmoking: false }
+        telemetry: { temp: 25, ph: 7.0, gas: 0, liquidColor: "#f0f9ff", liquidHeight: 0.45, isHeating: false, isBubbling: false, isPrecipitating: false, isSmoking: false }
       },
       {
         stepNumber: 2,
@@ -854,7 +854,7 @@ export const LAB_REFLECTIONS: Record<string, ExperimentReflection> = {
         colorState: "أحمر قرميدي داكن",
         chemicalProperty: "صورة تأصلية مستقرة",
         equationOrFormula: "4P(red) + 5O2 ⟶ (240°C) ⟶ 2P2O5↑",
-        telemetry: { temp: 245, ph: 7.0, gas: 40, liquidColor: "#f0f9ff", liquidHeight: 0.3, isHeating: true, isBubbling: false, isPrecipitating: false, isSmoking: true, flameColor: "#facc15" }
+        telemetry: { temp: 25, ph: 7.0, gas: 0, liquidColor: "#f0f9ff", liquidHeight: 0.3, isHeating: false, isBubbling: false, isPrecipitating: false, isSmoking: false }
       },
       {
         stepNumber: 2,

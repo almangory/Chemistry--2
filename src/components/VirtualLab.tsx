@@ -984,12 +984,12 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
         break;
       case "u1_l2": // s, p, d, f blocks
         apparatusType = "test_tubes";
-        liquidColor = currentStep === 2 ? "#0284c7" : currentStep === 0 ? "#cbd5e1" : "#f1f5f9";
-        isBubbling = currentStep === 0;
+        liquidColor = currentStep === 2 ? "#0284c7" : currentStep === 1 ? "#cbd5e1" : "#f1f5f9";
+        isBubbling = currentStep === 1;
         break;
       case "u1_l3": // Period 3 trends
         apparatusType = "test_tubes";
-        liquidColor = currentStep >= 1 ? "#f43f5e" : "#e0f2fe";
+        liquidColor = currentStep >= 1 ? "#f43f5e" : "#f0f9ff";
         isBubbling = currentStep >= 1;
         isHeating = currentStep === 3;
         temperature = currentStep === 3 ? 85 : 25;
@@ -1011,96 +1011,97 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
         break;
       case "u2_l2": // Flame tests
         apparatusType = "test_tubes";
-        isHeating = true;
-        flameColor = currentStep === 1 ? "#eab308" : currentStep === 2 ? "#a855f7" : currentStep === 3 ? "#e11d48" : "#3b82f6";
-        temperature = 650;
+        isHeating = currentStep >= 1;
+        flameColor = currentStep === 1 ? "#3b82f6" : currentStep === 2 ? "#eab308" : currentStep === 3 ? "#a855f7" : "#e11d48";
+        temperature = currentStep >= 1 ? 650 : 25;
         break;
 
       // UNIT 3: Organic Chemistry
       case "u3_l1": // Wohler synthesis of Urea
         apparatusType = "beaker";
-        liquidColor = currentStep >= 2 ? "#f8fafc" : "#e0f2fe";
-        isHeating = currentStep >= 2;
-        isPrecipitating = currentStep === 0 || currentStep === 1 || currentStep === 3;
-        temperature = currentStep >= 2 ? 110 : 25;
+        liquidColor = currentStep === 0 ? "#f0f9ff" : currentStep === 1 ? "#f1f5f9" : currentStep === 2 ? "#f0f9ff" : "#f8fafc";
+        isHeating = currentStep === 2;
+        isPrecipitating = currentStep === 1 || currentStep === 3;
+        isSmoking = currentStep === 2;
+        temperature = currentStep === 2 ? 105 : 25;
         break;
       case "u3_l2": // IUPAC
         apparatusType = "beaker";
-        liquidColor = "#fed7aa";
+        liquidColor = currentStep >= 1 ? "#fed7aa" : "#f0f9ff";
         liquidHeight = 0.5;
         break;
       case "u3_l3": // Hydrocarbon comparison
         apparatusType = "test_tubes";
-        liquidColor = "#e0f2fe";
+        liquidColor = currentStep >= 2 ? "#f0f9ff" : "#e0f2fe";
         break;
       case "u3_l4": // Methane prep
         apparatusType = "gas_prep";
         liquidColor = "#94a3b8";
-        isHeating = currentStep >= 1;
+        isHeating = currentStep >= 2;
         isBubbling = currentStep >= 2;
-        temperature = currentStep >= 1 ? 250 : 25;
+        temperature = currentStep >= 2 ? 250 : 25;
         gasVolume = currentStep >= 2 ? 220 : 0;
         flameColor = "#3b82f6";
         break;
       case "u3_l5": // Ethene & Bromine
         apparatusType = "beaker";
-        liquidColor = currentStep === 2 ? "#f8fafc" : "#ea580c";
+        liquidColor = currentStep === 0 ? "#f0f9ff" : currentStep === 1 ? "#ea580c" : "#f8fafc";
         isHeating = currentStep === 1;
         temperature = currentStep === 1 ? 180 : 25;
         isBubbling = currentStep >= 1;
         break;
       case "u3_l6": // Ethyne oxy-acetylene
         apparatusType = "gas_prep";
-        liquidColor = "#cbd5e1";
+        liquidColor = currentStep >= 1 ? "#cbd5e1" : "#f0f9ff";
         isBubbling = currentStep >= 1;
-        isHeating = currentStep >= 2;
-        isSmoking = currentStep === 2;
+        isHeating = currentStep >= 3;
+        isSmoking = currentStep === 1 || currentStep === 3;
         temperature = currentStep === 3 ? 3000 : 25;
         gasVolume = currentStep >= 1 ? 240 : 0;
         break;
       case "u3_l7": // Benzene vs Hexene
         apparatusType = "test_tubes";
-        liquidColor = currentStep >= 2 ? "#7e22ce" : "#e0f2fe";
+        liquidColor = currentStep >= 1 ? "#7e22ce" : "#f0f9ff";
         break;
       case "u3_l8": // Isomers
         apparatusType = "test_tubes";
-        liquidColor = currentStep === 2 ? "#ea580c" : "#f8fafc";
+        liquidColor = currentStep >= 2 ? "#ea580c" : "#f0f9ff";
         break;
 
       // UNIT 4: Group 5 Elements (Nitrogen & Phosphorus)
       case "u4_l1": // Phosphorus allotropes
         apparatusType = "beaker";
-        isHeating = currentStep >= 2;
+        isHeating = currentStep >= 1;
         isSmoking = currentStep >= 1;
-        temperature = currentStep === 1 ? 35 : 240;
+        temperature = currentStep === 0 ? 25 : currentStep === 1 ? 35 : 240;
         flameColor = "#facc15";
         break;
       case "u4_l2": // Nitrogen prep
         apparatusType = "gas_prep";
         liquidColor = "#e0f2fe";
-        isHeating = currentStep >= 1;
+        isHeating = currentStep >= 2;
         isBubbling = currentStep >= 2;
-        temperature = currentStep >= 1 ? 85 : 25;
+        temperature = currentStep >= 2 ? 85 : 25;
         gasVolume = currentStep >= 2 ? 200 : 0;
         break;
       case "u4_l3": // Ammonia fountain
         apparatusType = "gas_prep";
-        liquidColor = currentStep >= 1 ? "#1d4ed8" : "#e0f2fe";
+        liquidColor = currentStep >= 1 ? "#1d4ed8" : "#f0f9ff";
         isBubbling = currentStep >= 1;
-        phValue = 11.5;
+        phValue = currentStep >= 1 ? 11.5 : 7.0;
         break;
       case "u4_l4": // Ammonium sulfate
         apparatusType = "beaker";
-        liquidColor = "#f8fafc";
+        liquidColor = currentStep >= 2 ? "#f8fafc" : "#f0f9ff";
         isPrecipitating = currentStep >= 2;
         isHeating = currentStep === 1;
-        phValue = 10.0;
+        phValue = currentStep >= 1 ? 10.0 : 7.0;
         break;
 
       // UNIT 5: Halogens
       case "u5_l1": // Halogen displacement
         apparatusType = "test_tubes";
-        liquidColor = currentStep === 1 ? "#ea580c" : currentStep === 2 ? "#581c87" : "#e0f2fe";
+        liquidColor = currentStep === 0 ? "#f0f9ff" : currentStep === 1 ? "#ea580c" : "#581c87";
         break;
       case "u5_l2": // Chlorine prep
         apparatusType = "gas_prep";
@@ -1113,8 +1114,8 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
         break;
       case "u5_l3": // Bleaching
         apparatusType = "beaker";
-        liquidColor = "#bef264";
-        isSmoking = true;
+        liquidColor = currentStep >= 1 ? "#bef264" : "#f0f9ff";
+        isSmoking = currentStep >= 1;
         break;
 
       // UNIT 6: Transition Elements
@@ -1137,12 +1138,12 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
         break;
       case "u6_l2": // Aqua Regia gold dissolution
         apparatusType = "beaker";
-        liquidColor = currentStep >= 2 ? "#eab308" : "#fed7aa";
+        liquidColor = currentStep >= 2 ? "#eab308" : currentStep === 1 ? "#fed7aa" : "#f0f9ff";
         isHeating = currentStep >= 2;
         isBubbling = currentStep >= 2;
         isSmoking = currentStep >= 2;
         temperature = currentStep >= 2 ? 80 : 25;
-        phValue = 0.5;
+        phValue = currentStep >= 1 ? 0.5 : 7.0;
         break;
     }
 

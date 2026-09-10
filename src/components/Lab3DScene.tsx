@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as THREE from "three";
-import { getStepGuidance, getUniversalTools, getBasinTools, StepGuidance } from "../data/labGuidance";
+import { getStepGuidance, getUniversalTools, getBasinTools, getExperimentTools, StepGuidance } from "../data/labGuidance";
 import { 
   Flame, 
   Droplet, 
@@ -1422,261 +1422,241 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       rimR.position.set(1.175, 0.08, 0);
       benchTrayGroup.add(rimR);
 
-      // Resolve chemical names
-      const chemA = (chemicals && chemicals[0]) ? chemicals[0] : "المتفاعل الأول A";
-      const chemB = (chemicals && chemicals[1]) ? chemicals[1] : "المتفاعل الثاني B";
+      // Get tailored tools for this specific experiment (Zero irrelevant tools & clean spacing)
+      const tailoredTools = getExperimentTools(experimentId, chemicals, apparatusList);
+      const bottleColors = [0x1e3a5f, 0x78350f, 0x065f46, 0x581c87, 0x831843, 0x312e81];
 
-      // 🖐️ DRAGGABLE TOOL A: Primary Reagent Bottle (قارورة الكاشف A)
-      const bottleAGroup = new THREE.Group();
-      const bAHome = new THREE.Vector3(trayX - 0.55, 0.08, trayZ - 0.65);
-      bottleAGroup.position.copy(bAHome);
-      bottleAGroup.userData = {
-        id: "add_reagent_1",
-        label: chemA + " 🧪",
-        homePos: bAHome.clone()
-      };
+      tailoredTools.forEach((tool, idx) => {
+        let posX = 0;
+        let posZ = 0;
+        const count = tailoredTools.length;
 
-      const bABody = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.24, 0.26, 0.8, 24),
-        new THREE.MeshPhysicalMaterial({ color: 0x1e3a5f, transparent: true, opacity: 0.82, roughness: 0.15 })
-      );
-      bABody.position.set(0, 0.4, 0);
-      bottleAGroup.add(bABody);
+        if (count <= 3) {
+          if (idx === 0) { posX = -0.65; posZ = -0.45; }
+          else if (idx === 1) { posX = 0.65; posZ = -0.45; }
+          else { posX = 0.0; posZ = 0.55; }
+        } else if (count === 4) {
+          if (idx === 0) { posX = -0.65; posZ = -0.55; }
+          else if (idx === 1) { posX = 0.65; posZ = -0.55; }
+          else if (idx === 2) { posX = -0.65; posZ = 0.55; }
+          else { posX = 0.65; posZ = 0.55; }
+        } else if (count === 5) {
+          if (idx === 0) { posX = -0.65; posZ = -0.7; }
+          else if (idx === 1) { posX = 0.65; posZ = -0.7; }
+          else if (idx === 2) { posX = -0.65; posZ = 0.05; }
+          else if (idx === 3) { posX = 0.65; posZ = 0.05; }
+          else { posX = 0.0; posZ = 0.75; }
+        } else {
+          const col = idx % 2 === 0 ? -0.65 : 0.65;
+          const row = Math.floor(idx / 2);
+          posX = col;
+          posZ = -0.75 + row * 0.75;
+        }
 
-      const bANeck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.22, 24), glassMaterial);
-      bANeck.position.set(0, 0.9, 0);
-      bottleAGroup.add(bANeck);
+        const toolGroup = new THREE.Group();
+        const homePos = new THREE.Vector3(trayX + posX, 0.08, trayZ + posZ);
+        toolGroup.position.copy(homePos);
 
-      const bACap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.14, 24), darkIronMat);
-      bACap.position.set(0, 1.05, 0);
-      bottleAGroup.add(bACap);
+        let beaconMesh: THREE.Mesh | null = null;
+        let badgeY = 1.6;
 
-      const labelA = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.265, 0.265, 0.35, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 })
-      );
-      labelA.position.set(0, 0.4, 0);
-      bottleAGroup.add(labelA);
+        if (tool.iconType === "pipette") {
+          toolGroup.rotation.x = Math.PI / 2;
+          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.015, 1.0, 16), glassMaterial);
+          stem.position.set(0, 0.4, 0);
+          toolGroup.add(stem);
 
-      const beaconA = new THREE.Mesh(
-        new THREE.SphereGeometry(0.11, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 })
-      );
-      beaconA.position.set(0, 1.35, 0);
-      bottleAGroup.add(beaconA);
+          const bulb = new THREE.Mesh(
+            new THREE.SphereGeometry(0.12, 16, 16),
+            new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.6 })
+          );
+          bulb.position.set(0, 1.0, 0);
+          toolGroup.add(bulb);
 
-      const badgeA = createToolBadge("①");
-      badgeA.position.set(0, 1.62, 0);
-      bottleAGroup.add(badgeA);
-      bottleAGroup.userData.badgeSprite = badgeA;
-      bottleAGroup.userData.beaconMesh = beaconA;
-      bottleAGroup.userData.toolNumber = 1;
+          const drop = new THREE.Mesh(
+            new THREE.SphereGeometry(0.04, 12, 12),
+            new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+          );
+          drop.position.set(0, -0.15, 0);
+          toolGroup.add(drop);
+          badgeY = 1.35;
+        } else if (tool.iconType === "rod") {
+          toolGroup.rotation.x = Math.PI / 2;
+          const rodMesh = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.025, 0.025, 1.1, 16),
+            new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.15 })
+          );
+          rodMesh.position.set(0, 0.45, 0);
+          toolGroup.add(rodMesh);
 
-      appGroup.add(bottleAGroup);
-      draggableToolsRef.current.push(bottleAGroup);
+          const blade = new THREE.Mesh(
+            new THREE.BoxGeometry(0.08, 0.015, 0.28),
+            new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.1 })
+          );
+          blade.position.set(0, -0.15, 0);
+          toolGroup.add(blade);
+          badgeY = 1.35;
+        } else if (tool.iconType === "funnel") {
+          const cone = new THREE.Mesh(new THREE.ConeGeometry(0.28, 0.45, 24, 1, true), glassMaterial);
+          cone.rotation.x = Math.PI;
+          cone.position.set(0, 0.5, 0);
+          toolGroup.add(cone);
 
-      // 🖐️ DRAGGABLE TOOL B: Secondary Reagent Bottle (قارورة الكاشف B)
-      const bottleBGroup = new THREE.Group();
-      const bBHome = new THREE.Vector3(trayX + 0.55, 0.08, trayZ - 0.65);
-      bottleBGroup.position.copy(bBHome);
-      bottleBGroup.userData = {
-        id: "add_reagent_2",
-        label: chemB + " 🧪",
-        homePos: bBHome.clone()
-      };
+          const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.03, 0.45, 16), glassMaterial);
+          stem.position.set(0, 0.15, 0);
+          toolGroup.add(stem);
 
-      const bBBody = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.24, 0.26, 0.8, 24),
-        new THREE.MeshPhysicalMaterial({ color: 0x78350f, transparent: true, opacity: 0.82, roughness: 0.15 })
-      );
-      bBBody.position.set(0, 0.4, 0);
-      bottleBGroup.add(bBBody);
+          const paper = new THREE.Mesh(
+            new THREE.ConeGeometry(0.26, 0.4, 24, 1, true),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, side: THREE.DoubleSide })
+          );
+          paper.rotation.x = Math.PI;
+          paper.position.set(0, 0.52, 0);
+          toolGroup.add(paper);
+          badgeY = 1.25;
+        } else if (tool.iconType === "flame") {
+          const handle = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.05, 0.05, 0.5, 16),
+            new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 })
+          );
+          handle.rotation.z = Math.PI / 2;
+          handle.position.set(0, 0.05, 0);
+          toolGroup.add(handle);
 
-      const bBNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.22, 24), glassMaterial);
-      bBNeck.position.set(0, 0.9, 0);
-      bottleBGroup.add(bBNeck);
+          const tip = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.02, 0.02, 0.4, 16),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9 })
+          );
+          tip.rotation.z = Math.PI / 2;
+          tip.position.set(0.35, 0.05, 0);
+          toolGroup.add(tip);
 
-      const bBCap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.14, 24), darkIronMat);
-      bBCap.position.set(0, 1.05, 0);
-      bottleBGroup.add(bBCap);
+          const spark = new THREE.Mesh(
+            new THREE.SphereGeometry(0.09, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.85 })
+          );
+          spark.position.set(0.6, 0.05, 0);
+          toolGroup.add(spark);
+          beaconMesh = spark;
+          badgeY = 1.1;
+        } else if (tool.iconType === "forceps") {
+          const tArm1 = new THREE.Mesh(
+            new THREE.BoxGeometry(0.03, 0.6, 0.015),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 })
+          );
+          tArm1.position.set(-0.04, 0.35, 0);
+          tArm1.rotation.z = 0.06;
+          toolGroup.add(tArm1);
 
-      const labelB = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.265, 0.265, 0.35, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 })
-      );
-      labelB.position.set(0, 0.4, 0);
-      bottleBGroup.add(labelB);
+          const tArm2 = new THREE.Mesh(
+            new THREE.BoxGeometry(0.03, 0.6, 0.015),
+            new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9, roughness: 0.2 })
+          );
+          tArm2.position.set(0.04, 0.35, 0);
+          tArm2.rotation.z = -0.06;
+          toolGroup.add(tArm2);
 
-      const beaconB = new THREE.Mesh(
-        new THREE.SphereGeometry(0.11, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.75 })
-      );
-      beaconB.position.set(0, 1.35, 0);
-      bottleBGroup.add(beaconB);
+          const nugget = new THREE.Mesh(
+            new THREE.DodecahedronGeometry(0.08),
+            new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8, roughness: 0.3 })
+          );
+          nugget.position.set(0, 0.08, 0);
+          toolGroup.add(nugget);
+          badgeY = 1.25;
+        } else if (tool.iconType === "knife") {
+          const handle = new THREE.Mesh(
+            new THREE.BoxGeometry(0.06, 0.35, 0.04),
+            new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 })
+          );
+          handle.position.set(0, 0.45, 0);
+          toolGroup.add(handle);
 
-      const badgeB = createToolBadge("②");
-      badgeB.position.set(0, 1.62, 0);
-      bottleBGroup.add(badgeB);
-      bottleBGroup.userData.badgeSprite = badgeB;
-      bottleBGroup.userData.beaconMesh = beaconB;
-      bottleBGroup.userData.toolNumber = 2;
+          const blade = new THREE.Mesh(
+            new THREE.BoxGeometry(0.02, 0.4, 0.08),
+            new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.95, roughness: 0.1 })
+          );
+          blade.position.set(0, 0.15, 0);
+          toolGroup.add(blade);
+          badgeY = 1.25;
+        } else if (tool.iconType === "water") {
+          const flaskBody = new THREE.Mesh(
+            new THREE.ConeGeometry(0.26, 0.55, 24),
+            new THREE.MeshPhysicalMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.65, roughness: 0.1 })
+          );
+          flaskBody.position.set(0, 0.28, 0);
+          toolGroup.add(flaskBody);
 
-      appGroup.add(bottleBGroup);
-      draggableToolsRef.current.push(bottleBGroup);
+          const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.25, 24), glassMaterial);
+          neck.position.set(0, 0.65, 0);
+          toolGroup.add(neck);
+          badgeY = 1.35;
+        } else if (tool.iconType === "magnet") {
+          const switchBox = new THREE.Mesh(
+            new THREE.BoxGeometry(0.38, 0.22, 0.38),
+            new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3 })
+          );
+          switchBox.position.set(0, 0.11, 0);
+          toolGroup.add(switchBox);
 
-      // 🖐️ DRAGGABLE TOOL C: Precision Chemical Pipette / Dropper (ماصة وقطارة كيميائية)
-      const pipetteGroup = new THREE.Group();
-      const pipHome = new THREE.Vector3(trayX - 0.5, 0.12, trayZ + 0.2);
-      pipetteGroup.position.copy(pipHome);
-      pipetteGroup.rotation.x = Math.PI / 2;
-      pipetteGroup.userData = {
-        id: "use_pipette",
-        label: "ماصة وقطارة كيميائية 💧",
-        homePos: pipHome.clone()
-      };
+          const button = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.08, 0.08, 0.1, 16),
+            new THREE.MeshBasicMaterial({ color: 0x06b6d4 })
+          );
+          button.position.set(0, 0.24, 0);
+          toolGroup.add(button);
+          beaconMesh = button;
+          badgeY = 1.2;
+        } else {
+          // Default: Reagent Bottle / Jar with label & beacon
+          const bColor = bottleColors[idx % bottleColors.length];
+          const body = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.24, 0.26, 0.8, 24),
+            new THREE.MeshPhysicalMaterial({ color: bColor, transparent: true, opacity: 0.85, roughness: 0.15 })
+          );
+          body.position.set(0, 0.4, 0);
+          toolGroup.add(body);
 
-      const pipStem = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.015, 1.0, 16), glassMaterial);
-      pipStem.position.set(0, 0.4, 0);
-      pipetteGroup.add(pipStem);
+          const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.14, 0.22, 24), glassMaterial);
+          neck.position.set(0, 0.9, 0);
+          toolGroup.add(neck);
 
-      const pipBulb = new THREE.Mesh(
-        new THREE.SphereGeometry(0.12, 16, 16),
-        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.6 })
-      );
-      pipBulb.position.set(0, 1.0, 0);
-      pipetteGroup.add(pipBulb);
+          const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.14, 24), darkIronMat);
+          cap.position.set(0, 1.05, 0);
+          toolGroup.add(cap);
 
-      const pipDrop = new THREE.Mesh(
-        new THREE.SphereGeometry(0.04, 12, 12),
-        new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
-      );
-      pipDrop.position.set(0, -0.15, 0);
-      pipetteGroup.add(pipDrop);
+          const label = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.265, 0.265, 0.35, 24, 1, true, -Math.PI / 3, (Math.PI * 2) / 3),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 })
+          );
+          label.position.set(0, 0.4, 0);
+          toolGroup.add(label);
 
-      const badgeC = createToolBadge("③");
-      badgeC.position.set(0, 1.32, 0);
-      pipetteGroup.add(badgeC);
-      pipetteGroup.userData.badgeSprite = badgeC;
-      pipetteGroup.userData.toolNumber = 3;
+          const beacon = new THREE.Mesh(
+            new THREE.SphereGeometry(0.11, 16, 16),
+            new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.75 })
+          );
+          beacon.position.set(0, 1.35, 0);
+          toolGroup.add(beacon);
+          beaconMesh = beacon;
+          badgeY = 1.62;
+        }
 
-      appGroup.add(pipetteGroup);
-      draggableToolsRef.current.push(pipetteGroup);
+        const badge = createToolBadge(tool.badge);
+        badge.position.set(0, badgeY, 0);
+        toolGroup.add(badge);
 
-      // 🖐️ DRAGGABLE TOOL D: Stainless Steel Spatula / Stirring Rod (ملعقة وساق تحريك)
-      const spatulaGroup = new THREE.Group();
-      const spatHome = new THREE.Vector3(trayX + 0.5, 0.12, trayZ + 0.2);
-      spatulaGroup.position.copy(spatHome);
-      spatulaGroup.rotation.x = Math.PI / 2;
-      spatulaGroup.userData = {
-        id: "stir_rod",
-        label: "ملعقة وساق تقليب زجاجي 🥄",
-        homePos: spatHome.clone()
-      };
+        toolGroup.userData = {
+          id: tool.id,
+          label: tool.label,
+          homePos: homePos.clone(),
+          badgeSprite: badge,
+          beaconMesh: beaconMesh,
+          toolNumber: tool.number
+        };
 
-      const rod = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.025, 0.025, 1.1, 16),
-        new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.9, roughness: 0.15 })
-      );
-      rod.position.set(0, 0.45, 0);
-      spatulaGroup.add(rod);
-
-      const bladeSpat = new THREE.Mesh(
-        new THREE.BoxGeometry(0.08, 0.015, 0.28),
-        new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.1 })
-      );
-      bladeSpat.position.set(0, -0.15, 0);
-      spatulaGroup.add(bladeSpat);
-
-      const badgeD = createToolBadge("④");
-      badgeD.position.set(0, 1.32, 0);
-      spatulaGroup.add(badgeD);
-      spatulaGroup.userData.badgeSprite = badgeD;
-      spatulaGroup.userData.toolNumber = 4;
-
-      appGroup.add(spatulaGroup);
-      draggableToolsRef.current.push(spatulaGroup);
-
-      // 🖐️ DRAGGABLE TOOL E: Filter Funnel with Paper (قمع وورق ترشيح)
-      const funnelGroup = new THREE.Group();
-      const funHome = new THREE.Vector3(trayX + 0.4, 0.14, trayZ + 0.95);
-      funnelGroup.position.copy(funHome);
-      funnelGroup.userData = {
-        id: "filter_funnel",
-        label: "قمع وورق ترشيح لفصل الراسب ⚗️",
-        homePos: funHome.clone()
-      };
-
-      const funnelCone = new THREE.Mesh(
-        new THREE.ConeGeometry(0.28, 0.45, 24, 1, true),
-        glassMaterial
-      );
-      funnelCone.rotation.x = Math.PI;
-      funnelCone.position.set(0, 0.5, 0);
-      funnelGroup.add(funnelCone);
-
-      const funnelStem = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.03, 0.45, 16), glassMaterial);
-      funnelStem.position.set(0, 0.15, 0);
-      funnelGroup.add(funnelStem);
-
-      const filterPaperCone = new THREE.Mesh(
-        new THREE.ConeGeometry(0.26, 0.4, 24, 1, true),
-        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9, side: THREE.DoubleSide })
-      );
-      filterPaperCone.rotation.x = Math.PI;
-      filterPaperCone.position.set(0, 0.52, 0);
-      funnelGroup.add(filterPaperCone);
-
-      const badgeE = createToolBadge("⑤");
-      badgeE.position.set(0, 0.95, 0);
-      funnelGroup.add(badgeE);
-      funnelGroup.userData.badgeSprite = badgeE;
-      funnelGroup.userData.toolNumber = 5;
-
-      appGroup.add(funnelGroup);
-      draggableToolsRef.current.push(funnelGroup);
-
-      // 🖐️ DRAGGABLE TOOL F: Burner Igniter / Match (مشعل الموقد)
-      const igniterGroup = new THREE.Group();
-      const ignHome = new THREE.Vector3(trayX - 0.4, 0.1, trayZ + 0.95);
-      igniterGroup.position.copy(ignHome);
-      igniterGroup.userData = {
-        id: "toggle_heat",
-        label: "مشعل الموقد الحراري 🔥",
-        homePos: ignHome.clone()
-      };
-
-      const ignHandle = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.05, 0.05, 0.5, 16),
-        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.4 })
-      );
-      ignHandle.rotation.z = Math.PI / 2;
-      ignHandle.position.set(0, 0.05, 0);
-      igniterGroup.add(ignHandle);
-
-      const ignTip = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.02, 0.02, 0.4, 16),
-        new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.9 })
-      );
-      ignTip.rotation.z = Math.PI / 2;
-      ignTip.position.set(0.35, 0.05, 0);
-      igniterGroup.add(ignTip);
-
-      const sparkGlow = new THREE.Mesh(
-        new THREE.SphereGeometry(0.09, 16, 16),
-        new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.85 })
-      );
-      sparkGlow.position.set(0.6, 0.05, 0);
-      igniterGroup.add(sparkGlow);
-
-      const badgeF = createToolBadge("⑥");
-      badgeF.position.set(0.3, 0.45, 0);
-      igniterGroup.add(badgeF);
-      igniterGroup.userData.badgeSprite = badgeF;
-      igniterGroup.userData.beaconMesh = sparkGlow;
-      igniterGroup.userData.toolNumber = 6;
-
-      appGroup.add(igniterGroup);
-      draggableToolsRef.current.push(igniterGroup);
+        appGroup.add(toolGroup);
+        draggableToolsRef.current.push(toolGroup);
+      });
 
       // 🌟 Active Tool Selection Halo on the Tray
       const activeToolHalo = new THREE.Mesh(
@@ -2540,7 +2520,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
                 ) : (
 
                   <div className="flex flex-wrap items-center gap-1">
-                    {getUniversalTools(chemicals).map((tool) => {
+                    {getExperimentTools(experimentId, chemicals, apparatusList).map((tool) => {
                       const isTarget = tool.id === currentActiveToolId;
                       return (
                         <button
@@ -2777,7 +2757,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
               ) : (
 
                 <div className="grid grid-cols-2 gap-1.5">
-                  {getUniversalTools(chemicals).map((tool) => {
+                  {getExperimentTools(experimentId, chemicals, apparatusList).map((tool) => {
                     const isTarget = tool.id === currentActiveToolId;
                     return (
                       <button
