@@ -1,0 +1,59 @@
+{
+  "name": "كيمياء الثاني الثانوي - منصة نقلة",
+  "short_name": "كيمياء نقلة",
+  "description": "المنهاج التفاعلي لمادة الكيمياء - الصف الثاني ثانوي (المنهج السوداني)",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#FFFFFF",
+  "theme_color": "#047857",
+  "categories": [
+    "education",
+    "books"
+  ],
+  "icons": [
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "المعمل الافتراضي",
+      "url": "/#lab",
+      "description": "دخول مباشر للمختبر الكيميائي التفاعلي"
+    },
+    {
+      "name": "فهرس الدروس",
+      "url": "/#syllabus",
+      "description": "استعراض ومذاكرة وحدات المنهج"
+    },
+    {
+      "name": "أوراق العمل والتدريبات",
+      "url": "/#worksheets",
+      "description": "بنك الأسئلة والتمارين الوزارية"
+    }
+  ]
+}

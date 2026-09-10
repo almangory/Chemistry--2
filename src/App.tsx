@@ -306,7 +306,11 @@ export default function App() {
           <span className="font-serif font-bold text-base text-[#2C3E50] dark:text-slate-100">
             كيمياء الثاني الثانوي
           </span>
-          <Atom className="w-5 h-5 text-[#047857] dark:text-emerald-400 animate-spin" style={{ animationDuration: "12s" }} />
+          <img
+            src="/icon-192.png"
+            alt="شعار كيمياء نقلة"
+            className="w-8 h-8 rounded-lg object-cover border border-emerald-400/50 shadow-2xs"
+          />
         </div>
       </header>
 
@@ -329,9 +333,11 @@ export default function App() {
                     </span>
                     <span className="block text-[10px] text-[#7F8C8D] dark:text-slate-400 font-medium mt-0.5">منهج السودان • الثاني الثانوي</span>
                   </div>
-                  <div className="w-9 h-9 rounded-xl bg-[#064E3B] flex items-center justify-center text-white shadow-md">
-                    <Atom className="w-5 h-5 text-emerald-300 animate-spin" style={{ animationDuration: "12s" }} />
-                  </div>
+                  <img
+                    src="/icon-192.png"
+                    alt="شعار كيمياء نقلة"
+                    className="w-10 h-10 rounded-xl object-cover border border-emerald-500/40 shadow-sm"
+                  />
                 </div>
 
                 {/* 🇸🇩 Student Profile & Indicators Card (Naqla SSO) */}

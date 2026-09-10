@@ -91,8 +91,8 @@ export const StudentProfileModal: React.FC<StudentProfileModalProps> = ({
             </button>
 
             <div className="flex items-center gap-3.5">
-              <div className="w-13 h-13 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center text-white shadow-inner shrink-0">
-                <GraduationCap className="w-7 h-7 text-emerald-200" />
+              <div className="w-13 h-13 rounded-2xl bg-white/15 backdrop-blur-md border border-white/25 flex items-center justify-center text-white shadow-inner shrink-0 overflow-hidden p-1">
+                <img src="/icon-192.png" alt="شعار كيمياء نقلة" className="w-full h-full object-cover rounded-xl" />
               </div>
 
               <div className="space-y-0.5">

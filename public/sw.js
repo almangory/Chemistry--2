@@ -1,7 +1,14 @@
-const CACHE_NAME = "sudan-chemistry-offline-v1";
+const CACHE_NAME = "sudan-chemistry-offline-v2";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
+  "/manifest.json",
+  "/favicon.png",
+  "/favicon-32x32.png",
+  "/icon-192.png",
+  "/icon-512.png",
+  "/apple-touch-icon.png",
+  "/app-logo.jpg",
   "/src/main.tsx",
   "/src/index.css"
 ];
