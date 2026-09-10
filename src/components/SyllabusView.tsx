@@ -15,7 +15,8 @@ import {
   CheckCircle2,
   Sparkles,
   Layers,
-  ArrowRight
+  ArrowRight,
+  X
 } from "lucide-react";
 import { Unit, Lesson } from "../types";
 
@@ -46,6 +47,7 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
   const [selectedLesson, setSelectedLesson] = useState<Lesson>(curriculumData[0].lessons[0]);
   const [showSummary, setShowSummary] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<"reader" | "grid">("reader");
+  const [expandedImage, setExpandedImage] = useState<string | null>(null);
 
   // Sync when selectedLessonId is passed externally (e.g. from Dashboard)
   useEffect(() => {
@@ -182,13 +184,30 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
                     setSelectedLesson(lesson);
                     setViewMode("reader");
                   }}
-                  className={`p-3.5 sm:p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-2.5 ${
+                  className={`group p-3 sm:p-3.5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-2.5 ${
                     isCurrent
-                      ? "bg-emerald-50/40 border-emerald-500 shadow-xs"
-                      : "bg-white border-slate-200 hover:border-emerald-400 shadow-xs"
+                      ? "bg-emerald-50/40 border-emerald-500 shadow-xs ring-1 ring-emerald-500"
+                      : "bg-white border-slate-200 hover:border-emerald-400 shadow-xs hover:shadow-md"
                   }`}
                 >
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
+                    {/* Lesson Image Thumbnail (Nano Banana generated) */}
+                    {lesson.image && (
+                      <div className="relative w-full h-32 sm:h-36 rounded-xl overflow-hidden bg-slate-100 border border-slate-100">
+                        <img
+                          src={lesson.image}
+                          alt={lesson.title}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent pointer-events-none" />
+                        <span className="absolute bottom-2 right-2 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-slate-800 backdrop-blur-sm shadow-xs flex items-center gap-1">
+                          <span>🔬</span>
+                          <span>شكل توضيحي</span>
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex items-center justify-between">
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 font-mono">
                         الدرس {idx + 1}
@@ -207,7 +226,7 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
                       </div>
                     </div>
 
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 font-sans leading-snug">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-800 font-sans leading-snug group-hover:text-emerald-800 transition-colors">
                       {lesson.title}
                     </h4>
 
@@ -340,6 +359,53 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
             </div>
           </div>
 
+          {/* 🔬 Featured Educational Diagram (Nano Banana Generated) */}
+          {selectedLesson.image && (
+            <div className="rounded-2xl border border-slate-200 overflow-hidden bg-white shadow-xs">
+              <div className="px-3.5 py-2.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 text-xs text-emerald-800 font-bold">
+                  <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>رسم علمي توضيحي معتمد (نانو بنانا)</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setExpandedImage(selectedLesson.image || null)}
+                  className="text-[11px] font-bold text-slate-700 hover:text-emerald-700 flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition-colors cursor-pointer shadow-2xs"
+                  title="تكبير الرسم التوضيحي بالدقة الكاملة"
+                >
+                  <Maximize2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>تكبير الرسم التوضيحي 🔍</span>
+                </button>
+              </div>
+
+              <div
+                className="relative cursor-pointer group bg-slate-50/60 flex items-center justify-center p-2 sm:p-4 overflow-hidden"
+                onClick={() => setExpandedImage(selectedLesson.image || null)}
+              >
+                <img
+                  src={selectedLesson.image}
+                  alt={selectedLesson.title}
+                  className="w-full max-h-[380px] object-contain rounded-xl transition-transform duration-300 group-hover:scale-[1.01]"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center pointer-events-none">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/95 text-slate-800 text-xs font-bold px-3 py-1.5 rounded-xl shadow-md flex items-center gap-1.5 border border-slate-200">
+                    <Maximize2 className="w-3.5 h-3.5 text-emerald-700" />
+                    <span>انقر لتكبير المخطط بالدقة الكاملة 🔍</span>
+                  </span>
+                </div>
+              </div>
+
+              <div className="px-3.5 py-2.5 bg-emerald-50/40 border-t border-slate-100 flex items-center justify-between text-right text-xs text-slate-700 leading-relaxed font-sans">
+                <div>
+                  <span className="font-bold text-emerald-900 ml-1">موضوع الشكل:</span>
+                  <span>{selectedLesson.subtitle || selectedLesson.title}</span>
+                </div>
+                <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">NANO BANANA • 16:9 HD</span>
+              </div>
+            </div>
+          )}
+
           {/* Lesson Main text OR Summary tab */}
           <AnimatePresence mode="wait">
             {!showSummary ? (
@@ -461,6 +527,61 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
           </div>
         </div>
       )}
+
+      {/* 🖼️ High-Res Diagram Lightbox Modal */}
+      <AnimatePresence>
+        {expandedImage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
+            onClick={() => setExpandedImage(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="relative max-w-5xl w-full bg-white rounded-2xl overflow-hidden shadow-2xl flex flex-col border border-slate-200"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-3.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-2 text-right">
+                  <span className="text-xs sm:text-sm font-bold text-slate-800">{selectedLesson.title}</span>
+                  <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md font-bold">
+                    رسم علمي معتمد
+                  </span>
+                </div>
+                <button
+                  onClick={() => setExpandedImage(null)}
+                  className="p-1.5 rounded-xl hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                  title="إغلاق"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-3 sm:p-5 overflow-auto flex items-center justify-center bg-slate-100/50 max-h-[75vh]">
+                <img
+                  src={expandedImage}
+                  alt={selectedLesson.title}
+                  className="max-w-full max-h-[70vh] object-contain rounded-xl shadow-sm border border-slate-200"
+                />
+              </div>
+
+              <div className="p-3 bg-white border-t border-slate-200 flex items-center justify-between text-xs text-slate-600">
+                <span>{selectedLesson.subtitle || selectedLesson.title}</span>
+                <button
+                  onClick={() => setExpandedImage(null)}
+                  className="px-3 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-xs transition-colors cursor-pointer"
+                >
+                  إغلاق النافذة
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

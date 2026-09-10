@@ -170,6 +170,22 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       {unit.lessons.map(l => l.title.replace(/^الدرس \d+:\s*/, "")).slice(0, 3).join(" • ")}
                     </p>
                   </div>
+
+                  {/* Unit Key Illustration Preview */}
+                  {unit.lessons[0]?.image && (
+                    <div className="relative w-full h-24 rounded-xl overflow-hidden bg-slate-100 border border-slate-100 mt-1">
+                      <img
+                        src={unit.lessons[0].image}
+                        alt={unit.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        loading="lazy"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent pointer-events-none" />
+                      <span className="absolute bottom-1.5 right-2 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/95 text-slate-800 backdrop-blur-xs shadow-2xs">
+                        رسم توضيحي 🔬
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Bottom: Progress Bar and Action */}

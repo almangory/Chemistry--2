@@ -18,6 +18,8 @@ import ethenePrepImg from "../assets/images/ethene_prep_1783109958566.jpg";
 import ethynePrepImg from "../assets/images/ethyne_prep_1783109969354.jpg";
 import benzeneStructureImg from "../assets/images/benzene_structure_1783109980602.jpg";
 import isomerStructuresImg from "../assets/images/isomer_structures_1783109991824.jpg";
+import organicClassificationImg from "../assets/images/organic_classification_1789029280836.jpg";
+import chainIsomersPentaneImg from "../assets/images/chain_isomers_pentane_1789029951475.jpg";
 import allotropyPhosphorusImg from "../assets/images/allotropy_phosphorus_1783110003299.jpg";
 import nitrogenPrepImg from "../assets/images/nitrogen_prep_1783110015154.jpg";
 import ammoniaFountainImg from "../assets/images/ammonia_fountain_1783110026717.jpg";
@@ -295,7 +297,7 @@ export const curriculumData: Unit[] = [
         id: "u3_l3",
         title: "تصنيف المركبات العضوية وأقسام الهيدروكربونات",
         subtitle: "المخطط الهيكلي للمركبات، السلاسل المفتوحة والمغلقة، ومفهوم المركبات المتقابلة",
-        image: organicChemistryImg,
+        image: organicClassificationImg,
         content: [
           "تنقسم المركبات العضوية وفق المنهج السوداني إلى قسمين رئيسيين:",
           "1. <strong>الهيدروكربونات (Hydrocarbons):</strong> مركبات عضوية تتكون من عنصري الكربون والهيدروجين فقط.",
@@ -466,7 +468,7 @@ export const curriculumData: Unit[] = [
         id: "u3_l8",
         title: "ظاهرة التشكل التماكب الأيزوميرية (السلسلي)",
         subtitle: "اشتراك في الصيغة الجزيئية واختلاف في البنائية، ومتماكبات البيوتان والبنتان والهكسان",
-        image: isomerStructuresImg,
+        image: chainIsomersPentaneImg,
         content: [
           "<strong>التماكب (Isomerism):</strong> هي ظاهرة فريدة للمركبات العضوية تعني اشتراك مركبين عضويين أو أكثر في الصيغة الجزيئية الكلية، واختلافهما في الصيغة البنائية (ترتيب ارتباط الذرات في الفراغ)، مما يؤدي لاختلاف خواصهما الفيزيائية والكيميائية.",
           "<em>قاعدة المنهج السوداني للصف الثاني الثانوي:</em> للتماكب أنواع عديدة، وسنكتفي في هذه المرحلة بدراسة <strong>التماكب السلسلي (Chain Isomerism)</strong> على أن تدرس بقية الأنواع (الموضعي، الوظيفي، الهندسي) في العام الدراسي القادم (الصف الثالث الثانوي).",
