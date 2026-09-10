@@ -144,6 +144,10 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   const raycasterRef = useRef<THREE.Raycaster>(new THREE.Raycaster());
   const mouseVecRef = useRef<THREE.Vector2>(new THREE.Vector2());
 
+  // 📱 Mobile Multi-Touch Pinch-to-Zoom Gesture State
+  const activePointersRef = useRef<Map<number, { x: number; y: number }>>(new Map());
+  const pinchDistanceRef = useRef<number | null>(null);
+
   // Orbit rotation controls
   const isDraggingCameraRef = useRef<boolean>(false);
   const isDraggingToolRef = useRef<boolean>(false);
@@ -1154,9 +1158,58 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         troughWater.position.set(0, 0.28, 0);
         troughGroup.add(troughWater);
 
-        const gasJar = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1.6, 24), glassMaterial);
+        const jarRadius = 0.38;
+        const jarHeight = 1.6;
+        const gasJar = new THREE.Mesh(new THREE.CylinderGeometry(jarRadius, jarRadius, jarHeight, 24, 1, true), glassMaterial);
         gasJar.position.set(0, 0.9, 0);
         troughGroup.add(gasJar);
+
+        // Water level inside inverted gas jar (displaced downward as gas collects)
+        const maxWaterH = 1.35;
+        const dispRatio = Math.min(1.0, (gasVolume || 0) / 220);
+        const jarWaterH = Math.max(0.12, maxWaterH * (1 - dispRatio));
+        const jarWaterGeo = new THREE.CylinderGeometry(jarRadius * 0.94, jarRadius * 0.94, jarWaterH, 24);
+        jarWaterGeo.translate(0, jarWaterH / 2, 0);
+        const jarWater = new THREE.Mesh(jarWaterGeo, new THREE.MeshPhysicalMaterial({
+          color: 0x38bdf8,
+          transparent: true,
+          opacity: 0.45,
+          transmission: 0.85,
+          roughness: 0.05,
+          ior: 1.333
+        }));
+        jarWater.position.set(0, 0.12, 0);
+        troughGroup.add(jarWater);
+
+        // Collected Gas Column filling top of inverted jar
+        if (dispRatio > 0.04) {
+          const gasColH = maxWaterH * dispRatio;
+          const jarGasGeo = new THREE.CylinderGeometry(jarRadius * 0.93, jarRadius * 0.93, gasColH, 24);
+          jarGasGeo.translate(0, -gasColH / 2, 0);
+
+          let gasHex = 0xffffff;
+          let gasOp = 0.30;
+          if (experimentId === "u5_l2") {
+            gasHex = 0xa3e635; // Chlorine: greenish-yellow gas!
+            gasOp = 0.78;
+          } else if (experimentId === "u4_l3") {
+            gasHex = 0x2563eb; // Ammonia fountain: deep alkaline blue!
+            gasOp = 0.85;
+          } else if (experimentId === "u3_l6") {
+            gasHex = 0x38bdf8;
+            gasOp = 0.40;
+          }
+
+          const jarGasMat = new THREE.MeshStandardMaterial({
+            color: gasHex,
+            transparent: true,
+            opacity: gasOp,
+            roughness: 0.2
+          });
+          const jarGasMesh = new THREE.Mesh(jarGasGeo, jarGasMat);
+          jarGasMesh.position.set(0, 0.12 + maxWaterH, 0);
+          troughGroup.add(jarGasMesh);
+        }
 
         const curve = new THREE.CatmullRomCurve3([
           new THREE.Vector3(0, 1.52 + beakerHeight, 0),
@@ -1190,8 +1243,57 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           rackGroup.add(upright);
         }
 
-        const tLiquidColors = ["#f43f5e", "#10b981", "#8b5cf6"];
+        // 🧪 Chemically Dynamic Test Tube Contents for All Curriculum Experiments
+        const getDynamicTubeContent = (tubeIdx: number) => {
+          if (experimentId === "u5_l1") {
+            // Halogen Displacement
+            if (tubeIdx === 0) return { color: "#e0f2fe", opacity: 0.5, height: 0.85 };
+            if (tubeIdx === 1) return { color: stepIndex >= 1 ? "#ea580c" : "#e0f2fe", opacity: 0.92, height: 0.9 };
+            return { color: stepIndex >= 2 ? "#581c87" : "#e0f2fe", opacity: 0.95, height: 0.95 };
+          }
+          if (experimentId === "u3_l7") {
+            // Benzene vs Hexene
+            if (tubeIdx === 0) return { color: stepIndex >= 1 ? "#f8fafc" : "#7e22ce", opacity: stepIndex >= 1 ? 0.35 : 0.88, height: 0.85 };
+            if (tubeIdx === 1) return { color: "#7e22ce", opacity: 0.9, height: 0.85 };
+            return { color: "#6b21a8", opacity: 0.85, height: 0.85 };
+          }
+          if (experimentId === "u3_l8") {
+            // Isomers: Propene vs Cyclopropane
+            if (tubeIdx === 0) return { color: stepIndex >= 1 ? "#f8fafc" : "#ea580c", opacity: stepIndex >= 1 ? 0.28 : 0.9, height: 0.85 };
+            if (tubeIdx === 1) return { color: "#ea580c", opacity: 0.9, height: 0.85 };
+            return { color: "#c2410c", opacity: 0.9, height: 0.85 };
+          }
+          if (experimentId === "u1_l3") {
+            // Period 3 Trends: Na vs Mg
+            if (tubeIdx === 0) return { color: stepIndex >= 1 ? "#ec4899" : "#e0f2fe", opacity: 0.88, height: 0.9 };
+            if (tubeIdx === 1) return { color: "#f0f9ff", opacity: 0.3, height: 0.8 };
+            return { color: stepIndex === 3 ? "#f472b6" : "#f0f9ff", opacity: stepIndex === 3 ? 0.8 : 0.3, height: 0.85 };
+          }
+          if (experimentId === "u1_l2") {
+            // s, p, d, f Blocks
+            if (tubeIdx === 0) return { color: "#f0f9ff", opacity: 0.35, height: 0.85 };
+            if (tubeIdx === 1) return { color: "#bef264", opacity: 0.75, height: 0.85 };
+            return { color: "#0284c7", opacity: 0.92, height: 0.9 };
+          }
+          if (experimentId === "u2_l2") {
+            // Flame tests
+            if (tubeIdx === 0) return { color: "#e11d48", opacity: 0.88, height: 0.8 };
+            if (tubeIdx === 1) return { color: "#eab308", opacity: 0.88, height: 0.8 };
+            return { color: "#a855f7", opacity: 0.88, height: 0.8 };
+          }
+          if (experimentId === "u3_l3") {
+            // Hydrocarbons
+            if (tubeIdx === 0) return { color: "#f1f5f9", opacity: 0.3, height: 0.8 };
+            if (tubeIdx === 1) return { color: stepIndex >= 2 ? "#38bdf8" : "#f1f5f9", opacity: 0.75, height: 0.85 };
+            return { color: stepIndex >= 3 ? "#f59e0b" : "#f1f5f9", opacity: 0.8, height: 0.85 };
+          }
+          const defaultColors = ["#38bdf8", liquidColor || "#10b981", "#8b5cf6"];
+          return { color: defaultColors[tubeIdx], opacity: 0.8, height: 0.8 };
+        };
+
         for (let t = -1; t <= 1; t++) {
+          const tubeIdx = t + 1;
+          const tubeContent = getDynamicTubeContent(tubeIdx);
           const tubeGroup = new THREE.Group();
           tubeGroup.position.set(t * 0.6, 0.4, 0);
 
@@ -1203,10 +1305,24 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           tubeCap.position.set(0, 0, 0);
           tubeGroup.add(tubeCap);
 
-          const tLiquidGeo = new THREE.CylinderGeometry(0.16, 0.16, 0.8, 24);
-          tLiquidGeo.translate(0, 0.4, 0);
-          const tLiquidMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(tLiquidColors[t + 1]), transparent: true, opacity: 0.8 });
+          const tLiquidGeo = new THREE.CylinderGeometry(0.16, 0.16, tubeContent.height, 24);
+          tLiquidGeo.translate(0, tubeContent.height / 2, 0);
+          const tLiquidMat = new THREE.MeshStandardMaterial({
+            color: new THREE.Color(tubeContent.color),
+            transparent: true,
+            opacity: tubeContent.opacity,
+            roughness: 0.12
+          });
           tubeGroup.add(new THREE.Mesh(tLiquidGeo, tLiquidMat));
+
+          // Glowing Identification Ring at the mouth of each tube
+          const mouthRing = new THREE.Mesh(
+            new THREE.TorusGeometry(0.18, 0.02, 16, 24),
+            new THREE.MeshBasicMaterial({ color: new THREE.Color(tubeContent.color) })
+          );
+          mouthRing.rotation.x = Math.PI / 2;
+          mouthRing.position.set(0, 1.6, 0);
+          tubeGroup.add(mouthRing);
 
           rackGroup.add(tubeGroup);
         }
@@ -1464,6 +1580,81 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
       benchTrayGroup.add(trayBase);
       appGroup.add(benchTrayGroup);
+
+      // ⚖️ Analytical Digital Laboratory Balance for u1_l1 (Dobereiner's Triads)
+      if (experimentId === "u1_l1") {
+        const scaleGroup = new THREE.Group();
+        scaleGroup.position.set(0, 0, 0.6);
+
+        const scaleBody = new THREE.Mesh(
+          new THREE.BoxGeometry(2.4, 0.35, 2.2),
+          new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.3 })
+        );
+        scaleBody.position.set(0, 0.175, 0);
+        scaleGroup.add(scaleBody);
+
+        const pan = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.7, 0.7, 0.05, 32),
+          new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.95, roughness: 0.1 })
+        );
+        pan.position.set(0, 0.38, 0);
+        scaleGroup.add(pan);
+
+        const sampleDish = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.45, 0.45, 0.03, 24),
+          glassMaterial
+        );
+        sampleDish.position.set(0, 0.42, 0);
+        scaleGroup.add(sampleDish);
+
+        const sampleColor = stepIndex === 0 ? 0xc084fc : stepIndex === 1 ? 0x94a3b8 : 0x38bdf8;
+        const sampleM = new THREE.Mesh(
+          new THREE.ConeGeometry(0.25, 0.12, 16),
+          new THREE.MeshStandardMaterial({ color: sampleColor, roughness: 0.4, metalness: 0.8 })
+        );
+        sampleM.position.set(0, 0.48, 0);
+        scaleGroup.add(sampleM);
+
+        const ledScreen = new THREE.Mesh(
+          new THREE.BoxGeometry(1.5, 0.22, 0.02),
+          new THREE.MeshBasicMaterial({ color: 0x0284c7 })
+        );
+        ledScreen.position.set(0, 0.22, 1.11);
+        scaleGroup.add(ledScreen);
+
+        appGroup.add(scaleGroup);
+      }
+
+      // 🥢 Platinum Wire Loop Holder for u2_l2 (Flame Tests)
+      if (experimentId === "u2_l2") {
+        const wireGroup = new THREE.Group();
+        wireGroup.position.set(0, 1.5, 0);
+
+        const ptHandle = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.04, 0.04, 1.2, 16),
+          new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 })
+        );
+        ptHandle.rotation.z = Math.PI / 3;
+        ptHandle.position.set(-0.8, 0.5, 0);
+        wireGroup.add(ptHandle);
+
+        const ptWire = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.015, 0.015, 0.9, 16),
+          new THREE.MeshStandardMaterial({ color: 0xf8fafc, metalness: 0.95, roughness: 0.05 })
+        );
+        ptWire.rotation.z = Math.PI / 3;
+        ptWire.position.set(-0.35, 0.22, 0);
+        wireGroup.add(ptWire);
+
+        const wireLoop = new THREE.Mesh(
+          new THREE.TorusGeometry(0.06, 0.012, 16, 24),
+          new THREE.MeshBasicMaterial({ color: new THREE.Color(flameColor) })
+        );
+        wireLoop.position.set(0, 0.05, 0);
+        wireGroup.add(wireLoop);
+
+        appGroup.add(wireGroup);
+      }
     }
 
     scene.add(appGroup);
@@ -1659,6 +1850,26 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
   // 4. Unified Pointer Drag & Drop Engine (Mouse + Touch on Mobile)
   const handlePointerDown = (e: React.PointerEvent) => {
     if (!mountRef.current || !cameraRef.current) return;
+    
+    // Register active pointer for multi-touch tracking
+    activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // 📱 Two-Finger Touch Pinch Gesture on Mobile Screens
+    if (activePointersRef.current.size === 2) {
+      isDraggingToolRef.current = false;
+      isDraggingCameraRef.current = false;
+      draggedObjectRef.current = null;
+      setIsCurrentlyDragging(false);
+
+      const pts = Array.from(activePointersRef.current.values()) as Array<{ x: number; y: number }>;
+      const [p1, p2] = pts;
+      if (p1 && p2) {
+        pinchDistanceRef.current = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+      }
+      setDragFeedback("🔍 تكبير وتصغير الشاشة بملامسة إصبعين...");
+      return;
+    }
+
     const rect = mountRef.current.getBoundingClientRect();
     const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1699,6 +1910,31 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
 
   const handlePointerMove = (e: React.PointerEvent) => {
     if (!mountRef.current || !cameraRef.current) return;
+
+    if (activePointersRef.current.has(e.pointerId)) {
+      activePointersRef.current.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    }
+
+    // 📱 Two-Finger Pinch-to-Zoom Handler for Mobile Touch
+    if (activePointersRef.current.size >= 2) {
+      const pts = Array.from(activePointersRef.current.values()) as Array<{ x: number; y: number }>;
+      const [p1, p2] = pts;
+      if (p1 && p2) {
+        const currentDist = Math.hypot(p1.x - p2.x, p1.y - p2.y);
+
+        if (pinchDistanceRef.current !== null && pinchDistanceRef.current > 0) {
+          const delta = currentDist - pinchDistanceRef.current;
+          // Pinching outwards (delta > 0) -> zoom in (reduce radius)
+          // Pinching inwards (delta < 0) -> zoom out (increase radius)
+          const zoomSpeed = 0.016;
+          cameraAngleRef.current.radius = Math.max(2.4, Math.min(13.0, cameraAngleRef.current.radius - delta * zoomSpeed));
+          updateCameraPos();
+        }
+        pinchDistanceRef.current = currentDist;
+      }
+      return;
+    }
+
     const rect = mountRef.current.getBoundingClientRect();
     const mouseX = ((e.clientX - rect.left) / rect.width) * 2 - 1;
     const mouseY = -((e.clientY - rect.top) / rect.height) * 2 + 1;
@@ -1796,7 +2032,20 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       setDragFeedback(null);
     }
 
+    activePointersRef.current.delete(e.pointerId);
+    if (activePointersRef.current.size < 2) {
+      pinchDistanceRef.current = null;
+    }
+
     isDraggingCameraRef.current = false;
+  };
+
+  const handlePointerCancel = (e: React.PointerEvent) => {
+    activePointersRef.current.delete(e.pointerId);
+    if (activePointersRef.current.size < 2) {
+      pinchDistanceRef.current = null;
+    }
+    handlePointerUp(e);
   };
 
   const handleWheel = (e: React.WheelEvent) => {
@@ -1832,7 +2081,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerUp}
+          onPointerCancel={handlePointerCancel}
           onWheel={handleWheel}
         />
 
