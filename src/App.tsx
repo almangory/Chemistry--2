@@ -275,7 +275,7 @@ export default function App() {
       </div>
 
       {/* Mobile Top Navbar */}
-      <header className={`${isFocusReading ? "hidden" : "lg:hidden flex"} bg-white/95 dark:bg-[#1A1A1E]/95 backdrop-blur border-b border-[#E5E2DE] dark:border-slate-800 sticky top-0 z-40 px-4 py-3 justify-between items-center`}>
+      <header className={`${isFocusReading ? "hidden" : "lg:hidden flex"} bg-white/95 dark:bg-slate-900/95 backdrop-blur border-b border-[#E5E2DE] dark:border-slate-800 sticky top-0 z-40 px-4 py-3 justify-between items-center`}>
         <div className="flex items-center gap-2">
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -314,7 +314,7 @@ export default function App() {
       <div className="flex flex-1 relative">
         {/* Sidebar Nav (Desktop & Mobile Drawer) */}
         <aside
-          className={`${isFocusReading ? "hidden" : "lg:block"} shrink-0 bg-[#F9F8F6] dark:bg-[#16161A] border-l border-[#E5E2DE] dark:border-slate-800 w-64 lg:w-72 fixed lg:static top-0 bottom-0 right-0 z-50 lg:z-auto transition-transform duration-300 transform ${
+          className={`${isFocusReading ? "hidden" : "lg:block"} shrink-0 bg-[#F9F8F6] dark:bg-slate-900 border-l border-[#E5E2DE] dark:border-slate-800 w-64 lg:w-72 fixed lg:static top-0 bottom-0 right-0 z-50 lg:z-auto transition-transform duration-300 transform ${
             isSidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"
           }`}
         >
@@ -335,7 +335,7 @@ export default function App() {
                 </div>
 
                 {/* 🇸🇩 Student Profile & Indicators Card (Naqla SSO) */}
-                <div className="bg-white dark:bg-[#1E1E24] p-3.5 rounded-2xl border border-[#E5E2DE] dark:border-slate-800 shadow-xs space-y-2.5">
+                <div className="bg-white dark:bg-slate-800 p-3.5 rounded-2xl border border-[#E5E2DE] dark:border-slate-800 shadow-xs space-y-2.5">
                   <div className="flex items-center gap-2.5 justify-end">
                     <div className="text-right flex-1 min-w-0">
                       <span className="text-xs font-bold text-[#2C3E50] dark:text-white truncate block">
@@ -374,7 +374,7 @@ export default function App() {
                         }}
                         className={`w-full px-3.5 py-3 rounded-xl text-xs font-bold flex items-center gap-3 justify-end transition-all cursor-pointer ${
                           isActive
-                            ? "bg-white dark:bg-[#1E1E24] text-[#047857] dark:text-emerald-400 border border-[#047857]/30 shadow-xs"
+                            ? "bg-white dark:bg-slate-800 text-[#047857] dark:text-emerald-400 border border-[#047857]/30 shadow-xs"
                             : "text-[#7F8C8D] dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-white hover:bg-white/60 dark:hover:bg-slate-800/40"
                         }`}
                       >
@@ -397,7 +397,7 @@ export default function App() {
                 </button>
 
                 {/* Dark Mode Toggle Switch */}
-                <div className="bg-white/80 dark:bg-[#1E1E24]/80 p-2.5 rounded-xl border border-[#E5E2DE] dark:border-slate-800 flex items-center justify-between flex-row-reverse transition-all">
+                <div className="bg-white/80 dark:bg-slate-800/80 p-2.5 rounded-xl border border-[#E5E2DE] dark:border-slate-800 flex items-center justify-between flex-row-reverse transition-all">
                   <div className="flex items-center gap-2 flex-row-reverse">
                     {isDarkMode ? (
                       <Sun className="w-4 h-4 text-amber-500 shrink-0" />
@@ -441,7 +441,7 @@ export default function App() {
         )}
 
         {/* Primary Page Canvas */}
-        <main className={`flex-1 overflow-y-auto px-4 md:px-8 py-6 w-full space-y-6 transition-all duration-300 ${isFocusReading ? "max-w-full" : "max-w-7xl mx-auto"}`}>
+        <main className={`flex-1 overflow-y-auto px-3 sm:px-6 md:px-8 py-4 sm:py-6 pb-24 lg:pb-8 w-full space-y-6 transition-all duration-300 ${isFocusReading ? "max-w-full" : "max-w-7xl mx-auto"}`}>
           {/* Offline Notification Banner */}
           <AnimatePresence>
             {isOffline && (
@@ -527,6 +527,62 @@ export default function App() {
           </AnimatePresence>
         </main>
       </div>
+      {/* 📱 Native Mobile Bottom Navigation Bar (شريط التنقل السفلي المخصص للجوال) */}
+      <nav aria-label="شريط التنقل السريع للجوال" className={`${isFocusReading ? "hidden" : "lg:hidden flex"} fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-lg px-2 py-1.5 items-center justify-around`}>
+        {/* 1. الرئيسية */}
+        <button
+          onClick={() => setActiveTab("dashboard")}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === "dashboard" ? "text-[#047857] font-bold" : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Award className={`w-5 h-5 ${activeTab === "dashboard" ? "text-[#047857]" : "text-slate-400"}`} />
+          <span className="text-[10px] font-sans">الرئيسية</span>
+        </button>
+
+        {/* 2. الدروس */}
+        <button
+          onClick={() => setActiveTab("syllabus")}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === "syllabus" ? "text-[#047857] font-bold" : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <BookOpen className={`w-5 h-5 ${activeTab === "syllabus" ? "text-[#047857]" : "text-slate-400"}`} />
+          <span className="text-[10px] font-sans">الدروس</span>
+        </button>
+
+        {/* 3. المعمل (21) */}
+        <button
+          onClick={() => setActiveTab("lab")}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === "lab" ? "text-[#E67E22] font-bold" : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <FlaskConical className={`w-5 h-5 ${activeTab === "lab" ? "text-[#E67E22]" : "text-slate-400"}`} />
+          <span className="text-[10px] font-sans">المعمل (21)</span>
+        </button>
+
+        {/* 4. أوراق العمل */}
+        <button
+          onClick={() => setActiveTab("worksheets")}
+          className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all cursor-pointer ${
+            activeTab === "worksheets" ? "text-[#047857] font-bold" : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <FileText className={`w-5 h-5 ${activeTab === "worksheets" ? "text-[#047857]" : "text-slate-400"}`} />
+          <span className="text-[10px] font-sans">أوراق العمل</span>
+        </button>
+
+        {/* 5. مؤشراتي */}
+        <button
+          onClick={() => setIsProfileModalOpen(true)}
+          className="flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all cursor-pointer text-slate-500 hover:text-[#047857]"
+        >
+          <GraduationCap className="w-5 h-5 text-emerald-600" />
+          <span className="text-[10px] font-sans">مؤشراتي</span>
+        </button>
+      </nav>
+
       <StudentAssistant />
 
       {/* 🇸🇩 Student Profile & Indicators Modal */}
@@ -556,7 +612,7 @@ export default function App() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsExitModalOpen(false)}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-slate-800/40 backdrop-blur-xs"
             />
             
             {/* Dialog Card */}
@@ -565,17 +621,17 @@ export default function App() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 350 }}
-              className="bg-white dark:bg-[#1A1A1E] border border-[#E5E2DE] dark:border-slate-800 max-w-md w-full rounded-2xl shadow-2xl p-6 relative z-10 text-right space-y-5"
+              className="bg-white border border-slate-200 max-w-md w-full rounded-2xl shadow-xl p-6 relative z-10 text-right space-y-5"
               dir="rtl"
             >
               <div className="flex items-start gap-3 flex-row-reverse">
-                <div className="w-12 h-12 rounded-full bg-amber-100 dark:bg-amber-900/20 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center shrink-0">
                   <span className="text-2xl">⚠️</span>
                 </div>
                 <div className="space-y-1">
-                  <h3 className="text-lg font-serif font-extrabold text-[#2C3E50] dark:text-white">هل أنت متأكد من مغادرة التطبيق؟</h3>
-                  <p className="text-xs text-[#7F8C8D] dark:text-slate-400 leading-relaxed">
-                    سيتم مغادرة التطبيق وتوجيهك لصفحة فارغة. يمكنك دائماً العودة لاحقاً لإكمال المذاكرة ومراجعة البطاقات التعليمية مجاناً حتى بدون اتصال إنترنت.
+                  <h3 className="text-base sm:text-lg font-bold text-slate-800">هل أنت متأكد من مغادرة المنصة؟</h3>
+                  <p className="text-xs text-slate-500 leading-relaxed">
+                    يمكنك دائماً العودة لاحقاً لإكمال المذاكرة ومراجعة البطاقات التعليمية والمعمل الافتراضي مجاناً حتى بدون اتصال إنترنت.
                   </p>
                 </div>
               </div>
@@ -583,7 +639,7 @@ export default function App() {
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   onClick={() => setIsExitModalOpen(false)}
-                  className="px-4 py-3 bg-[#2C3E50] hover:bg-slate-800 text-white font-bold text-xs rounded-xl cursor-pointer transition-all shadow-sm text-center font-sans"
+                  className="px-4 py-2.5 bg-[#047857] hover:bg-[#036549] text-white font-bold text-xs rounded-xl cursor-pointer transition-all shadow-xs text-center font-sans"
                 >
                   البقاء ومتابعة المذاكرة
                 </button>
@@ -592,7 +648,7 @@ export default function App() {
                     setIsExitModalOpen(false);
                     window.location.href = "about:blank";
                   }}
-                  className="px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 dark:bg-red-950/20 dark:hover:bg-red-950/40 dark:border-red-900/50 font-bold text-xs rounded-xl cursor-pointer transition-all text-center font-sans"
+                  className="px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 font-bold text-xs rounded-xl cursor-pointer transition-all text-center font-sans"
                 >
                   نعم، أريد المغادرة
                 </button>
@@ -604,3 +660,4 @@ export default function App() {
     </div>
   );
 }
+

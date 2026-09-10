@@ -41,29 +41,29 @@
 }
 
 /* ==========================================
-   وضع القراءة الليلي (Premium Dark Mode)
+   وضع القراءة المريح للعين (Soft Reading Mode - No Black)
    ========================================== */
 .dark {
   color-scheme: dark;
 }
 
-/* Global transitions and overrides */
+/* Global transitions and soft slate palette */
 .dark body,
 .dark .bg-\[\#FDFCFB\] {
-  background-color: #121214 !important;
+  background-color: #0f172a !important;
   color: #E2E8F0 !important;
 }
 
 /* Card-level backgrounds */
 .dark .bg-white {
-  background-color: #1A1A1E !important;
-  border-color: #2D2D34 !important;
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
   color: #F1F5F9 !important;
 }
 
 .dark .bg-\[\#F9F8F6\] {
-  background-color: #161619 !important;
-  border-color: #2D2D34 !important;
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
   color: #E2E8F0 !important;
 }
 
@@ -74,21 +74,21 @@
 .dark .bg-amber-50\/50,
 .dark .bg-emerald-50,
 .dark .bg-orange-50 {
-  background-color: #1E293B !important;
+  background-color: #1e293b !important;
   border-color: #334155 !important;
   color: #F1F5F9 !important;
 }
 
 /* Borders mapping */
 .dark .border-\[\#E5E2DE\] {
-  border-color: #2D2D34 !important;
+  border-color: #334155 !important;
 }
 
 .dark .border-l-\[\#E5E2DE\],
 .dark .border-r-\[\#E5E2DE\],
 .dark .border-b-\[\#E5E2DE\],
 .dark .border-t-\[\#E5E2DE\] {
-  border-color: #2D2D34 !important;
+  border-color: #334155 !important;
 }
 
 /* Text elements mapping */
@@ -113,45 +113,45 @@
 .dark select,
 .dark input,
 .dark textarea {
-  background-color: #161619 !important;
+  background-color: #1e293b !important;
   color: #F1F5F9 !important;
-  border-color: #2D2D34 !important;
+  border-color: #334155 !important;
 }
 
 .dark select option {
-  background-color: #1A1A1E !important;
+  background-color: #1e293b !important;
   color: #F1F5F9 !important;
 }
 
 /* Header, sidebar elements */
 .dark header {
-  background-color: #1A1A1E !important;
-  border-color: #2D2D34 !important;
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
 }
 
 .dark aside {
-  background-color: #161619 !important;
-  border-color: #2D2D34 !important;
+  background-color: #0f172a !important;
+  border-color: #334155 !important;
 }
 
 .dark aside button:hover {
-  background-color: #1E1E24 !important;
+  background-color: #334155 !important;
 }
 
 .dark aside button.bg-white {
-  background-color: #1E1E24 !important;
-  border-color: #2D2D34 !important;
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
   color: #F1F5F9 !important;
 }
 
 /* Interactive hover elements in lists */
 .dark .hover\:bg-\[\#F9F8F6\]:hover,
 .dark .hover\:bg-\[\#E5E2DE\]\/30:hover {
-  background-color: #1E1E24 !important;
+  background-color: #334155 !important;
 }
 
 .dark .bg-slate-900 {
-  background-color: #0A0A0C !important;
+  background-color: #0f172a !important;
 }
 
 .dark .text-slate-400 {
@@ -171,15 +171,15 @@
   color: #F87171 !important;
 }
 
-/* Scrollbar dark mode adjustments */
+/* Scrollbar soft styling */
 .dark ::-webkit-scrollbar-track {
-  background: #121214 !important;
+  background: #0f172a !important;
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  background: #2D2D34 !important;
+  background: #334155 !important;
 }
 
 .dark ::-webkit-scrollbar-thumb:hover {
-  background: #4E4E5A !important;
+  background: #475569 !important;
 }
