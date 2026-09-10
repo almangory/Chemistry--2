@@ -14,11 +14,18 @@ import {
   Droplet,
   Compass,
   Zap,
-  Info
+  Info,
+  Maximize2,
+  Scale,
+  Magnet,
+  Eye,
+  HelpCircle,
+  CheckCircle2
 } from "lucide-react";
 import { PeriodicTableTool } from "./PeriodicTableTool";
 import { MolecularSimulator } from "./MolecularSimulator";
 import { Lab3DScene } from "./Lab3DScene";
+import { getExperimentReflection, LAB_REFLECTIONS } from "../data/labReflections";
 
 interface LabStep {
   text: string;
@@ -737,22 +744,24 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
 
   const [manualHeating, setManualHeating] = useState<boolean>(false);
   const [manualBubbling, setManualBubbling] = useState<boolean>(false);
+  const [manualMagnet, setManualMagnet] = useState<boolean>(false);
 
   const handleActionTrigger = (action: string) => {
     if (action === "toggle_heat") {
       setManualHeating(prev => !prev);
+    } else if (action === "toggle_magnet") {
+      setManualMagnet(prev => !prev);
     } else if (action === "add_reagent") {
       setManualBubbling(true);
-      setTimeout(() => setManualBubbling(false), 3000);
+      setTimeout(() => setManualBubbling(false), 4000);
     } else if (action === "stir") {
-      setManualBubbling(true);
-      setTimeout(() => setManualBubbling(false), 2000);
+      setChamberStatus("تم رج وتقليب المحلول وتجانس المتفاعلات");
     }
   };
 
   // 🧪 High-precision 3D Laboratory State calculation for all 21 lessons
   const get3DLabState = () => {
-    let apparatusType: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" = "beaker";
+    let apparatusType: "beaker" | "test_tubes" | "gas_prep" | "electrolysis" | "magnetic_balance" = "beaker";
     let liquidColor = "#38bdf8";
     let liquidHeight = 0.45;
     let isHeating = false;
@@ -763,6 +772,9 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
     let temperature = 25;
     let phValue = 7.0;
     let gasVolume = 0;
+    let apparentWeight: number | undefined = undefined;
+    let magneticFieldOn: boolean = manualMagnet;
+    let activeSubstance: string | undefined = undefined;
 
     switch (selectedExp.id) {
       // UNIT 1: Classification & Periodicity
@@ -909,8 +921,21 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
 
       // UNIT 6: Transition Elements
       case "u6_l1": // Transition magnetism & color
-        apparatusType = "test_tubes";
-        liquidColor = currentStep === 0 ? "#10b981" : currentStep === 1 ? "#0284c7" : "#e2e8f0";
+        apparatusType = "magnetic_balance";
+        magneticFieldOn = manualMagnet || currentStep >= 1;
+        if (currentStep === 0) {
+          activeSubstance = "FeSO4";
+          apparentWeight = 10.00;
+        } else if (currentStep === 1) {
+          activeSubstance = "FeSO4";
+          apparentWeight = 11.85;
+        } else if (currentStep === 2) {
+          activeSubstance = "CuSO4";
+          apparentWeight = 10.42;
+        } else {
+          activeSubstance = "ZnCl2";
+          apparentWeight = 9.92;
+        }
         break;
       case "u6_l2": // Aqua Regia gold dissolution
         apparatusType = "beaker";
@@ -934,7 +959,10 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
       flameColor,
       temperature,
       phValue,
-      gasVolume
+      gasVolume,
+      apparentWeight,
+      magneticFieldOn,
+      activeSubstance
     };
   };
 
@@ -1094,38 +1122,58 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
 
         {/* Center: Live Simulation Chamber */}
         <div className="lg:col-span-6 bg-[#F9F8F6] border border-[#E5E2DE] p-3 sm:p-4 rounded-xl flex flex-col items-center justify-between min-h-[490px] relative overflow-hidden shadow-sm">
-          <div className="absolute top-4 left-4 flex gap-1.5 items-center bg-white/80 px-2 py-0.5 rounded-full border border-[#E5E2DE]">
-            <Shield className="w-3.5 h-3.5 text-emerald-600" />
-            <span className="text-[10px] text-emerald-700 font-bold font-sans">نظام الأمان النشط مفعل</span>
+          <div className="w-full flex items-center justify-between mb-2">
+            <div className="flex gap-1.5 items-center bg-white/80 px-2.5 py-1 rounded-full border border-[#E5E2DE] shadow-2xs">
+              <Shield className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-[10px] text-emerald-700 font-bold font-sans">نظام الأمان النشط مفعل</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-[#7F8C8D] font-bold">المختبر الافتراضي 3D WebGL</span>
+            </div>
           </div>
 
           {/* 3D WebGL Virtual Laboratory Chamber */}
-          <div className="w-full flex-1 my-2">
+          <div className="w-full flex-1 my-1">
             {(() => {
               const lab3D = get3DLabState();
+              const expReflection = getExperimentReflection(selectedExp.id);
+              const currentStepReflection = expReflection?.steps[currentStep];
+
               return (
                 <Lab3DScene
                   experimentId={selectedExp.id}
                   stepIndex={currentStep}
-                  apparatusType={lab3D.apparatusType}
-                  liquidColor={lab3D.liquidColor}
-                  liquidHeight={lab3D.liquidHeight}
+                  apparatusType={expReflection?.apparatusType || lab3D.apparatusType}
+                  liquidColor={currentStepReflection?.telemetry.liquidColor || lab3D.liquidColor}
+                  liquidHeight={currentStepReflection?.telemetry.liquidHeight || lab3D.liquidHeight}
                   isHeating={lab3D.isHeating || manualHeating}
                   isBubbling={lab3D.isBubbling || manualBubbling}
-                  isPrecipitating={lab3D.isPrecipitating}
-                  isSmoking={lab3D.isSmoking}
-                  flameColor={lab3D.flameColor}
-                  temperature={lab3D.temperature}
-                  phValue={lab3D.phValue}
-                  gasVolume={lab3D.gasVolume}
-                  chemicalNote={selectedExp.steps[currentStep]?.chemicalChange}
+                  isPrecipitating={currentStepReflection?.telemetry.isPrecipitating || lab3D.isPrecipitating}
+                  isSmoking={currentStepReflection?.telemetry.isSmoking || lab3D.isSmoking}
+                  flameColor={currentStepReflection?.telemetry.flameColor || lab3D.flameColor}
+                  temperature={currentStepReflection?.telemetry.temp || lab3D.temperature}
+                  phValue={currentStepReflection?.telemetry.ph || lab3D.phValue}
+                  gasVolume={currentStepReflection?.telemetry.gas || lab3D.gasVolume}
+                  apparentWeight={currentStepReflection?.telemetry.weight !== undefined ? currentStepReflection.telemetry.weight : lab3D.apparentWeight}
+                  magneticFieldOn={currentStepReflection?.telemetry.magneticFieldOn !== undefined ? currentStepReflection.telemetry.magneticFieldOn : lab3D.magneticFieldOn}
+                  activeSubstance={currentStepReflection?.telemetry.activeSubstance || lab3D.activeSubstance}
+                  chemicalNote={currentStepReflection?.observation || selectedExp.steps[currentStep]?.chemicalChange}
+                  scientificObservation={currentStepReflection?.observation}
+                  scientificReason={currentStepReflection?.scientificReason}
+                  experimentTitle={selectedExp.title}
+                  unitName={selectedExp.unit}
+                  totalSteps={selectedExp.steps.length}
+                  onNextStep={currentStep < selectedExp.steps.length - 1 ? handleNextStep : undefined}
+                  onPrevStep={currentStep > 0 ? () => setCurrentStep(prev => prev - 1) : undefined}
+                  onReset={handleReset}
                   onActionTrigger={handleActionTrigger}
                 />
               );
             })()}
           </div>
 
-          <div className="w-full flex justify-between items-center border-t border-[#E5E2DE] pt-4 mt-2">
+          <div className="w-full flex justify-between items-center border-t border-[#E5E2DE] pt-3 mt-2">
             <span className="text-[10px] text-[#95A5A6] font-bold font-mono">STATUS: {chamberStatus}</span>
             <span className="text-[10px] text-[#E67E22] font-bold font-sans">خطوة {currentStep + 1} من {selectedExp.steps.length}</span>
           </div>
@@ -1202,33 +1250,149 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
 
       </div>
 
-      {/* Educational Theory and Explanation Section */}
-      <div className="bg-[#F9F8F6] border border-[#E5E2DE] p-6 rounded-lg space-y-4 shadow-xs text-right mt-6">
-        <div className="flex items-center gap-2 justify-end border-b border-[#E5E2DE] pb-2 mb-3">
-          <h3 className="text-lg font-serif font-bold text-[#2C3E50]">لوحة التحليل الكيميائي والتفسير التعليمي المعتمد للتجربة</h3>
-          <Info className="w-5 h-5 text-indigo-600" />
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-4 rounded-lg border border-[#E5E2DE] space-y-2">
-            <span className="text-xs font-bold text-indigo-700 block border-b border-[#F5F4F0] pb-1">الخلفية النظرية الكيميائية (منهج السودان):</span>
-            <p className="text-xs text-[#1A1A1A] leading-relaxed">
-              {getTheoryExplanation(selectedExp.id)}
-            </p>
+      {/* 🔬 Comprehensive Live Results, Observations & Scientific Reflection Dashboard */}
+      {(() => {
+        const expReflection = getExperimentReflection(selectedExp.id);
+        const currentStepReflection = expReflection?.steps[currentStep];
+
+        return (
+          <div className="bg-[#F9F8F6] border border-[#E5E2DE] p-5 sm:p-6 rounded-2xl space-y-5 shadow-xs text-right mt-6">
+            {/* Header */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#E5E2DE] pb-3">
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 border border-emerald-200 shadow-2xs">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600 animate-pulse" />
+                  <span>انعكاس ونتائج الخطوة ({currentStep + 1} من {selectedExp.steps.length})</span>
+                </span>
+                {currentStepReflection?.chemicalProperty && (
+                  <span className="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold border border-indigo-200">
+                    {currentStepReflection.chemicalProperty}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                <h3 className="text-base sm:text-lg font-bold text-[#2C3E50]">لوحة التحليل الكيميائي والنتائج المعتمدة للدرس</h3>
+                <Info className="w-5 h-5 text-indigo-600" />
+              </div>
+            </div>
+
+            {/* Step Observation & Reflection Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Card 1: Immediate Lab Observation */}
+              <div className="bg-white p-4 rounded-xl border border-[#E5E2DE] space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-[#F5F4F0] pb-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-700">
+                    <Eye className="w-4 h-4 text-emerald-600" />
+                    <span>المشاهدة والانعكاس المخبري المباشر:</span>
+                  </div>
+                  <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded font-semibold">
+                    انعكاس مرئي مباشر
+                  </span>
+                </div>
+                <p className="text-xs text-[#1A1A1A] leading-relaxed font-sans">
+                  {currentStepReflection?.observation || selectedExp.steps[currentStep]?.chemicalChange}
+                </p>
+                {currentStepReflection?.telemetry.weight !== undefined && (
+                  <div className="mt-2 text-xs font-mono font-bold text-emerald-800 bg-emerald-50/80 p-2 rounded border border-emerald-200 flex items-center justify-between">
+                    <span>قراءة ميزان غوي الحساس:</span>
+                    <span>{currentStepReflection.telemetry.weight.toFixed(2)} g</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Card 2: Scientific Explanation */}
+              <div className="bg-white p-4 rounded-xl border border-[#E5E2DE] space-y-2 shadow-2xs">
+                <div className="flex items-center justify-between border-b border-[#F5F4F0] pb-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-indigo-700">
+                    <HelpCircle className="w-4 h-4 text-indigo-600" />
+                    <span>التفسير والتعليل العلمي (منهج السودان):</span>
+                  </div>
+                  <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded font-semibold">
+                    سؤال علل / فسر
+                  </span>
+                </div>
+                <p className="text-xs text-[#1A1A1A] leading-relaxed font-sans">
+                  {currentStepReflection?.scientificReason || getTheoryExplanation(selectedExp.id)}
+                </p>
+              </div>
+            </div>
+
+            {/* Exam Tip and Formula Badge */}
+            <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-xl border border-[#E5E2DE] text-xs">
+              {currentStepReflection?.examTip && (
+                <div className="flex items-center gap-2 text-amber-800">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                  <span className="font-bold">تنبيه امتحانات الشهادة الثانوية (بخت الرضا): </span>
+                  <span className="font-normal">{currentStepReflection.examTip}</span>
+                </div>
+              )}
+
+              {currentStepReflection?.equationOrFormula && (
+                <div className="font-mono text-xs font-bold text-indigo-800 bg-indigo-50/70 px-3 py-1 rounded-lg border border-indigo-200 select-all" dir="ltr">
+                  {currentStepReflection.equationOrFormula}
+                </div>
+              )}
+            </div>
+
+            {/* Cumulative Comparative Results Table */}
+            {expReflection?.cumulativeTable && expReflection.cumulativeTable.length > 0 && (
+              <div className="bg-white p-4 rounded-xl border border-[#E5E2DE] space-y-2.5">
+                <div className="flex items-center justify-between border-b border-[#F5F4F0] pb-2">
+                  <span className="text-xs font-bold text-[#2C3E50]">
+                    📊 جدول المقارنة والتسجيل التراكمي لنتائج عينات التجربة:
+                  </span>
+                  <span className="text-[10px] text-[#7F8C8D]">توثيق الفروقات المعملية</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-right text-xs border border-[#E5E2DE] rounded-lg overflow-hidden">
+                    <thead className="bg-[#F5F4F0] text-[#2C3E50] font-bold text-[11px]">
+                      <tr>
+                        <th className="p-2.5 border-b border-[#E5E2DE]">العينة / المادة</th>
+                        <th className="p-2.5 border-b border-[#E5E2DE]">الظرف / الإجراء</th>
+                        <th className="p-2.5 border-b border-[#E5E2DE]">النتيجة الملاحظة</th>
+                        <th className="p-2.5 border-b border-[#E5E2DE]">المدلول الكيميائي</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#E5E2DE]">
+                      {expReflection.cumulativeTable.map((row, idx) => (
+                        <tr key={idx} className={idx % 2 === 0 ? "bg-white" : "bg-[#FAF9F6]"}>
+                          <td className="p-2.5 font-bold text-[#2C3E50]">{row.sampleName}</td>
+                          <td className="p-2.5 text-[#7F8C8D]">{row.condition}</td>
+                          <td className="p-2.5 font-semibold text-emerald-800">{row.result}</td>
+                          <td className="p-2.5 text-[#1A1A1A]">{row.scientificMeaning}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* 3-Column Standard Theory / Observation / Conclusion Breakdown */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+              <div className="bg-white p-4 rounded-xl border border-[#E5E2DE] space-y-2">
+                <span className="text-xs font-bold text-indigo-700 block border-b border-[#F5F4F0] pb-1">الخلفية النظرية للدرس:</span>
+                <p className="text-xs text-[#1A1A1A] leading-relaxed">
+                  {getTheoryExplanation(selectedExp.id)}
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-[#E5E2DE] space-y-2">
+                <span className="text-xs font-bold text-[#E67E22] block border-b border-[#F5F4F0] pb-1">الملاحظات المخبرية العامة:</span>
+                <p className="text-xs text-[#1A1A1A] leading-relaxed">
+                  {getObservationExplanation(selectedExp.id)}
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-xl border border-[#E5E2DE] space-y-2">
+                <span className="text-xs font-bold text-emerald-700 block border-b border-[#F5F4F0] pb-1">الاستنتاج العلمي الشامل:</span>
+                <p className="text-xs text-[#1A1A1A] leading-relaxed">
+                  {expReflection?.overallConclusion || getConclusionExplanation(selectedExp.id)}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-4 rounded-lg border border-[#E5E2DE] space-y-2">
-            <span className="text-xs font-bold text-[#E67E22] block border-b border-[#F5F4F0] pb-1">الملاحظات والمشاهدات المخبرية:</span>
-            <p className="text-xs text-[#1A1A1A] leading-relaxed">
-              {getObservationExplanation(selectedExp.id)}
-            </p>
-          </div>
-          <div className="bg-white p-4 rounded-lg border border-[#E5E2DE] space-y-2">
-            <span className="text-xs font-bold text-emerald-700 block border-b border-[#F5F4F0] pb-1">الاستنتاج العلمي والمفاهيم الكيميائية:</span>
-            <p className="text-xs text-[#1A1A1A] leading-relaxed">
-              {getConclusionExplanation(selectedExp.id)}
-            </p>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Interactive Molecular Chemical Reactions Simulation Tool */}
       <MolecularSimulator />
