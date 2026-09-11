@@ -40,9 +40,9 @@ const sudanCases: CaseStudy[] = [
     location: "محطات المقرن، شمبات، وود مدني لتنقية المياه",
     concept: "كيمياء المحاليل، التخثر، والتعقيم بالهالوجينات (الوحدة الخامسة)",
     icon: Droplet,
-    color: "text-blue-600 bg-blue-50 border-blue-200",
-    accentBg: "bg-blue-50/50",
-    borderColor: "border-blue-100",
+    color: "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border-blue-200 dark:border-blue-800/60",
+    accentBg: "bg-blue-50/50 dark:bg-slate-900/90",
+    borderColor: "border-blue-100 dark:border-blue-900/50",
     summary: "يعتبر طمي النيل الأزرق (خاصة في موسم الفيضان) شديد العكارة ويحتاج لمعالجات كيميائية دقيقة قبل ضخه للمواطنين في شبكات المياه السودانية.",
     steps: [
       {
@@ -69,9 +69,9 @@ const sudanCases: CaseStudy[] = [
     location: "مصانع سكر كنانة، عسلاية، والجنيد",
     concept: "الكربوهيدرات والكيمياء العضوية (الوحدة الثالثة)",
     icon: Layers,
-    color: "text-emerald-600 bg-emerald-50 border-emerald-200",
-    accentBg: "bg-emerald-50/50",
-    borderColor: "border-emerald-100",
+    color: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800/60",
+    accentBg: "bg-emerald-50/50 dark:bg-slate-900/90",
+    borderColor: "border-emerald-100 dark:border-emerald-900/50",
     summary: "السودان رائد في صناعة السكر من قصب السكر، وتمر عملية استخلاص السكروز النقي بعدة تفاعلات وتحولات كيميائية دقيقة تمنع التخمر والأكسدة.",
     steps: [
       {
@@ -98,9 +98,9 @@ const sudanCases: CaseStudy[] = [
     location: "مناجم أبو حمد، البطانة، وقبجية بتعدين الذهب",
     concept: "الفلزات الانتقالية والماء الملكي (الوحدة السادسة)",
     icon: Flame,
-    color: "text-amber-600 bg-amber-50 border-amber-200",
-    accentBg: "bg-amber-50/50",
-    borderColor: "border-amber-100",
+    color: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800/60",
+    accentBg: "bg-amber-50/50 dark:bg-slate-900/90",
+    borderColor: "border-amber-100 dark:border-amber-900/50",
     summary: "يحتل السودان مرتبة متقدمة في إنتاج الذهب الإفريقي. الكيمياء تحدد طرق الفرز، السيانيد البديل، والاستخلاص عالي الجودة بالزنك والكربون النشط.",
     steps: [
       {
@@ -127,9 +127,9 @@ const sudanCases: CaseStudy[] = [
     location: "صناعة 'الخمرة والظفرة' البيتية والتجارية بالسودان",
     concept: "الكيمياء العضوية والمركبات الحلقية والعطرية (الوحدة الثالثة)",
     icon: Sparkles,
-    color: "text-purple-600 bg-purple-50 border-purple-200",
-    accentBg: "bg-purple-50/50",
-    borderColor: "border-purple-100",
+    color: "text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/60 border-purple-200 dark:border-purple-800/60",
+    accentBg: "bg-purple-50/50 dark:bg-slate-900/90",
+    borderColor: "border-purple-100 dark:border-purple-900/50",
     summary: "تتميز العطور السودانية التقليدية مثل 'الخمرة' بثباتها العالي لسنوات، وهو سر كيميائي يعتمد على التفاعلات العضوية والتثبيت الجزيئي للمستخلصات العطرية.",
     steps: [
       {
@@ -155,19 +155,19 @@ export const SudanCaseStudies: React.FC = () => {
   const currentCase = sudanCases.find((c) => c.id === selectedCase) || sudanCases[0];
 
   return (
-    <div className="bg-white border border-[#E5E2DE] rounded-lg p-6 text-right shadow-sm space-y-6">
+    <div className="bg-white dark:bg-slate-900 border border-[#E5E2DE] dark:border-slate-800 rounded-lg p-6 text-right shadow-sm space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E5E2DE] pb-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#E5E2DE] dark:border-slate-800 pb-4">
         <div className="order-2 sm:order-1 flex items-center gap-2">
-          <span className="text-xs text-[#7F8C8D] bg-[#F9F8F6] px-2.5 py-1 rounded border border-[#E5E2DE] font-bold font-sans">
+          <span className="text-xs text-[#7F8C8D] dark:text-slate-400 bg-[#F9F8F6] dark:bg-slate-800 px-2.5 py-1 rounded border border-[#E5E2DE] dark:border-slate-700 font-bold font-sans">
             من واقع بيئتنا السودانية
           </span>
-          <h3 className="text-lg font-serif font-bold text-[#2C3E50]">دراسات حالة واقعية: الكيمياء في السودان</h3>
+          <h3 className="text-lg font-serif font-bold text-[#2C3E50] dark:text-slate-100">دراسات حالة واقعية: الكيمياء في السودان</h3>
         </div>
         <Compass className="order-1 sm:order-2 w-6 h-6 text-[#E67E22] shrink-0" />
       </div>
 
-      <p className="text-xs text-[#7F8C8D] leading-relaxed">
+      <p className="text-xs text-[#7F8C8D] dark:text-slate-300 leading-relaxed">
         تطبيق المفاهيم الكيميائية النظرية التي تدرسها في منهج الصف الثاني الثانوي على قطاعات البيئة والصناعة الحية داخل بلدنا السودان. اختر دراسة الحالة لتستكشف الكيمياء التطبيقية والعملية:
       </p>
 
@@ -180,21 +180,21 @@ export const SudanCaseStudies: React.FC = () => {
             <button
               key={item.id}
               onClick={() => setSelectedCase(item.id)}
-              className={`p-4 rounded border text-right transition-all flex flex-col justify-between gap-3 ${
+              className={`p-4 rounded-xl border text-right transition-all flex flex-col justify-between gap-3 ${
                 isSelected 
-                  ? "bg-[#F9F8F6] border-[#E67E22] shadow-sm scale-102 ring-1 ring-[#E67E22]" 
-                  : "bg-white hover:bg-[#F9F8F6]/50 border-[#E5E2DE]"
+                  ? "bg-[#F9F8F6] dark:bg-slate-800/95 border-[#E67E22] dark:border-[#E67E22] shadow-sm scale-102 ring-1 ring-[#E67E22]" 
+                  : "bg-white dark:bg-slate-900/80 hover:bg-[#F9F8F6]/50 dark:hover:bg-slate-800/60 border-[#E5E2DE] dark:border-slate-800"
               }`}
             >
               <div className="flex justify-between items-center w-full">
                 <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${item.color}`}>
                   {item.badge}
                 </span>
-                <Icon className={`w-5 h-5 ${isSelected ? "text-[#E67E22]" : "text-[#95A5A6]"}`} />
+                <Icon className={`w-5 h-5 ${isSelected ? "text-[#E67E22]" : "text-[#95A5A6] dark:text-slate-400"}`} />
               </div>
               <div className="space-y-1">
-                <span className="block font-bold text-sm text-[#2C3E50]">{item.title}</span>
-                <span className="block text-[10px] text-[#7F8C8D] font-sans truncate">{item.location}</span>
+                <span className="block font-bold text-sm text-[#2C3E50] dark:text-slate-100">{item.title}</span>
+                <span className="block text-[10px] text-[#7F8C8D] dark:text-slate-400 font-sans truncate">{item.location}</span>
               </div>
             </button>
           );
@@ -209,43 +209,43 @@ export const SudanCaseStudies: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.2 }}
-          className={`p-6 rounded border border-[#E5E2DE] ${currentCase.accentBg} space-y-5`}
+          className={`p-6 rounded-xl border border-[#E5E2DE] dark:border-slate-800 ${currentCase.accentBg} space-y-5 shadow-sm`}
         >
           {/* Main Info */}
-          <div className="space-y-2 border-b border-[#E5E2DE] pb-4">
+          <div className="space-y-2 border-b border-[#E5E2DE] dark:border-slate-800 pb-4">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <span className="text-xs font-bold text-[#E67E22] bg-white px-2.5 py-1 rounded border border-[#E5E2DE] flex items-center gap-1">
+              <span className="text-xs font-bold text-[#E67E22] bg-white dark:bg-slate-800 px-2.5 py-1 rounded border border-[#E5E2DE] dark:border-slate-700 flex items-center gap-1 shadow-2xs">
                 <MapPin className="w-3.5 h-3.5 text-[#E67E22]" />
                 {currentCase.location}
               </span>
-              <h4 className="text-base font-bold text-[#2C3E50]">{currentCase.title}</h4>
+              <h4 className="text-base font-bold text-[#2C3E50] dark:text-slate-100">{currentCase.title}</h4>
             </div>
             <div className="flex items-center gap-1.5 justify-end">
-              <span className="text-xs text-[#7F8C8D] font-sans font-medium">{currentCase.concept}</span>
-              <Info className="w-3.5 h-3.5 text-[#95A5A6]" />
+              <span className="text-xs text-[#7F8C8D] dark:text-slate-300 font-sans font-medium">{currentCase.concept}</span>
+              <Info className="w-3.5 h-3.5 text-[#95A5A6] dark:text-slate-400" />
             </div>
           </div>
 
           {/* Description */}
-          <p className="text-xs text-[#2C3E50] leading-relaxed bg-white p-4 rounded border border-[#E5E2DE] shadow-inner">
+          <p className="text-xs text-[#2C3E50] dark:text-slate-200 leading-relaxed bg-white dark:bg-slate-950/80 p-4 rounded-lg border border-[#E5E2DE] dark:border-slate-800 shadow-inner">
             {currentCase.summary}
           </p>
 
           {/* Steps Timeline */}
           <div className="space-y-4">
-            <h5 className="text-xs font-bold text-[#7F8C8D] font-sans uppercase tracking-wider mb-2">الخطوات الكيميائية والعمليات بالتفصيل:</h5>
-            <div className="space-y-4 relative border-r-2 border-[#E5E2DE] mr-3 pr-5">
+            <h5 className="text-xs font-bold text-[#7F8C8D] dark:text-slate-300 font-sans uppercase tracking-wider mb-2">الخطوات الكيميائية والعمليات بالتفصيل:</h5>
+            <div className="space-y-4 relative border-r-2 border-[#E5E2DE] dark:border-slate-700 mr-3 pr-5">
               {currentCase.steps.map((step, idx) => (
-                <div key={idx} className="relative space-y-1.5">
+                <div key={idx} className="relative space-y-2 bg-white/80 dark:bg-slate-950/60 p-3.5 rounded-lg border border-[#E5E2DE] dark:border-slate-800 shadow-2xs">
                   {/* Timeline dot */}
-                  <span className="absolute right-[-26px] top-1.5 w-3 h-3 rounded-full bg-[#E67E22] border-2 border-white shadow-sm" />
+                  <span className="absolute right-[-26px] top-4 w-3.5 h-3.5 rounded-full bg-[#E67E22] border-2 border-white dark:border-slate-900 shadow-xs" />
                   
-                  <span className="block text-xs font-bold text-[#2C3E50]">{step.title}</span>
-                  <p className="text-xs text-[#7F8C8D] leading-relaxed">{step.description}</p>
+                  <span className="block text-xs font-bold text-[#2C3E50] dark:text-slate-100">{step.title}</span>
+                  <p className="text-xs text-[#7F8C8D] dark:text-slate-300 leading-relaxed">{step.description}</p>
                   
                   {step.chemicalEquation && (
-                    <div className="bg-white border border-[#E5E2DE] p-2 rounded text-left font-mono text-xs text-[#2C3E50] shadow-sm overflow-x-auto select-all" dir="ltr">
-                      <span className="text-[10px] text-indigo-600 font-bold block mb-1">الرابط الكيميائي / المعادلة:</span>
+                    <div className="bg-white dark:bg-slate-950 border border-[#E5E2DE] dark:border-slate-800 p-2.5 rounded text-left font-mono text-xs text-[#2C3E50] dark:text-emerald-300 shadow-2xs overflow-x-auto select-all" dir="ltr">
+                      <span className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold block mb-1">الرابط الكيميائي / المعادلة:</span>
                       {step.chemicalEquation}
                     </div>
                   )}
@@ -255,12 +255,12 @@ export const SudanCaseStudies: React.FC = () => {
           </div>
 
           {/* Sudanese Context Box */}
-          <div className="bg-white border border-[#E5E2DE] p-4 rounded shadow-sm flex gap-4 items-start">
+          <div className="bg-white dark:bg-slate-950/80 border border-[#E5E2DE] dark:border-slate-800 p-4 rounded-lg shadow-xs flex gap-4 items-start">
             <div className="flex-1 space-y-1">
-              <span className="block text-xs font-bold text-[#2C3E50]">معلومة سودانية كيميائية:</span>
-              <p className="text-xs text-[#7F8C8D] leading-relaxed">{currentCase.localTip}</p>
+              <span className="block text-xs font-bold text-[#2C3E50] dark:text-slate-100">معلومة سودانية كيميائية:</span>
+              <p className="text-xs text-[#7F8C8D] dark:text-slate-300 leading-relaxed">{currentCase.localTip}</p>
             </div>
-            <div className="p-2 bg-amber-50 rounded border border-amber-100 shrink-0">
+            <div className="p-2 bg-amber-50 dark:bg-amber-950/50 rounded border border-amber-100 dark:border-amber-900/60 shrink-0">
               <Lightbulb className="w-5 h-5 text-[#E67E22] animate-bounce" />
             </div>
           </div>

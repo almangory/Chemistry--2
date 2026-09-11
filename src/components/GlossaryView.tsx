@@ -68,13 +68,13 @@ export const GlossaryView: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Tab Navigation switcher */}
-      <div className="flex border-b border-[#E5E2DE] justify-center md:justify-start gap-1 flex-row-reverse">
+      <div className="flex border-b border-[#E5E2DE] dark:border-slate-800 justify-center md:justify-start gap-1 flex-row-reverse">
         <button
           onClick={() => setActiveTab("terms")}
           className={`px-5 py-3 text-xs font-bold font-sans transition-all flex items-center gap-2 border-b-2 cursor-pointer ${
             activeTab === "terms"
-              ? "border-[#E67E22] text-[#E67E22] bg-[#E67E22]/5"
-              : "border-transparent text-[#7F8C8D] hover:text-[#2C3E50]"
+              ? "border-[#E67E22] text-[#E67E22] bg-[#E67E22]/5 dark:bg-[#E67E22]/10"
+              : "border-transparent text-[#7F8C8D] dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-slate-200"
           }`}
         >
           <BookOpen className="w-4 h-4" />
@@ -84,8 +84,8 @@ export const GlossaryView: React.FC = () => {
           onClick={() => setActiveTab("elements")}
           className={`px-5 py-3 text-xs font-bold font-sans transition-all flex items-center gap-2 border-b-2 cursor-pointer ${
             activeTab === "elements"
-              ? "border-[#E67E22] text-[#E67E22] bg-[#E67E22]/5"
-              : "border-transparent text-[#7F8C8D] hover:text-[#2C3E50]"
+              ? "border-[#E67E22] text-[#E67E22] bg-[#E67E22]/5 dark:bg-[#E67E22]/10"
+              : "border-transparent text-[#7F8C8D] dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-slate-200"
           }`}
         >
           <Atom className="w-4 h-4" />
@@ -96,8 +96,8 @@ export const GlossaryView: React.FC = () => {
           onClick={() => setActiveTab("flashcards")}
           className={`px-5 py-3 text-xs font-bold font-sans transition-all flex items-center gap-2 border-b-2 cursor-pointer ${
             activeTab === "flashcards"
-              ? "border-[#E67E22] text-[#E67E22] bg-[#E67E22]/5"
-              : "border-transparent text-[#7F8C8D] hover:text-[#2C3E50]"
+              ? "border-[#E67E22] text-[#E67E22] bg-[#E67E22]/5 dark:bg-[#E67E22]/10"
+              : "border-transparent text-[#7F8C8D] dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-slate-200"
           }`}
         >
           <Bookmark className="w-4 h-4" />
@@ -116,7 +116,7 @@ export const GlossaryView: React.FC = () => {
               <select
                 value={selectedUnit}
                 onChange={(e) => setSelectedUnit(e.target.value)}
-                className="w-full bg-white border border-[#E5E2DE] text-[#2C3E50] px-4 py-3.5 rounded text-xs font-bold text-right focus:outline-none focus:border-[#E67E22] appearance-none cursor-pointer shadow-sm"
+                className="w-full bg-white dark:bg-slate-900 border border-[#E5E2DE] dark:border-slate-800 text-[#2C3E50] dark:text-slate-100 px-4 py-3.5 rounded text-xs font-bold text-right focus:outline-none focus:border-[#E67E22] appearance-none cursor-pointer shadow-sm"
               >
                 <option value="all">جميع فصول ومنهج الوحدات</option>
                 <option value="1">الوحدة الأولى: الترتيب الدوري للعناصر</option>
@@ -135,9 +135,9 @@ export const GlossaryView: React.FC = () => {
                 placeholder="ابحث عن مصطلح علمي، تعريف كيميائي، أو كلمة باللاتينية..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-white border border-[#E5E2DE] text-[#1A1A1A] px-4 py-3.5 pl-12 rounded text-xs text-right focus:outline-none focus:border-[#E67E22] font-sans shadow-sm"
+                className="w-full bg-white dark:bg-slate-900 border border-[#E5E2DE] dark:border-slate-800 text-[#1A1A1A] dark:text-slate-100 px-4 py-3.5 pl-12 rounded text-xs text-right focus:outline-none focus:border-[#E67E22] font-sans shadow-sm"
               />
-              <Search className="w-5 h-5 text-[#95A5A6] absolute left-4 top-3.5" />
+              <Search className="w-5 h-5 text-[#95A5A6] dark:text-slate-400 absolute left-4 top-3.5" />
             </div>
           </div>
 

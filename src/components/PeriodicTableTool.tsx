@@ -523,15 +523,15 @@ export const PeriodicTableTool: React.FC = () => {
 
   const getCategoryColor = (cat: ElementData["category"]) => {
     switch (cat) {
-      case "alkali": return "bg-red-50 hover:bg-red-100 border-red-300 text-red-800";
-      case "alkaline-earth": return "bg-orange-50 hover:bg-orange-100 border-orange-300 text-orange-800";
-      case "transition": return "bg-indigo-50 hover:bg-indigo-100 border-indigo-300 text-indigo-800";
-      case "lanthanide": return "bg-purple-50 hover:bg-purple-100 border-purple-300 text-purple-800";
-      case "metalloid": return "bg-amber-50 hover:bg-amber-100 border-amber-300 text-amber-800";
-      case "nonmetal": return "bg-emerald-50 hover:bg-emerald-100 border-emerald-300 text-emerald-800";
-      case "halogen": return "bg-sky-50 hover:bg-sky-100 border-sky-300 text-sky-800";
-      case "noble": return "bg-teal-50 hover:bg-teal-100 border-teal-300 text-teal-800";
-      default: return "bg-slate-50 hover:bg-slate-100 border-slate-300 text-slate-800";
+      case "alkali": return "bg-red-50 dark:bg-red-950/60 hover:bg-red-100 dark:hover:bg-red-900/60 border-red-300 dark:border-red-800 text-red-800 dark:text-red-300";
+      case "alkaline-earth": return "bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-100 dark:hover:bg-orange-900/60 border-orange-300 dark:border-orange-800 text-orange-800 dark:text-orange-300";
+      case "transition": return "bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 border-indigo-300 dark:border-indigo-800 text-indigo-800 dark:text-indigo-300";
+      case "lanthanide": return "bg-purple-50 dark:bg-purple-950/60 hover:bg-purple-100 dark:hover:bg-purple-900/60 border-purple-300 dark:border-purple-800 text-purple-800 dark:text-purple-300";
+      case "metalloid": return "bg-amber-50 dark:bg-amber-950/60 hover:bg-amber-100 dark:hover:bg-amber-900/60 border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300";
+      case "nonmetal": return "bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300";
+      case "halogen": return "bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 border-sky-300 dark:border-sky-800 text-sky-800 dark:text-sky-300";
+      case "noble": return "bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/60 border-teal-300 dark:border-teal-800 text-teal-800 dark:text-teal-300";
+      default: return "bg-slate-50 dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200";
     }
   };
 
@@ -550,25 +550,25 @@ export const PeriodicTableTool: React.FC = () => {
   };
 
   return (
-    <div className="bg-white border border-[#E5E2DE] rounded-lg p-5 space-y-6 shadow-sm text-right" id="periodic_table_wrapper">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-[#E5E2DE] pb-3 gap-4">
+    <div className="bg-white dark:bg-slate-900 border border-[#E5E2DE] dark:border-slate-800 rounded-lg p-5 space-y-6 shadow-sm text-right" id="periodic_table_wrapper">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center border-b border-[#E5E2DE] dark:border-slate-800 pb-3 gap-4">
         <div className="order-2 md:order-1">
-          <h3 className="text-lg font-serif font-bold text-[#2C3E50] flex items-center gap-1.5 justify-end">
+          <h3 className="text-lg font-serif font-bold text-[#2C3E50] dark:text-slate-100 flex items-center gap-1.5 justify-end">
             الجدول الدوري التفاعلي المساعد للثاني الثانوي
-            <Layers className="w-5 h-5 text-indigo-600" />
+            <Layers className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
           </h3>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
             انقر على أي عنصر لعرض خصائصه الفيزيائية والتوزيع الإلكتروني ودوره التعليمي الكامل في المنهج السوداني.
           </p>
         </div>
-        <div className="flex items-center gap-2 bg-[#2C3E50]/5 px-3 py-1.5 rounded-full border border-[#2C3E50]/10 order-1 md:order-2 w-full md:w-auto">
+        <div className="flex items-center gap-2 bg-[#2C3E50]/5 dark:bg-slate-800 px-3 py-1.5 rounded-full border border-[#2C3E50]/10 dark:border-slate-700 order-1 md:order-2 w-full md:w-auto">
           <Star className="w-4 h-4 text-amber-500 fill-amber-500 animate-pulse" />
-          <span className="text-xs font-bold text-[#2C3E50] font-sans">مرجع الطالب المخبري المعتمد</span>
+          <span className="text-xs font-bold text-[#2C3E50] dark:text-slate-200 font-sans">مرجع الطالب المخبري المعتمد</span>
         </div>
       </div>
 
       {/* Control Panel: Search & Filter */}
-      <div className="flex flex-col sm:flex-row gap-3 items-stretch justify-between bg-[#F9F8F6] p-3 rounded-lg border border-[#E5E2DE]">
+      <div className="flex flex-col sm:flex-row gap-3 items-stretch justify-between bg-[#F9F8F6] dark:bg-slate-800/80 p-3 rounded-lg border border-[#E5E2DE] dark:border-slate-800">
         <div className="flex flex-wrap gap-1.5 justify-end order-2 sm:order-1">
           {(["all", "s", "p", "d", "f"] as const).map((block) => (
             <button
@@ -576,8 +576,8 @@ export const PeriodicTableTool: React.FC = () => {
               onClick={() => setFilterBlock(block)}
               className={`px-3 py-1 rounded text-xs font-bold transition-all ${
                 filterBlock === block
-                  ? "bg-[#2C3E50] text-white shadow-xs"
-                  : "bg-white text-slate-600 border border-[#E5E2DE] hover:bg-slate-50"
+                  ? "bg-[#2C3E50] dark:bg-indigo-600 text-white shadow-xs"
+                  : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-[#E5E2DE] dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800"
               }`}
             >
               {block === "all" ? "كل الفئات" : `الفئة ${block.toUpperCase()}`}
@@ -591,7 +591,7 @@ export const PeriodicTableTool: React.FC = () => {
             placeholder="ابحث بالاسم، الرمز أو العدد الذري..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full text-xs text-right pr-3 pl-8 py-2 border border-[#E5E2DE] rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white"
+            className="w-full text-xs text-right pr-3 pl-8 py-2 border border-[#E5E2DE] dark:border-slate-700 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 bg-white dark:bg-slate-900 text-[#2C3E50] dark:text-slate-100"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
         </div>
@@ -599,7 +599,7 @@ export const PeriodicTableTool: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Side: Element Detailed Properties Card */}
-        <div className="lg:col-span-4 bg-gradient-to-br from-[#FDFCFB] to-[#F9F8F6] border border-[#E5E2DE] rounded-xl p-5 shadow-inner space-y-4 min-h-[380px] flex flex-col justify-between">
+        <div className="lg:col-span-4 bg-gradient-to-br from-[#FDFCFB] to-[#F9F8F6] dark:from-slate-900 dark:to-slate-800/90 border border-[#E5E2DE] dark:border-slate-800 rounded-xl p-5 shadow-inner space-y-4 min-h-[380px] flex flex-col justify-between">
           <AnimatePresence mode="wait">
             {selectedElement ? (
               <motion.div
@@ -610,13 +610,13 @@ export const PeriodicTableTool: React.FC = () => {
                 className="space-y-4"
               >
                 {/* Element Badge Big View */}
-                <div className="flex items-center justify-between border-b border-[#E5E2DE] pb-3">
+                <div className="flex items-center justify-between border-b border-[#E5E2DE] dark:border-slate-800 pb-3">
                   <div className="text-left font-mono">
-                    <span className="block text-2xl font-bold text-[#2C3E50]">{selectedElement.symbol}</span>
+                    <span className="block text-2xl font-bold text-[#2C3E50] dark:text-slate-100">{selectedElement.symbol}</span>
                     <span className="block text-[10px] text-slate-400">Z = {selectedElement.number}</span>
                   </div>
                   <div className="text-right">
-                    <h4 className="text-lg font-bold text-slate-800">{selectedElement.name}</h4>
+                    <h4 className="text-lg font-bold text-slate-800 dark:text-slate-100">{selectedElement.name}</h4>
                     <span className={`inline-block px-2.5 py-0.5 rounded text-[10px] font-bold mt-1 ${getCategoryColor(selectedElement.category)}`}>
                       {getCategoryLabel(selectedElement.category)}
                     </span>

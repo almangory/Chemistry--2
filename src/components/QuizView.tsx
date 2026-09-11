@@ -130,27 +130,27 @@ export const QuizView: React.FC<QuizViewProps> = ({
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -15 }}
-            className="max-w-3xl mx-auto bg-white border border-[#E5E2DE] p-6 md:p-8 rounded shadow-sm text-right space-y-8"
+            className="max-w-3xl mx-auto bg-white dark:bg-slate-900 border border-[#E5E2DE] dark:border-slate-800 p-6 md:p-8 rounded shadow-sm text-right space-y-8"
           >
             {/* Header */}
-            <div className="border-b border-[#E5E2DE] pb-5 text-right space-y-2">
+            <div className="border-b border-[#E5E2DE] dark:border-slate-800 pb-5 text-right space-y-2">
               <div className="flex justify-between items-center flex-row-reverse">
                 <div className="bg-[#E67E22]/10 text-[#E67E22] p-2 rounded-full">
                   <Sliders className="w-5 h-5" />
                 </div>
-                <h2 className="text-lg font-serif font-bold text-[#2C3E50] flex items-center gap-2 flex-row-reverse">
+                <h2 className="text-lg font-serif font-bold text-[#2C3E50] dark:text-slate-100 flex items-center gap-2 flex-row-reverse">
                   <span>تخصيص الامتحان والتقييم الذكي</span>
                   <Sparkles className="w-4 h-4 text-amber-500" />
                 </h2>
               </div>
-              <p className="text-xs text-[#7F8C8D] leading-relaxed font-sans">
+              <p className="text-xs text-[#7F8C8D] dark:text-slate-400 leading-relaxed font-sans">
                 اختر نوع الامتحان، حدد نطاق الأسئلة، واختر الطول المناسب للاختبار لتحدي معلوماتك الكيميائية في المنهج السوداني دون تكرار للأسئلة.
               </p>
             </div>
 
             {/* Scope Tabs Selector */}
             <div className="space-y-3">
-              <label className="block text-xs font-bold text-[#2C3E50] font-sans">1. نطاق الامتحان والأسئلة:</label>
+              <label className="block text-xs font-bold text-[#2C3E50] dark:text-slate-200 font-sans">1. نطاق الامتحان والأسئلة:</label>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {/* Unit Scope */}
                 <button
@@ -158,12 +158,12 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   onClick={() => setSelectedScope("unit")}
                   className={`p-4 rounded border-2 text-right transition-all flex flex-col justify-between gap-2 cursor-pointer ${
                     selectedScope === "unit"
-                      ? "bg-amber-50/50 border-[#E67E22] text-[#2C3E50]"
-                      : "bg-white border-[#E5E2DE] text-[#7F8C8D] hover:bg-[#F9F8F6]"
+                      ? "bg-amber-50/50 dark:bg-amber-950/40 border-[#E67E22] text-[#2C3E50] dark:text-amber-200"
+                      : "bg-white dark:bg-slate-800 border-[#E5E2DE] dark:border-slate-700 text-[#7F8C8D] dark:text-slate-300 hover:bg-[#F9F8F6] dark:hover:bg-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full flex-row-reverse">
-                    <Layers className={`w-5 h-5 ${selectedScope === "unit" ? "text-[#E67E22]" : "text-[#95A5A6]"}`} />
+                    <Layers className={`w-5 h-5 ${selectedScope === "unit" ? "text-[#E67E22]" : "text-[#95A5A6] dark:text-slate-400"}`} />
                     <span className="text-xs font-bold font-sans">امتحان وحدة كاملة</span>
                   </div>
                   <span className="text-[10px] opacity-85 leading-relaxed font-sans block mt-1">
@@ -177,12 +177,12 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   onClick={() => setSelectedScope("lesson")}
                   className={`p-4 rounded border-2 text-right transition-all flex flex-col justify-between gap-2 cursor-pointer ${
                     selectedScope === "lesson"
-                      ? "bg-amber-50/50 border-[#E67E22] text-[#2C3E50]"
-                      : "bg-white border-[#E5E2DE] text-[#7F8C8D] hover:bg-[#F9F8F6]"
+                      ? "bg-amber-50/50 dark:bg-amber-950/40 border-[#E67E22] text-[#2C3E50] dark:text-amber-200"
+                      : "bg-white dark:bg-slate-800 border-[#E5E2DE] dark:border-slate-700 text-[#7F8C8D] dark:text-slate-300 hover:bg-[#F9F8F6] dark:hover:bg-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full flex-row-reverse">
-                    <BookOpen className={`w-5 h-5 ${selectedScope === "lesson" ? "text-[#E67E22]" : "text-[#95A5A6]"}`} />
+                    <BookOpen className={`w-5 h-5 ${selectedScope === "lesson" ? "text-[#E67E22]" : "text-[#95A5A6] dark:text-slate-400"}`} />
                     <span className="text-xs font-bold font-sans">امتحان درس معين</span>
                   </div>
                   <span className="text-[10px] opacity-85 leading-relaxed font-sans block mt-1">
@@ -196,12 +196,12 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   onClick={() => setSelectedScope("favorites")}
                   className={`p-4 rounded border-2 text-right transition-all flex flex-col justify-between gap-2 cursor-pointer relative ${
                     selectedScope === "favorites"
-                      ? "bg-amber-50/50 border-[#E67E22] text-[#2C3E50]"
-                      : "bg-white border-[#E5E2DE] text-[#7F8C8D] hover:bg-[#F9F8F6]"
+                      ? "bg-amber-50/50 dark:bg-amber-950/40 border-[#E67E22] text-[#2C3E50] dark:text-amber-200"
+                      : "bg-white dark:bg-slate-800 border-[#E5E2DE] dark:border-slate-700 text-[#7F8C8D] dark:text-slate-300 hover:bg-[#F9F8F6] dark:hover:bg-slate-700"
                   }`}
                 >
                   <div className="flex items-center justify-between w-full flex-row-reverse">
-                    <Heart className={`w-5 h-5 ${selectedScope === "favorites" ? "text-red-500 fill-red-500" : "text-[#95A5A6]"}`} />
+                    <Heart className={`w-5 h-5 ${selectedScope === "favorites" ? "text-red-500 fill-red-500" : "text-[#95A5A6] dark:text-slate-400"}`} />
                     <span className="text-xs font-bold font-sans">الدروس المفضلة</span>
                   </div>
                   <span className="text-[10px] opacity-85 leading-relaxed font-sans block mt-1">
@@ -223,14 +223,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {/* Unit Selector */}
                   <div className="space-y-1.5 text-right">
-                    <label className="block text-xs font-bold text-[#2C3E50] font-sans">الوحدة الدراسية:</label>
+                    <label className="block text-xs font-bold text-[#2C3E50] dark:text-slate-200 font-sans">الوحدة الدراسية:</label>
                     <select
                       value={selectedUnitId}
                       onChange={(e) => setSelectedUnitId(e.target.value)}
-                      className="w-full bg-[#F9F8F6] border border-[#E5E2DE] rounded p-2.5 text-xs text-[#2C3E50] focus:ring-1 focus:ring-[#E67E22] outline-none text-right font-sans font-semibold"
+                      className="w-full bg-[#F9F8F6] dark:bg-slate-800 border border-[#E5E2DE] dark:border-slate-700 rounded p-2.5 text-xs text-[#2C3E50] dark:text-slate-100 focus:ring-1 focus:ring-[#E67E22] outline-none text-right font-sans font-semibold"
                     >
                       {curriculumData.map((unit) => (
-                        <option key={unit.id} value={unit.id}>
+                        <option key={unit.id} value={unit.id} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                           الوحدة {unit.number}: {unit.title}
                         </option>
                       ))}
@@ -240,14 +240,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   {/* Lesson Selector (Only for Lesson scope) */}
                   {selectedScope === "lesson" && (
                     <div className="space-y-1.5 text-right">
-                      <label className="block text-xs font-bold text-[#2C3E50] font-sans">الدرس المستهدف:</label>
+                      <label className="block text-xs font-bold text-[#2C3E50] dark:text-slate-200 font-sans">الدرس المستهدف:</label>
                       <select
                         value={selectedLessonId}
                         onChange={(e) => setSelectedLessonId(e.target.value)}
-                        className="w-full bg-[#F9F8F6] border border-[#E5E2DE] rounded p-2.5 text-xs text-[#2C3E50] focus:ring-1 focus:ring-[#E67E22] outline-none text-right font-sans font-semibold"
+                        className="w-full bg-[#F9F8F6] dark:bg-slate-800 border border-[#E5E2DE] dark:border-slate-700 rounded p-2.5 text-xs text-[#2C3E50] dark:text-slate-100 focus:ring-1 focus:ring-[#E67E22] outline-none text-right font-sans font-semibold"
                       >
                         {activeUnit.lessons.map((lesson) => (
-                          <option key={lesson.id} value={lesson.id}>
+                          <option key={lesson.id} value={lesson.id} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                             {lesson.title}
                           </option>
                         ))}
@@ -259,7 +259,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
               {/* Favorites alert/warning if empty */}
               {selectedScope === "favorites" && favoriteLessons.length === 0 && (
-                <div className="p-4 bg-amber-50 border border-amber-200 text-amber-800 text-xs rounded text-right leading-relaxed font-sans">
+                <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 text-xs rounded text-right leading-relaxed font-sans">
                   ⚠️ <strong>لا توجد دروس مفضلة حالياً:</strong> يمكنك تفضيل الدروس من خلال علامة النجمة بصفحة المنهج (الكتاب الإلكتروني)، لنتمكن من توليد أسئلة مخصصة لك من فصولك المفضلة كلياً.
                 </div>
               )}
@@ -268,8 +268,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
             {/* Questions count selector */}
             <div className="space-y-3 pt-2">
               <div className="flex justify-between items-center flex-row-reverse">
-                <label className="text-xs font-bold text-[#2C3E50] font-sans">2. عدد أسئلة الامتحان:</label>
-                <span className="text-xs font-mono font-bold text-[#E67E22] bg-[#E67E22]/10 px-2 py-0.5 rounded">
+                <label className="text-xs font-bold text-[#2C3E50] dark:text-slate-200 font-sans">2. عدد أسئلة الامتحان:</label>
+                <span className="text-xs font-mono font-bold text-[#E67E22] bg-[#E67E22]/10 dark:bg-[#E67E22]/20 px-2 py-0.5 rounded">
                   {requestedCount} سؤالاً
                 </span>
               </div>
@@ -284,28 +284,28 @@ export const QuizView: React.FC<QuizViewProps> = ({
                     className={`py-2 rounded border text-xs font-bold font-mono transition-all ${
                       requestedCount === num
                         ? "bg-[#E67E22] border-[#E67E22] text-white shadow-sm"
-                        : "bg-white border-[#E5E2DE] text-[#7F8C8D] hover:bg-[#F9F8F6]"
+                        : "bg-white dark:bg-slate-800 border-[#E5E2DE] dark:border-slate-700 text-[#7F8C8D] dark:text-slate-300 hover:bg-[#F9F8F6] dark:hover:bg-slate-700"
                     }`}
                   >
                     {num}
                   </button>
                 ))}
               </div>
-              <span className="block text-[10px] text-[#95A5A6] font-sans text-right">
+              <span className="block text-[10px] text-[#95A5A6] dark:text-slate-400 font-sans text-right">
                 * الحد الأقصى المسموح به هو 30 سؤالاً لضمان تجربة تقييم متوازنة وعالية التركيز.
               </span>
             </div>
 
             {/* Start Button */}
-            <div className="pt-4 border-t border-[#E5E2DE] flex justify-end">
+            <div className="pt-4 border-t border-[#E5E2DE] dark:border-slate-800 flex justify-end">
               <button
                 type="button"
                 disabled={selectedScope === "favorites" && favoriteLessons.length === 0}
                 onClick={handleStartQuiz}
                 className={`px-8 py-3 rounded text-xs font-bold font-sans transition-all flex items-center gap-2 flex-row-reverse shadow-md ${
                   selectedScope === "favorites" && favoriteLessons.length === 0
-                    ? "bg-[#F9F8F6] text-[#95A5A6] border border-[#E5E2DE] cursor-not-allowed shadow-none"
-                    : "bg-[#2C3E50] hover:bg-[#1A252F] text-white hover:scale-[1.02]"
+                    ? "bg-[#F9F8F6] dark:bg-slate-800 text-[#95A5A6] dark:text-slate-500 border border-[#E5E2DE] dark:border-slate-700 cursor-not-allowed shadow-none"
+                    : "bg-[#2C3E50] hover:bg-[#1A252F] dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white hover:scale-[1.02]"
                 }`}
               >
                 <span>ابدأ الامتحان المخصص الآن</span>
@@ -319,20 +319,20 @@ export const QuizView: React.FC<QuizViewProps> = ({
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            className="max-w-3xl mx-auto bg-white border border-[#E5E2DE] p-6 md:p-8 rounded shadow-sm text-right"
+            className="max-w-3xl mx-auto bg-white dark:bg-slate-900 border border-[#E5E2DE] dark:border-slate-800 p-6 md:p-8 rounded shadow-sm text-right"
           >
             {!quizFinished ? (
               <div className="space-y-6">
                 {/* Question progress */}
-                <div className="flex justify-between items-center border-b border-[#E5E2DE] pb-4">
-                  <div className="text-xs text-[#7F8C8D] font-mono font-bold">
+                <div className="flex justify-between items-center border-b border-[#E5E2DE] dark:border-slate-800 pb-4">
+                  <div className="text-xs text-[#7F8C8D] dark:text-slate-400 font-mono font-bold">
                     SCORE: {correctCount}/{questions.length}
                   </div>
                   <div className="text-right space-y-1">
                     <span className="text-[10px] bg-[#E67E22] text-white px-2 py-0.5 rounded-sm font-bold uppercase font-mono">
                       سؤال {currentQuestionIdx + 1} من {questions.length}
                     </span>
-                    <h3 className="text-xs text-[#7F8C8D] font-sans mt-1">
+                    <h3 className="text-xs text-[#7F8C8D] dark:text-slate-400 font-sans mt-1">
                       {selectedScope === "unit" && `امتحان تقييم: الوحدة ${activeUnit.number}`}
                       {selectedScope === "lesson" && `امتحان درس: ${activeLesson.title}`}
                       {selectedScope === "favorites" && "امتحان الدروس المفضلة المخصصة"}
@@ -341,8 +341,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 </div>
 
                 {/* Question Text */}
-                <div className="p-5 bg-[#F9F8F6] rounded border border-[#E5E2DE]">
-                  <p className="text-sm font-bold text-[#1A1A1A] leading-relaxed font-sans">
+                <div className="p-5 bg-[#F9F8F6] dark:bg-slate-800/80 rounded border border-[#E5E2DE] dark:border-slate-700">
+                  <p className="text-sm font-bold text-[#1A1A1A] dark:text-slate-100 leading-relaxed font-sans">
                     {activeQuestion?.question}
                   </p>
                 </div>
@@ -353,14 +353,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
                     const isCorrect = idx === activeQuestion.correctAnswer;
                     const isSelected = idx === selectedOption;
                     
-                    let optionStyle = "bg-[#F9F8F6] border-[#E5E2DE] text-[#2C3E50] hover:bg-[#E5E2DE]/30";
+                    let optionStyle = "bg-[#F9F8F6] dark:bg-slate-800/70 border-[#E5E2DE] dark:border-slate-700 text-[#2C3E50] dark:text-slate-200 hover:bg-[#E5E2DE]/30 dark:hover:bg-slate-700/60";
                     if (isAnswered) {
                       if (isCorrect) {
-                        optionStyle = "bg-emerald-50 border-emerald-500 text-emerald-800";
+                        optionStyle = "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-500 text-emerald-800 dark:text-emerald-300";
                       } else if (isSelected) {
-                        optionStyle = "bg-red-50 border-red-500 text-red-800";
+                        optionStyle = "bg-red-50 dark:bg-red-950/40 border-red-500 text-red-800 dark:text-red-300";
                       } else {
-                        optionStyle = "bg-[#F9F8F6] border-[#E5E2DE] text-[#95A5A6] opacity-60";
+                        optionStyle = "bg-[#F9F8F6] dark:bg-slate-800/30 border-[#E5E2DE] dark:border-slate-800 text-[#95A5A6] dark:text-slate-500 opacity-60";
                       }
                     }
 
@@ -372,10 +372,10 @@ export const QuizView: React.FC<QuizViewProps> = ({
                       >
                         {/* Left icon feedback */}
                         <div className="shrink-0 flex items-center">
-                          {isAnswered && isCorrect && <Check className="w-4 h-4 text-emerald-600 font-bold" />}
-                          {isAnswered && isSelected && !isCorrect && <X className="w-4 h-4 text-red-600 font-bold" />}
+                          {isAnswered && isCorrect && <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 font-bold" />}
+                          {isAnswered && isSelected && !isCorrect && <X className="w-4 h-4 text-red-600 dark:text-red-400 font-bold" />}
                           {!isAnswered && (
-                            <span className="w-5 h-5 rounded-full border border-[#E5E2DE] text-[10px] font-bold text-[#7F8C8D] flex items-center justify-center font-mono bg-white shadow-sm">
+                            <span className="w-5 h-5 rounded-full border border-[#E5E2DE] dark:border-slate-600 text-[10px] font-bold text-[#7F8C8D] dark:text-slate-300 flex items-center justify-center font-mono bg-white dark:bg-slate-800 shadow-sm">
                               {idx + 1}
                             </span>
                           )}
@@ -393,25 +393,25 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   <motion.div
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
-                    className="p-4 bg-[#F9F8F6] border-r-4 border-[#E67E22] rounded space-y-1.5"
+                    className="p-4 bg-[#F9F8F6] dark:bg-slate-800/80 border-r-4 border-[#E67E22] rounded space-y-1.5"
                   >
                     <div className="flex items-center gap-1.5 justify-end">
-                      <span className="font-bold text-xs text-[#E67E22] font-sans">الشرح والإجابة النموذجية:</span>
-                      <HelpCircle className="w-4 h-4 text-[#E67E22]" />
+                      <span className="font-bold text-xs text-[#E67E22] dark:text-amber-400 font-sans">الشرح والإجابة النموذجية:</span>
+                      <HelpCircle className="w-4 h-4 text-[#E67E22] dark:text-amber-400" />
                     </div>
-                    <p className="text-xs text-[#7F8C8D] leading-relaxed font-sans">{activeQuestion.explanation}</p>
+                    <p className="text-xs text-[#7F8C8D] dark:text-slate-300 leading-relaxed font-sans">{activeQuestion.explanation}</p>
                   </motion.div>
                 )}
 
                 {/* Button container */}
-                <div className="flex justify-between items-center pt-4 border-t border-[#E5E2DE] flex-row-reverse">
+                <div className="flex justify-between items-center pt-4 border-t border-[#E5E2DE] dark:border-slate-800 flex-row-reverse">
                   <button
                     disabled={!isAnswered}
                     onClick={handleNext}
                     className={`px-6 py-2.5 rounded text-xs font-bold font-sans transition-all flex items-center gap-1.5 flex-row-reverse ${
                       isAnswered
                         ? "bg-[#E67E22] text-white hover:bg-[#d6721b] shadow-sm"
-                        : "bg-[#F9F8F6] text-[#95A5A6] border border-[#E5E2DE] cursor-not-allowed"
+                        : "bg-[#F9F8F6] dark:bg-slate-800 text-[#95A5A6] dark:text-slate-500 border border-[#E5E2DE] dark:border-slate-700 cursor-not-allowed"
                     }`}
                   >
                     <span>
@@ -423,7 +423,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   <button
                     type="button"
                     onClick={handleReturnToSetup}
-                    className="text-xs text-[#7F8C8D] hover:text-[#2C3E50] font-sans font-semibold flex items-center gap-1"
+                    className="text-xs text-[#7F8C8D] dark:text-slate-400 hover:text-[#2C3E50] dark:hover:text-slate-200 font-sans font-semibold flex items-center gap-1"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
                     <span>إلغاء والعودة للتهيئة</span>
@@ -437,50 +437,50 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-xs text-emerald-600 font-bold block uppercase font-mono">EXAM COMPLETED</span>
-                  <h3 className="text-xl md:text-2xl font-serif font-bold text-[#2C3E50]">تهانينا الحارة! لقد أكملت الاختبار</h3>
-                  <p className="text-xs text-[#7F8C8D] max-w-sm mx-auto mt-1">
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold block uppercase font-mono">EXAM COMPLETED</span>
+                  <h3 className="text-xl md:text-2xl font-serif font-bold text-[#2C3E50] dark:text-slate-100">تهانينا الحارة! لقد أكملت الاختبار</h3>
+                  <p className="text-xs text-[#7F8C8D] dark:text-slate-400 max-w-sm mx-auto mt-1">
                     لقد أنجزت بنجاح امتحان التقييم المخصص في الكيمياء للمنهج السوداني.
                   </p>
                 </div>
 
                 {/* Score card */}
-                <div className="p-6 bg-[#F9F8F6] rounded border border-[#E5E2DE] inline-block min-w-56 space-y-2 shadow-sm">
-                  <span className="text-xs text-[#7F8C8D] block font-sans">علامتك النهائية المستحقة:</span>
-                  <span className="text-4xl font-serif font-bold text-emerald-600 font-mono">
+                <div className="p-6 bg-[#F9F8F6] dark:bg-slate-800/80 rounded border border-[#E5E2DE] dark:border-slate-700 inline-block min-w-56 space-y-2 shadow-sm">
+                  <span className="text-xs text-[#7F8C8D] dark:text-slate-300 block font-sans">علامتك النهائية المستحقة:</span>
+                  <span className="text-4xl font-serif font-bold text-emerald-600 dark:text-emerald-400 font-mono">
                     {Math.round((correctCount / questions.length) * 100)}%
                   </span>
-                  <span className="text-xs text-[#95A5A6] block">({correctCount} إجابات صحيحة من أصل {questions.length})</span>
+                  <span className="text-xs text-[#95A5A6] dark:text-slate-400 block">({correctCount} إجابات صحيحة من أصل {questions.length})</span>
                 </div>
 
                 {/* Certificate of mastery badge */}
                 {Math.round((correctCount / questions.length) * 100) >= 80 ? (
-                  <div className="p-4 bg-emerald-50 border border-emerald-200 rounded max-w-md mx-auto text-right flex gap-3 items-center shadow-sm">
+                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded max-w-md mx-auto text-right flex gap-3 items-center shadow-sm">
                     <div className="flex-1 space-y-1">
-                      <span className="font-bold text-xs text-emerald-700 block font-sans">مبارك! لقد حصلت على وسام كفاءة المنهج</span>
-                      <p className="text-[11px] text-[#7F8C8D] leading-relaxed font-sans">
+                      <span className="font-bold text-xs text-emerald-700 dark:text-emerald-300 block font-sans">مبارك! لقد حصلت على وسام كفاءة المنهج</span>
+                      <p className="text-[11px] text-[#7F8C8D] dark:text-slate-300 leading-relaxed font-sans">
                         لحصولك على علامة تزيد عن 80%، تم تسجيل كفاءتك العالية بنجاح في لوحة الميداليات الكيميائية الخاصة بك!
                       </p>
                     </div>
-                    <Award className="w-8 h-8 text-emerald-600 shrink-0" />
+                    <Award className="w-8 h-8 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   </div>
                 ) : (
-                  <div className="p-4 bg-orange-50 border border-orange-200 rounded max-w-md mx-auto text-right flex gap-3 items-center shadow-sm">
+                  <div className="p-4 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/60 rounded max-w-md mx-auto text-right flex gap-3 items-center shadow-sm">
                     <div className="flex-1 space-y-1">
-                      <span className="font-bold text-xs text-[#E67E22] block font-sans">هل تريد تحسين درجاتك؟</span>
-                      <p className="text-[11px] text-[#7F8C8D] leading-relaxed font-sans">
+                      <span className="font-bold text-xs text-[#E67E22] dark:text-amber-400 block font-sans">هل تريد تحسين درجاتك؟</span>
+                      <p className="text-[11px] text-[#7F8C8D] dark:text-slate-300 leading-relaxed font-sans">
                         تحتاج لعلامة 80% أو أكثر لتأهيل الأوسمة الكيميائية. تصفح ملخص المنهج وأعد الاختبار لتزيد درجاتك.
                       </p>
                     </div>
-                    <RotateCcw className="w-6 h-6 text-[#E67E22] shrink-0" />
+                    <RotateCcw className="w-6 h-6 text-[#E67E22] dark:text-amber-400 shrink-0" />
                   </div>
                 )}
 
                 {/* Action buttons */}
-                <div className="flex gap-3 justify-center border-t border-[#E5E2DE] pt-6">
+                <div className="flex gap-3 justify-center border-t border-[#E5E2DE] dark:border-slate-800 pt-6">
                   <button
                     onClick={handleReset}
-                    className="px-4 py-2 bg-white hover:bg-[#F9F8F6] text-[#2C3E50] border border-[#E5E2DE] font-bold rounded text-xs transition-all flex items-center gap-1.5 shadow-sm"
+                    className="px-4 py-2 bg-white dark:bg-slate-800 hover:bg-[#F9F8F6] dark:hover:bg-slate-700 text-[#2C3E50] dark:text-slate-200 border border-[#E5E2DE] dark:border-slate-700 font-bold rounded text-xs transition-all flex items-center gap-1.5 shadow-sm"
                   >
                     <RotateCcw className="w-4 h-4" />
                     أعد الاختبار بنفس الإعدادات

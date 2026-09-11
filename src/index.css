@@ -1,6 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Cairo:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: "Cairo", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Amiri", "Playfair Display", Georgia, serif;
@@ -49,38 +51,156 @@
 
 /* Global transitions and soft slate palette */
 .dark body,
-.dark .bg-\[\#FDFCFB\] {
+.dark .bg-\[\#FDFCFB\],
+.dark [class*="bg-[#FDFCFB]"] {
   background-color: #0f172a !important;
   color: #E2E8F0 !important;
 }
 
 /* Card-level backgrounds */
-.dark .bg-white {
+.dark .bg-white,
+.dark [class*="bg-white"],
+.dark .bg-\[\#F9F8F6\],
+.dark [class*="bg-[#F9F8F6]"],
+.dark .bg-\[\#FCFDF9\],
+.dark [class*="bg-[#FCFDF9]"],
+.dark .bg-\[\#FAF9F5\],
+.dark [class*="bg-[#FAF9F5]"],
+.dark .bg-\[\#FCFBF9\],
+.dark [class*="bg-[#FCFBF9]"],
+.dark .bg-\[\#FAF7F0\],
+.dark [class*="bg-[#FAF7F0]"],
+.dark .bg-\[\#FDFBF7\],
+.dark [class*="bg-[#FDFBF7]"] {
   background-color: #1e293b !important;
   border-color: #334155 !important;
   color: #F1F5F9 !important;
 }
 
-.dark .bg-\[\#F9F8F6\] {
+/* Printable A4 sheet dark mode preview */
+.dark .a4-sheet {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+/* Secondary alerts, boxes, chips, and pastel highlights in dark mode */
+.dark [class*="bg-slate-50"],
+.dark [class*="bg-gray-50"],
+.dark [class*="bg-zinc-50"],
+.dark [class*="bg-neutral-50"] {
+  background-color: #1e293b !important;
+  border-color: #334155 !important;
+  color: #F1F5F9 !important;
+}
+
+.dark [class*="bg-amber-50"] {
+  background-color: rgba(245, 158, 11, 0.14) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: #FCD34D !important;
+}
+
+.dark [class*="bg-emerald-50"] {
+  background-color: rgba(16, 185, 129, 0.14) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #6EE7B7 !important;
+}
+
+.dark [class*="bg-blue-50"] {
+  background-color: rgba(59, 130, 246, 0.14) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #93C5FD !important;
+}
+
+.dark [class*="bg-purple-50"] {
+  background-color: rgba(168, 85, 247, 0.14) !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+  color: #D8B4FE !important;
+}
+
+.dark [class*="bg-rose-50"],
+.dark [class*="bg-red-50"] {
+  background-color: rgba(244, 63, 94, 0.14) !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+  color: #FDA4AF !important;
+}
+
+.dark [class*="bg-orange-50"] {
+  background-color: rgba(249, 115, 22, 0.14) !important;
+  border-color: rgba(249, 115, 22, 0.3) !important;
+  color: #FDBA74 !important;
+}
+
+.dark [class*="bg-teal-50"] {
+  background-color: rgba(20, 184, 166, 0.14) !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
+  color: #5EEAD4 !important;
+}
+
+.dark [class*="bg-cyan-50"],
+.dark [class*="bg-sky-50"] {
+  background-color: rgba(14, 165, 233, 0.14) !important;
+  border-color: rgba(14, 165, 233, 0.3) !important;
+  color: #7DD3FC !important;
+}
+
+.dark [class*="bg-indigo-50"] {
+  background-color: rgba(99, 102, 241, 0.14) !important;
+  border-color: rgba(99, 102, 241, 0.3) !important;
+  color: #A5B4FC !important;
+}
+
+.dark [class*="bg-yellow-50"] {
+  background-color: rgba(234, 179, 8, 0.14) !important;
+  border-color: rgba(234, 179, 8, 0.3) !important;
+  color: #FDE047 !important;
+}
+
+/* Secondary 100-level badges */
+.dark [class*="bg-slate-100"],
+.dark [class*="bg-gray-100"] {
   background-color: #1e293b !important;
   border-color: #334155 !important;
   color: #E2E8F0 !important;
 }
 
-/* Secondary alerts, boxes, and highlights */
-.dark .bg-slate-50,
-.dark .bg-amber-50\/55,
-.dark .bg-amber-50,
-.dark .bg-amber-50\/50,
-.dark .bg-emerald-50,
-.dark .bg-orange-50 {
-  background-color: #1e293b !important;
-  border-color: #334155 !important;
-  color: #F1F5F9 !important;
+.dark [class*="bg-emerald-100"] {
+  background-color: rgba(6, 78, 59, 0.5) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: #6EE7B7 !important;
 }
 
-/* Borders mapping */
-.dark .border-\[\#E5E2DE\] {
+.dark [class*="bg-amber-100"] {
+  background-color: rgba(120, 53, 15, 0.5) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+  color: #FCD34D !important;
+}
+
+.dark [class*="bg-blue-100"] {
+  background-color: rgba(30, 58, 138, 0.5) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: #93C5FD !important;
+}
+
+.dark [class*="bg-red-100"],
+.dark [class*="bg-rose-100"] {
+  background-color: rgba(136, 19, 55, 0.5) !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+  color: #FDA4AF !important;
+}
+
+.dark [class*="bg-purple-100"] {
+  background-color: rgba(88, 28, 135, 0.5) !important;
+  border-color: rgba(168, 85, 247, 0.3) !important;
+  color: #D8B4FE !important;
+}
+
+/* Universal Borders in Dark Mode */
+.dark [class*="border-[#E5E2DE]"],
+.dark .border-slate-200,
+.dark .border-slate-100,
+.dark .border-gray-200,
+.dark .border-gray-100 {
   border-color: #334155 !important;
 }
 
@@ -91,22 +211,100 @@
   border-color: #334155 !important;
 }
 
-/* Text elements mapping */
-.dark .text-\[\#2C3E50\] {
-  color: #F1F5F9 !important;
+/* Text elements mapping - Primary & Bold Headlines */
+.dark [class*="text-[#2C3E50]"],
+.dark [class*="text-[#1A1A1A]"],
+.dark [class*="text-[#1E1E1E]"],
+.dark [class*="text-[#1A252F]"],
+.dark [class*="text-[#34495E]"],
+.dark [class*="text-[#292524]"],
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-zinc-900,
+.dark .text-zinc-800,
+.dark .text-neutral-900,
+.dark .text-neutral-800 {
+  color: #F8FAFC !important;
 }
 
-.dark .text-\[\#1A1A1A\] {
-  color: #E2E8F0 !important;
+/* Text elements mapping - Subtitles, descriptions, metadata */
+.dark [class*="text-[#7F8C8D]"],
+.dark [class*="text-[#95A5A6]"],
+.dark [class*="text-[#78716c]"],
+.dark .text-slate-700,
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-gray-700,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-zinc-700,
+.dark .text-zinc-600,
+.dark .text-neutral-700,
+.dark .text-neutral-600 {
+  color: #CBD5E1 !important;
 }
 
-.dark .text-\[\#1E1E1E\] {
-  color: #E2E8F0 !important;
+/* Luminous Colored Accents in Dark Mode */
+.dark [class*="text-[#064E3B]"],
+.dark [class*="text-[#047857]"],
+.dark .text-emerald-950,
+.dark .text-emerald-900,
+.dark .text-emerald-800,
+.dark .text-emerald-700 {
+  color: #34D399 !important;
 }
 
-.dark .text-\[\#7F8C8D\],
-.dark .text-\[\#95A5A6\] {
-  color: #94A3B8 !important;
+.dark .text-amber-900,
+.dark .text-amber-800,
+.dark .text-amber-700 {
+  color: #FBBF24 !important;
+}
+
+.dark .text-blue-900,
+.dark .text-blue-800,
+.dark .text-blue-700 {
+  color: #60A5FA !important;
+}
+
+.dark .text-purple-900,
+.dark .text-purple-800,
+.dark .text-purple-700 {
+  color: #C084FC !important;
+}
+
+.dark .text-rose-900,
+.dark .text-rose-800,
+.dark .text-rose-700,
+.dark .text-red-900,
+.dark .text-red-800,
+.dark .text-red-700 {
+  color: #FB7185 !important;
+}
+
+.dark .text-teal-900,
+.dark .text-teal-800,
+.dark .text-teal-700 {
+  color: #2DD4BF !important;
+}
+
+.dark .text-indigo-900,
+.dark .text-indigo-800,
+.dark .text-indigo-700 {
+  color: #818CF8 !important;
+}
+
+.dark .text-sky-900,
+.dark .text-sky-800,
+.dark .text-sky-700 {
+  color: #38BDF8 !important;
+}
+
+.dark .text-orange-900,
+.dark .text-orange-800,
+.dark .text-orange-700 {
+  color: #FB923C !important;
 }
 
 /* Selection and interactive fields */
@@ -163,14 +361,6 @@
   fill: #F1F5F9 !important;
 }
 
-.dark .text-emerald-800 {
-  color: #34D399 !important;
-}
-
-.dark .text-red-800 {
-  color: #F87171 !important;
-}
-
 /* Scrollbar soft styling */
 .dark ::-webkit-scrollbar-track {
   background: #0f172a !important;
@@ -187,19 +377,30 @@
 /* ==========================================
    وضع القراءة المريح الورقي الدافئ (Warm Reading Mode)
    ========================================== */
-.reading-theme-warm {
+html:not(.dark) .reading-theme-warm {
   background-color: #FAF7F0 !important;
   color: #292524 !important;
 }
 
-.reading-theme-warm .reader-container {
+html:not(.dark) .reading-theme-warm .reader-container {
   background-color: #FDFBF7 !important;
   border-color: #E7E0D3 !important;
 }
 
-.reading-theme-warm p,
-.reading-theme-warm div {
+html:not(.dark) .reading-theme-warm p,
+html:not(.dark) .reading-theme-warm div {
   color: #292524 !important;
+}
+
+.dark .reading-theme-warm {
+  background-color: #1c1917 !important;
+  border-color: #292524 !important;
+  color: #f5f5f4 !important;
+}
+
+.dark .reading-theme-warm p,
+.dark .reading-theme-warm div {
+  color: #f5f5f4 !important;
 }
 
 /* ==========================================

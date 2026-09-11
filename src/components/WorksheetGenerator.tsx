@@ -1084,12 +1084,11 @@ export const WorksheetGenerator: React.FC<WorksheetGeneratorProps> = ({
         {worksheetPages.map((pageQuestions, pageIdx) => (
           <div
             key={pageIdx}
-            className="a4-sheet relative bg-white border border-[#E5E2DE] p-8 md:p-14 shadow-xl mx-auto rounded-lg overflow-hidden flex flex-col justify-between print:border-0 print:shadow-none print:p-8 print:my-0 print:rounded-none select-none"
+            className="a4-sheet relative bg-white dark:bg-slate-900 border border-[#E5E2DE] dark:border-slate-800 p-8 md:p-14 shadow-xl mx-auto rounded-lg overflow-hidden flex flex-col justify-between print:border-0 print:shadow-none print:p-8 print:my-0 print:rounded-none print:bg-white select-none"
             style={{
               width: "100%",
               maxWidth: "800px",
               aspectRatio: "1/1.414", // precise A4 proportion
-              background: "#FFFFFF",
               position: "relative"
             }}
           >
