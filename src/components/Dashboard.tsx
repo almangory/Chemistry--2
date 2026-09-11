@@ -1,7 +1,7 @@
 import React from "react";
 import { 
   BookOpen, 
-  FlaskConical, 
+  FlaskConical,
   CheckSquare, 
   Sparkles, 
   ArrowLeft, 
@@ -228,82 +228,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
         </div>
       </div>
 
-      {/* ⚗️ 3. Quick Interactive Virtual Lab Highlights */}
-      <div className="bg-emerald-50/40 border border-emerald-100 rounded-2xl p-4 sm:p-5 space-y-3.5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <FlaskConical className="w-5 h-5 text-[#E67E22]" />
-            <div>
-              <h3 className="text-sm sm:text-base font-bold text-slate-800 font-sans">
-                تجارب مختارة في المعمل الكيميائي الافتراضي
-              </h3>
-              <p className="text-[11px] text-slate-500">
-                محاكاة عملية وتفاعلية لتجارب كتاب الكيمياء خطوة بخطوة مع المشاهدة والاستنتاج
-              </p>
-            </div>
-          </div>
-
-          <button
-            onClick={() => activeTabSetter("lab")}
-            className="px-3.5 py-1.5 bg-[#E67E22] hover:bg-[#d35400] text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shadow-xs transition-colors shrink-0 font-sans cursor-pointer"
-          >
-            <span>جميع التجارب الـ 21</span>
-            <ChevronLeft className="w-3.5 h-3.5" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-          {/* Highlight 1: Methane */}
-          <div 
-            onClick={() => activeTabSetter("lab")}
-            className="p-3.5 bg-white rounded-xl border border-slate-200/80 hover:border-[#E67E22] transition-colors cursor-pointer space-y-1.5 shadow-xs"
-          >
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200 inline-block font-sans">
-              الوحدة 3 • الكيمياء العضوية
-            </span>
-            <h4 className="text-xs sm:text-sm font-bold text-slate-800 font-sans">
-              تحضير غاز الميثان بالتقطير الجاف
-            </h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-              خلات الصوديوم اللامائية مع الجير الصودي وجمع الغاز بإزاحة الماء لأسفل.
-            </p>
-          </div>
-
-          {/* Highlight 2: Ethene & Bromine Water */}
-          <div 
-            onClick={() => activeTabSetter("lab")}
-            className="p-3.5 bg-white rounded-xl border border-slate-200/80 hover:border-[#E67E22] transition-colors cursor-pointer space-y-1.5 shadow-xs"
-          >
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200 inline-block font-sans">
-              الوحدة 3 • تفاعلات الإضافة
-            </span>
-            <h4 className="text-xs sm:text-sm font-bold text-slate-800 font-sans">
-              كشف عدم التشبع بماء البروم الأحمر
-            </h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-              التمييز بين الإيثين والإيثان، وزوال اللون الأحمر السريع في غير المشبع.
-            </p>
-          </div>
-
-          {/* Highlight 3: Ammonia Fountain */}
-          <div 
-            onClick={() => activeTabSetter("lab")}
-            className="p-3.5 bg-white rounded-xl border border-slate-200/80 hover:border-[#E67E22] transition-colors cursor-pointer space-y-1.5 shadow-xs"
-          >
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-purple-50 text-purple-800 border border-purple-200 inline-block font-sans">
-              الوحدة 4 • النشادر
-            </span>
-            <h4 className="text-xs sm:text-sm font-bold text-slate-800 font-sans">
-              نافورة النشادر ومحلول عباد الشمس
-            </h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-              إثبات ذوبانية غاز الأمونيا الفائقة في الماء مع إظهار خواصه القاعدية.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* 🇸🇩 4. Real-world Case Studies: Chemistry in Sudan */}
+      {/* 🇸🇩 3. Real-world Case Studies: Chemistry in Sudan */}
       <SudanCaseStudies />
     </div>
   );

@@ -469,30 +469,28 @@ export const StudentAssistant: React.FC = () => {
           >
             <button
               onClick={() => setIsOpen(true)}
-              className="group relative flex items-center gap-2.5 pl-4 sm:pl-5 pr-2 sm:pr-2.5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white font-bold shadow-xl shadow-emerald-950/40 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-emerald-400/50 cursor-pointer"
-              title="تحدث مع سودان بوت - المعلم الكيميائي الذكي للشهادة السودانية"
+              className="group relative flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 p-0.5 shadow-2xl shadow-emerald-950/70 hover:shadow-emerald-500/50 hover:scale-110 active:scale-95 transition-all duration-200 border-2 border-emerald-300/80 cursor-pointer"
+              title="تحدث مع سودان بوت - المعلم الكيميائي الذكي"
             >
-              {/* Pulsing indicator */}
-              <span className="relative flex h-3.5 w-3.5 shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-200"></span>
+              {/* Online Green Pulsing Dot Badge */}
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 z-10">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-4 w-4 bg-emerald-500 border-2 border-white shadow-sm"></span>
               </span>
 
-              {/* 🇸🇩 Sudan Bot Custom Avatar */}
-              <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-emerald-200 shadow-md bg-white shrink-0 ring-2 ring-emerald-400/40 group-hover:scale-110 transition-transform">
+              {/* 🇸🇩 Sudan Bot Circular Avatar Icon */}
+              <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center">
                 <img
                   src="/sudan-bot-avatar.png"
                   alt="سودان بوت"
-                  className="w-full h-full object-cover object-top"
+                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform"
                 />
               </div>
 
-              <div className="flex items-center gap-1.5 font-sans">
-                <span className="text-xs sm:text-sm font-extrabold tracking-wide">المعلم الذكي (18 سنة)</span>
-                <span className="bg-emerald-800/80 text-[10px] px-1.5 py-0.5 rounded-md border border-emerald-500/40 text-emerald-200">
-                  شهادة سودانية 🇸🇩
-                </span>
-              </div>
+              {/* Hover Tooltip */}
+              <span className="absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap bg-emerald-950/95 text-emerald-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-emerald-500/50 shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                سودان بوت 🇸🇩
+              </span>
             </button>
           </motion.div>
         )}
@@ -528,8 +526,8 @@ export const StudentAssistant: React.FC = () => {
                     <h3 className="font-extrabold text-sm sm:text-base text-white tracking-wide font-sans">
                       سودان بوت (المعلم الكيميائي)
                     </h3>
-                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.5 rounded">
-                      عمر 18 سنة 🎓
+                    <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 px-1.5 py-0.5 rounded">
+                      الشهادة السودانية 🇸🇩
                     </span>
                   </div>
                   <div className="flex items-center gap-1.5 text-[11px] text-emerald-300/80">
