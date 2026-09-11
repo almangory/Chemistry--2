@@ -59,7 +59,7 @@ const HIGH_YIELD_CHEMISTRY_PRESETS = [
   { label: "🌿 تسمية الكيمياء العضوية IUPAC", query: "وضح القواعد الصارمة لتسمية مشتقات الهيدروكربونات (الكحولات، الألدهيدات، الأحماض، والإسترات) حسب نظام IUPAC." },
   { label: "⚖️ قاعدة لوشاتيليه والاتزان", query: "اشرح قاعدة لوشاتيليه وأثر تغير الضغط والحرارة والتركيز على موضع الاتزان وقيمة ثابت الاتزان Kc." },
   { label: "🔥 قانون هس والمحتوى الحراري", query: "كيف أحسب التغير في المحتوى الحراري للتفاعل ΔH باستخدام قانون هس وطاقة الروابط؟" },
-  { label: "🎯 اديني الزيت في الكيمياء", query: "اديني الزيت في كيمياء الشهادة السودانية" }
+  { label: "🎯 ملخص كيمياء الشهادة السودانية", query: "لخص لي أهم القوانين والمفاهيم الكيميائية المتكررة في امتحانات الشهادة السودانية" }
 ];
 
 // Custom Q&A dataset representing common high-yield Sudan chemistry questions (Offline Fallback)
@@ -195,7 +195,7 @@ export const StudentAssistant: React.FC = () => {
   <li>⚖️ <strong>الاتزان الكيميائي:</strong> قاعدة لوشاتيليه، ثابت الاتزان Kc، وتأثير الضغط والحرارة.</li>
   <li>🔥 <strong>الكيمياء الحرارية:</strong> حسابات المحتوى الحراري ΔH وقانون هس.</li>
 </ul>
-تفضل بطرح أي مسألة، أو اطلب <em>«اديني الزيت»</em> لأي درس وسأوافيك بالقوانين وشراك امتحانات الشهادة السودانية فوراً! 🚀`,
+تفضل بطرح أي مسألة، أو اطلب تلخيص أي درس وسأوافيك بالقوانين وأهم نقاط امتحانات الشهادة السودانية فوراً! 🚀`,
       timestamp: new Date()
     }
   ]);
@@ -424,9 +424,19 @@ export const StudentAssistant: React.FC = () => {
     }
 
     // 3. Curriculum search
+    const cleanSearch = normalizedQuery
+      .replace(/^(لخص لي|لخص|ملخص|شرح|اشرح لي|اشرح|درس|عن|في|ماهو|ما هو)\s+/g, "")
+      .trim();
+
     for (const unit of curriculumData) {
       for (const lesson of unit.lessons) {
-        if (normalizeArabic(lesson.title).includes(normalizedQuery) || normalizeArabic(lesson.subtitle || "").includes(normalizedQuery)) {
+        const normTitle = normalizeArabic(lesson.title);
+        const normSub = normalizeArabic(lesson.subtitle || "");
+        if (
+          normTitle.includes(normalizedQuery) ||
+          normSub.includes(normalizedQuery) ||
+          (cleanSearch.length > 2 && (normTitle.includes(cleanSearch) || normSub.includes(cleanSearch) || cleanSearch.includes(normTitle)))
+        ) {
           return {
             id: Math.random().toString(),
             sender: "assistant",
@@ -710,7 +720,7 @@ export const StudentAssistant: React.FC = () => {
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                     </div>
-                    <span>سودان بوت يزن التفاعلات الكيميائية ويراجع شراك الامتحان... ⚗️</span>
+                    <span>سودان بوت يزن التفاعلات الكيميائية ويراجع نماذج الامتحان... ⚗️</span>
                   </div>
                 </div>
               )}
@@ -732,7 +742,7 @@ export const StudentAssistant: React.FC = () => {
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="اكتب سؤالك أو مسألتك الكيميائية (مثال: احسب كمية الكهرباء، أو اديني الزيت)..."
+                    placeholder="اكتب سؤالك أو مسألتك الكيميائية (مثال: احسب كمية الكهرباء، أو لخص لي درس كذا)..."
                     disabled={isLoading}
                     className="w-full bg-[#072a20] border border-emerald-700/60 rounded-2xl py-2.5 px-4 text-xs sm:text-sm text-white placeholder-emerald-400/60 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-all font-sans"
                   />
@@ -749,7 +759,7 @@ export const StudentAssistant: React.FC = () => {
               </form>
 
               <div className="flex items-center justify-between mt-2 px-1 text-[10px] text-emerald-400/70 font-sans">
-                <span>💡 نصيحة: اكتب <strong>اديني الزيت في [اسم الدرس]</strong> لتلخيص مباشر لأهم نقاط الامتحان</span>
+                <span>💡 نصيحة: اكتب <strong>لخص لي [اسم الدرس]</strong> لتلخيص مباشر لأهم نقاط الامتحان</span>
                 <span>منصة نقلة • المناهج السودانية 🇸🇩</span>
               </div>
             </div>
