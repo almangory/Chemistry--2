@@ -186,7 +186,7 @@ export const StudentAssistant: React.FC = () => {
       id: "welcome-senior",
       sender: "assistant",
       text: `أهلاً بك يا زميل التميز الأكاديمي وبطل الشهادة السودانية! ⚗️🧪<br/><br/>
-أنا <strong>المعلم الكيميائي الأكاديمي الذكي</strong> لمنصة نَقْـلَة للمناهج الإلكترونية، مدعوم بأحدث خوارزميات التفكير والذكاء الاصطناعي للمرحلة الثانوية.<br/><br/>
+أنا <strong>سودان بوت 🤖🇸🇩 (المعلم الكيميائي الأكاديمي الذكي)</strong> لمنصة نَقْـلَة للمناهج الإلكترونية، مدعوم بأحدث خوارزميات التفكير والذكاء الاصطناعي للمرحلة الثانوية.<br/><br/>
 جاهز لمساعدتك في استيعاب ومراجعة:
 <ul class="list-disc list-inside space-y-1 my-2 text-emerald-200">
   <li>⚡ <strong>الكيمياء الكهربية:</strong> خلايا دانيال، التحليل الكهربائي، وقوانين فاراداي.</li>
@@ -469,17 +469,25 @@ export const StudentAssistant: React.FC = () => {
           >
             <button
               onClick={() => setIsOpen(true)}
-              className="group relative flex items-center gap-2.5 px-4 sm:px-5 py-3 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white font-bold shadow-xl shadow-emerald-950/40 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-emerald-400/40 cursor-pointer"
-              title="تحدث مع المعلم الكيميائي الذكي للشهادة السودانية"
+              className="group relative flex items-center gap-2.5 pl-4 sm:pl-5 pr-2 sm:pr-2.5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white font-bold shadow-xl shadow-emerald-950/40 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-emerald-400/50 cursor-pointer"
+              title="تحدث مع سودان بوت - المعلم الكيميائي الذكي للشهادة السودانية"
             >
               {/* Pulsing indicator */}
-              <span className="relative flex h-3.5 w-3.5">
+              <span className="relative flex h-3.5 w-3.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-200"></span>
               </span>
 
+              {/* 🇸🇩 Sudan Bot Custom Avatar */}
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden border-2 border-emerald-200 shadow-md bg-white shrink-0 ring-2 ring-emerald-400/40 group-hover:scale-110 transition-transform">
+                <img
+                  src="/sudan-bot-avatar.png"
+                  alt="سودان بوت"
+                  className="w-full h-full object-cover object-top"
+                />
+              </div>
+
               <div className="flex items-center gap-1.5 font-sans">
-                <Atom className="w-5 h-5 animate-spin-slow text-emerald-100" />
                 <span className="text-xs sm:text-sm font-extrabold tracking-wide">المعلم الذكي (18 سنة)</span>
                 <span className="bg-emerald-800/80 text-[10px] px-1.5 py-0.5 rounded-md border border-emerald-500/40 text-emerald-200">
                   شهادة سودانية 🇸🇩
@@ -508,13 +516,17 @@ export const StudentAssistant: React.FC = () => {
             {/* 🏷️ Header */}
             <div className="bg-gradient-to-r from-[#06241b] via-[#083326] to-[#041a13] px-4 py-3.5 border-b border-emerald-800/70 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center border border-emerald-300/40 shadow-inner">
-                  <Atom className="w-6 h-6 text-white animate-spin-slow" />
+                <div className="relative w-11 h-11 rounded-2xl overflow-hidden border-2 border-emerald-300/70 shadow-lg bg-white shrink-0 ring-2 ring-emerald-500/40">
+                  <img
+                    src="/sudan-bot-avatar.png"
+                    alt="سودان بوت"
+                    className="w-full h-full object-cover object-top"
+                  />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
                     <h3 className="font-extrabold text-sm sm:text-base text-white tracking-wide font-sans">
-                      المعلم الكيميائي الأكاديمي
+                      سودان بوت (المعلم الكيميائي)
                     </h3>
                     <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.5 rounded">
                       عمر 18 سنة 🎓
@@ -590,14 +602,24 @@ export const StudentAssistant: React.FC = () => {
                 return (
                   <div
                     key={msg.id}
-                    className={`flex flex-col ${isUser ? "items-start" : "items-end"}`}
+                    className={`flex gap-2.5 ${isUser ? "flex-row-reverse items-start" : "flex-row items-start"}`}
                   >
-                    <div
-                      className={`max-w-[92%] sm:max-w-[85%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm leading-relaxed ${
-                        isUser
-                          ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-xs shadow-md"
-                          : "bg-[#06241b] border border-emerald-700/40 text-slate-100 rounded-tl-xs shadow-md"
-                      }`}
+                    {!isUser && (
+                      <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-emerald-400/60 bg-white shrink-0 mt-0.5 shadow-md ring-1 ring-emerald-500/40">
+                        <img
+                          src="/sudan-bot-avatar.png"
+                          alt="سودان بوت"
+                          className="w-full h-full object-cover object-top"
+                        />
+                      </div>
+                    )}
+                    <div className={`flex flex-col ${isUser ? "items-start" : "items-end"} flex-1`}>
+                      <div
+                        className={`max-w-[94%] sm:max-w-[88%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm leading-relaxed ${
+                          isUser
+                            ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-xs shadow-md mr-auto"
+                            : "bg-[#06241b] border border-emerald-700/40 text-slate-100 rounded-tl-xs shadow-md ml-auto"
+                        }`}
                     >
                       {/* Formatted HTML/Markdown Body */}
                       <div
@@ -671,18 +693,26 @@ export const StudentAssistant: React.FC = () => {
                       {msg.timestamp.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}
                     </span>
                   </div>
-                );
-              })}
+                </div>
+              );
+            })}
 
               {/* Loading indicator */}
               {isLoading && (
-                <div className="flex flex-col items-end">
-                  <div className="bg-[#06241b] border border-emerald-700/40 rounded-2xl rounded-tl-xs p-3.5 max-w-[80%] flex items-center gap-3 text-emerald-300 text-xs">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-emerald-400/60 bg-white shrink-0 shadow-md ring-1 ring-emerald-500/40 animate-pulse">
+                    <img
+                      src="/sudan-bot-avatar.png"
+                      alt="سودان بوت"
+                      className="w-full h-full object-cover object-top"
+                    />
+                  </div>
+                  <div className="bg-[#06241b] border border-emerald-700/40 rounded-2xl rounded-tl-xs p-3.5 max-w-[80%] flex items-center gap-3 text-emerald-300 text-xs shadow-md">
                     <div className="relative flex h-3 w-3">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                     </div>
-                    <span>المعلم يفكر ويزن التفاعلات الكيميائية ويراجع شراك الامتحان... ⚗️</span>
+                    <span>سودان بوت يزن التفاعلات الكيميائية ويراجع شراك الامتحان... ⚗️</span>
                   </div>
                 </div>
               )}
