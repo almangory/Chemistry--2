@@ -1,22 +1,68 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { MessageSquare, X, Send, Search, HelpCircle, BookOpen, Sparkles, RefreshCw } from "lucide-react";
+import {
+  MessageSquare,
+  X,
+  Send,
+  Sparkles,
+  RefreshCw,
+  Volume2,
+  Square,
+  Maximize2,
+  Minimize2,
+  Copy,
+  Check,
+  Zap,
+  FlaskConical,
+  Atom,
+  HelpCircle,
+  ExternalLink,
+  BookOpen,
+  Wifi,
+  Cloud
+} from "lucide-react";
 import { glossaryTerms } from "../data/glossary";
 import { curriculumData } from "../data/curriculum";
+
+interface MediaData {
+  type?: string;
+  title: string;
+  channel?: string;
+  search_url?: string;
+  watch_url?: string;
+  embed_url?: string;
+  thumbnail?: string;
+  badge?: string;
+}
 
 interface Message {
   id: string;
   sender: "student" | "assistant";
   text: string;
   timestamp: Date;
+  media?: MediaData | null;
+  toolsUsed?: any[];
   reference?: {
-    type: "glossary" | "curriculum" | "qa";
+    type: "glossary" | "curriculum" | "qa" | "ai";
     title: string;
     unitId?: string;
   };
 }
 
-// Custom Q&A dataset representing common high-yield Sudan chemistry questions
+const LOCAL_TUNNEL_CHECK_URL = "https://local-ai-arsenal.pages.dev/static/tunnel_status.json";
+const CLOUD_MENTOR_ENDPOINT = "https://local-ai-arsenal.pages.dev/api/mentor/chat";
+const CLOUD_TTS_ENDPOINT = "https://local-ai-arsenal.pages.dev/api/tts";
+
+const HIGH_YIELD_CHEMISTRY_PRESETS = [
+  { label: "⚡ مسائل قوانين فاراداي", query: "اشرح قوانين فاراداي للتحليل الكهربي وكيف أحل مسألة حساب كمية الكهرباء والكتلة المترسبة خطوة بخطوة؟" },
+  { label: "🧪 مسائل المعايرة الحجمية", query: "كيف أحل مسائل معايرة الأحماض والقواعد وقانون التعادل وحساب التركيز المولي والنسبة المئوية؟" },
+  { label: "🌿 تسمية الكيمياء العضوية IUPAC", query: "وضح القواعد الصارمة لتسمية مشتقات الهيدروكربونات (الكحولات، الألدهيدات، الأحماض، والإسترات) حسب نظام IUPAC." },
+  { label: "⚖️ قاعدة لوشاتيليه والاتزان", query: "اشرح قاعدة لوشاتيليه وأثر تغير الضغط والحرارة والتركيز على موضع الاتزان وقيمة ثابت الاتزان Kc." },
+  { label: "🔥 قانون هس والمحتوى الحراري", query: "كيف أحسب التغير في المحتوى الحراري للتفاعل ΔH باستخدام قانون هس وطاقة الروابط؟" },
+  { label: "🎯 اديني الزيت في الكيمياء", query: "اديني الزيت في كيمياء الشهادة السودانية" }
+];
+
+// Custom Q&A dataset representing common high-yield Sudan chemistry questions (Offline Fallback)
 const customQA = [
   {
     keywords: ["ميثان", "الميثان", "methane", "تحضير الميثان", "غاز المستنقعات"],
@@ -25,7 +71,7 @@ const customQA = [
     يحضر الميثان في المختبر بـ <strong>التقطير الجاف لخلات (أسيتات) الصوديوم اللامائية</strong> مع <strong>الجير الصودي</strong> (وهو خليط من الصودا الكاوية NaOH والجير الحي CaO).<br/><br/>
     <strong>دور الجير الحي (CaO):</strong> لا يدخل في التفاعل ولكنه يساعد في خفض درجة انصهار الخليط ومنع تميع زجاج أنبوبة الاختبار.<br/><br/>
     <strong>معادلة التفاعل الكيميائية:</strong><br/>
-    <code class="bg-[#F9F8F6] px-2 py-1 rounded block text-center border my-2 font-mono text-[#E67E22] font-bold">
+    <code class="bg-[#0f2d24] text-emerald-300 px-3 py-1.5 rounded-lg block text-center border border-emerald-700/50 my-2 font-mono text-sm font-bold dir-ltr">
       CH₃COONa (s) + NaOH (s) ⟶[CaO, Δ] CH₄ (g) ↑ + Na₂CO₃ (s)
     </code><br/>
     يجمع الغاز بإزاحة الماء لأسفل لأنه شحيح الذوبان في الماء وأخف من الهواء.`,
@@ -37,108 +83,30 @@ const customQA = [
     answer: `<strong>تحضير غاز الإيثين (C₂H₄) معملياً:</strong><br/>
     يحضر الإيثين بـ <strong>نزع جزيء ماء من الكحول الإيثيلي (الإيثانول)</strong> بواسطة <strong>حمض الكبريتيك المركز</strong> كعامل نازع للماء عند درجة حرارة ثابتة <strong>180°م</strong>.<br/><br/>
     <strong>معادلة التفاعل الكيميائية:</strong><br/>
-    <code class="bg-[#F9F8F6] px-2 py-1 rounded block text-center border my-2 font-mono text-[#E67E22] font-bold">
+    <code class="bg-[#0f2d24] text-emerald-300 px-3 py-1.5 rounded-lg block text-center border border-emerald-700/50 my-2 font-mono text-sm font-bold dir-ltr">
       C₂H₅OH ⟶[H₂SO₄ / 180°C] C₂H₄ (g) ↑ + H₂O
     </code><br/>
     <strong>الكشف عن الإيثين:</strong> يزيل لون ماء البروم الأحمر سريعاً لكونه هيدروكربوناً غير مشبع يحتوي على رابطة ثنائية (سيجما وباي).`,
     unitId: "3"
   },
   {
-    keywords: ["ايثاين", "الإيثاين", "ethyne", "acetylene", "استلين", "الأستيلين", "تحضير الايثاين"],
-    question: "كيف يحضر غاز الإيثاين (الأستيلين) وما استخدامات لهبه؟",
-    answer: `<strong>تحضير غاز الإيثاين (C₂H₂) معملياً:</strong><br/>
-    يحضر الإيثاين بـ <strong>تنقيط الماء على كربيد الكالسيوم (CaC₂)</strong> في درجة حرارة الغرفة العادية.<br/><br/>
-    <strong>معادلة التفاعل الكيميائية:</strong><br/>
-    <code class="bg-[#F9F8F6] px-2 py-1 rounded block text-center border my-2 font-mono text-[#E67E22] font-bold">
-      CaC₂ (s) + 2H₂O (l) ⟶ C₂H₂ (g) ↑ + Ca(OH)₂ (aq)
-    </code><br/>
-    <strong>لهب الأكسي-أستيلين:</strong> عند احتراق الإيثاين في وفرة من الأكسجين، يعطي لهباً شديد السخونة (أكثر من 3000 درجة مئوية) يسمى لهب الأكسي-أستيلين، ويستخدم في <strong>قطع ولحام المعادن</strong>.`,
-    unitId: "3"
-  },
-  {
-    keywords: ["هابر", "Haber", "امونيا", "النشادر", "نشادر", "تحضير الامونيا"],
-    question: "ما هي طريقة هابر لتحضير الأمونيا صناعياً؟",
-    answer: `<strong>إنتاج الأمونيا (NH₃) صناعياً (طريقة هابر-بوش):</strong><br/>
-    تعتمد على الاتحاد المباشر بين غازي النيتروجين والهيدروجين تحت ظروف تشغيل محددة:<br/>
-    1. ضغط عالٍ جداً (حوالي 200 ضغط جوي).<br/>
-    2. درجة حرارة مرتفعة (حوالي 500 درجة مئوية).<br/>
-    3. وجود عامل حفاز (أكسيد الحديد المجزأ بالتشارك مع دقيق المولدبنيوم).<br/><br/>
-    <strong>معادلة التفاعل المتزن:</strong><br/>
-    <code class="bg-[#F9F8F6] px-2 py-1 rounded block text-center border my-2 font-mono text-[#E67E22] font-bold">
-      N₂ (g) + 3H₂ (g) ⇌[Fe / 500°C / 200atm] 2NH₃ (g) + الحرارة
-    </code><br/>
-    النشادر غاز قلوي التأثير يزرق ورقة عباد الشمس الحمراء المبللة ويذوب بشدة فائقة في الماء (نافورة الأمونيا).`,
-    unitId: "4"
-  },
-  {
-    keywords: ["صوديوم", "الصوديوم", "sodium", "خلية داونز", "داونز"],
-    question: "كيف يستخلص الصوديوم صناعياً وما تفاعله مع الماء؟",
-    answer: `<strong>استخلاص الصوديوم (Na):</strong><br/>
-    يستخلص صناعياً في <strong>خلية داونز (Downs Cell)</strong> بالتحليل الكهربائي لـ <strong>مصهور كلوريد الصوديوم اللامائي (NaCl)</strong> وليس محلوله لضمان عدم اختزال الهيدروجين عند الكاثود.<br/><br/>
-    <strong>تفاعل الصوديوم العنيف مع الماء:</strong><br/>
-    يتفاعل الصوديوم بشدة فائقة مع الماء مطلقاً حرارة عالية كافية لإشعال غاز الهيدروجين المنطلق بفرقعة مميزة:<br/>
-    <code class="bg-[#F9F8F6] px-2 py-1 rounded block text-center border my-2 font-mono text-[#E67E22] font-bold">
-      2Na (s) + 2H₂O (l) ⟶ 2NaOH (aq) + H₂ (g) ↑ + حرارة
-    </code><br/>
-    لذا يحفظ الصوديوم مغموراً تحت الكيروسين (الجازولين) لعزله عن الهواء والرطوبة.`,
-    unitId: "2"
-  },
-  {
-    keywords: ["كلور", "الكلور", "chlorine", "تحضير الكلور", "قصر الالوان"],
-    question: "كيف يحضر غاز الكلور معملياً وما سر قصر الألوان؟",
-    answer: `<strong>تحضير غاز الكلور (Cl₂) معملياً:</strong><br/>
-    يحضر بأكسدة حمض الهيدروكلوريك المركز بواسطة عامل مؤكسد قوي مثل <strong>ثاني أكسيد المنجنيز (MnO₂)</strong>:<br/>
-    <code class="bg-[#F9F8F6] px-2 py-1 rounded block text-center border my-2 font-mono text-[#E67E22] font-bold">
-      MnO₂ (s) + 4HCl (aq) ⟶ MnCl₂ (aq) + Cl₂ (g) ↑ + 2H₂O (l)
-    </code><br/>
-    <strong>سر خاصية قصر الألوان (Bleaching):</strong><br/>
-    الكلور لا يقصر الألوان وهو جاف! يحتاج للرطوبة (الماء) ليتفاعل معها مطلقاً <strong>الأكسجين الذري النشط [O]</strong> الذي يؤكسد صبغات المواد العضوية محولاً إياها لمواد عديمة اللون:<br/>
-    <code class="bg-[#F9F8F6] px-2 py-1 rounded block text-center border my-2 font-mono text-[#E67E22] font-bold">
-      Cl₂ + H₂O ⟶ HCl + HClO ⟶ 2HCl + [O] (أكسجين ذري نشط)
+    keywords: ["فاراداي", "Faraday", "التحليل الكهربي", "كولوم"],
+    question: "ما هما قانونا فاراداي للتحليل الكهربي وما صيغتهما الرياضية؟",
+    answer: `<strong>قوانين فاراداي للتحليل الكهربائي:</strong><br/>
+    1. <strong>القانون الأول:</strong> تتناسب كتلة المادة المترسبة أو المتصاعدة عند أي قطب تناسباً طردياً مع كمية الكهرباء المارة في المحلول الإلكتروليتي (\(m \propto Q\)).<br/>
+    2. <strong>القانون الثاني:</strong> عند مرور نفس كمية الكهرباء في عدة محاليل إلكتروليتية متصلة على التوالي، فإن كتل المواد المترسبة تتناسب طردياً مع كتلها المكافئة الجرامية.<br/><br/>
+    <strong>الصيغة الرياضية الموحدة لحل المسائل:</strong><br/>
+    <code class="bg-[#0f2d24] text-emerald-300 px-3 py-1.5 rounded-lg block text-center border border-emerald-700/50 my-2 font-mono text-sm font-bold dir-ltr">
+      Q (كولوم) = I (أمبير) × t (ثواني) | m = (M × I × t) / (z × 96500)
     </code>`,
-    unitId: "5"
-  },
-  {
-    keywords: ["بنزين", "البنزين", "benzene", "كيكولي", "رنين", "الرنين"],
-    question: "ما هي بنية البنزين العطري وما ظاهرة الرنين فيه؟",
-    answer: `<strong>البنزين العطري (C₆H₆):</strong><br/>
-    هو أبسط الهيدروكربونات الأروماتية العطرية. توصل العالم الألماني <strong>أوجست كيكولي (Kekulé)</strong> عام 1865م لبنيته الحلقية السداسية المتبادلة بين روابط أحادية وثنائية.<br/><br/>
-    <strong>ظاهرة الرنين (Resonance):</strong><br/>
-    تبين لاحقاً أن الروابط الثنائية ليست ثابتة، بل تدور الإلكترونات الستة (π) باستمرار حول الحلقة دون تمركز محدد. يرمز لذلك بحلقة سداسية بداخلها دائرة.<br/><br/>
-    <strong>نتيجة الرنين:</strong> يمنح البنزين استقراراً كيميائياً وثباتاً استثنائياً؛ لذا يفضل تفاعلات <strong>الاستبدال (الإحلال)</strong> ويقاوم تفاعلات الإضافة رغم عدم تشبعه.`,
-    unitId: "3"
-  },
-  {
-    keywords: ["تاصل", "التأصل", "allotropy", "فوسفور", "الفوسفور"],
-    question: "ما هي ظاهرة التأصل وما أهم صورها في الفوسفور؟",
-    answer: `<strong>ظاهرة التأصل (Allotropy):</strong><br/>
-    هي ظاهرة وجود العنصر اللافلزي الصلب في <strong>عدة صور مختلفة في الخواص الفيزيائية</strong> (كاللون والبلورة والصلابة) و<strong>متفقة تماماً في الخواص الكيميائية</strong> لكونها تتكون من ذرات نفس العنصر.<br/><br/>
-    <strong>صور الفوسفور المتأصلة:</strong><br/>
-    1. <strong>الفوسفور الأبيض:</strong> نشط جداً، شمعي الملمس، يشتعل تلقائياً في الهواء وسام جداً.<br/>
-    2. <strong>الفوسفور الأحمر:</strong> أقل نشاطاً، غير سام، بلوري، يستخدم في صناعة أعواد الثقاب.<br/>
-    3. <strong>الفوسفور الأسود:</strong> صورة بلورية نادرة تشبه الجرافيت وموصلة ضعيفة للكهرباء.`,
-    unitId: "4"
-  },
-  {
-    keywords: ["كهروسالبية", "الكهروسالبية", "جهد التاين", "الالفة", "تدرج الخواص"],
-    question: "كيف تتدرج الكهروسالبية وجهد التأين عبر الجدول الدوري؟",
-    answer: `<strong>تدرج الخواص الدورية الهامة:</strong><br/>
-    - <strong>جهد التأين:</strong> الطاقة اللازمة لنزع الإلكترون الأضعف ارتباطاً بالذرة.<br/>
-    - <strong>الألفة الإلكترونية:</strong> الطاقة المنطلقة عند اكتساب إلكترون.<br/>
-    - <strong>الكهروسالبية:</strong> قدرة الذرة في الجزيء على جذب إلكترونات الرابطة.<br/><br/>
-    <strong>نمط التدرج الدوري:</strong><br/>
-    1. <strong>عبر الدورة (من اليمين لليسار):</strong> <strong>تزداد</strong> هذه الخواص الثلاث بزيادة العدد الذري والشحنة الموجبة الفعالة للنواة وصغر الحجم الذري (نصف القطر).<br/>
-    2. <strong>عبر المجموعة (من الأعلى للأسفل):</strong> <strong>تقل</strong> هذه الخواص الثلاث لزيادة الحجم الذري وحجب النواة بمستويات طاقة مكتملة.<br/><br/>
-    أقوى اللافلزات كهروسالبية وألفة هو <strong>الفلور (F)</strong> في أعلى يمين الجدول الدوري.`,
     unitId: "1"
   }
 ];
 
-// Normalize Arabic text to ensure maximum matching coverage (removes accents, normalizes letters)
 function normalizeArabic(text: string): string {
   if (!text) return "";
   return text
-    .replace(/[\u064B-\u0652]/g, "") // Remove Harakat (Fatha, Damma, Kasra, etc.)
+    .replace(/[\u064B-\u0652]/g, "")
     .replace(/[أإآا]/g, "ا")
     .replace(/ة/g, "ه")
     .replace(/ى/g, "ي")
@@ -149,30 +117,186 @@ function normalizeArabic(text: string): string {
     .toLowerCase();
 }
 
+function cleanTtsText(str: string): string {
+  return (str || "")
+    .replace(/<[^>]*>/g, "")
+    .replace(/[*#_`~\[\]]/g, "")
+    .replace(/https?:\/\/\S+/g, "")
+    .replace(/\\[\(\)\[\]]/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+// Simple Markdown / LaTeX to HTML parser for Chemistry
+function renderFormattedContent(content: string): string {
+  if (!content) return "";
+  let html = content;
+
+  // Code blocks / equations
+  html = html.replace(/```(?:chemistry|chem|math|latex)?([\s\S]*?)```/g, (_match, code) => {
+    return `<pre class="bg-[#06241b] border border-emerald-700/60 text-emerald-300 p-3 rounded-xl overflow-x-auto my-2.5 font-mono text-xs sm:text-sm dir-ltr"><code>${code.trim()}</code></pre>`;
+  });
+
+  // LaTeX Display Math \[ ... \]
+  html = html.replace(/\\\[([\s\S]*?)\\\]/g, (_match, eq) => {
+    return `<div class="bg-[#072a20] border border-emerald-600/40 text-emerald-200 py-2 px-3 rounded-xl my-2 text-center font-mono text-sm sm:text-base font-bold dir-ltr overflow-x-auto">${eq.trim()}</div>`;
+  });
+
+  // LaTeX Inline Math \( ... \)
+  html = html.replace(/\\\((.*?)\\\)/g, (_match, eq) => {
+    return `<code class="bg-[#072a20] text-emerald-300 px-1.5 py-0.5 rounded text-xs font-mono font-semibold dir-ltr">${eq.trim()}</code>`;
+  });
+
+  // Chemical sub/super notation replacement for common tags
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-[#093529] text-emerald-300 px-1.5 py-0.5 rounded font-mono text-xs">$1</code>');
+
+  // Headers
+  html = html.replace(/^### (.*$)/gim, '<h4 class="text-emerald-300 font-bold text-sm sm:text-base mt-3 mb-1">$1</h4>');
+  html = html.replace(/^## (.*$)/gim, '<h3 class="text-emerald-200 font-extrabold text-base sm:text-lg mt-4 mb-2 border-b border-emerald-800/60 pb-1">$1</h3>');
+
+  // Horizontal rules
+  html = html.replace(/^---$/gim, '<hr class="border-emerald-800/60 my-3" />');
+
+  // Bullet points
+  html = html.replace(/^\s*[-•]\s+(.*$)/gim, '<li class="mr-4 my-1 text-slate-200">$1</li>');
+
+  // Line breaks to <br/>
+  html = html.replace(/\n\n/g, '<br/><br/>').replace(/\n/g, '<br/>');
+
+  return html;
+}
+
 export const StudentAssistant: React.FC = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [isMaximized, setIsMaximized] = useState<boolean>(false);
   const [query, setQuery] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [connectionMode, setConnectionMode] = useState<"local" | "cloud" | "offline">("cloud");
+  const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
+  const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null);
+  const [activeTunnelUrl, setActiveTunnelUrl] = useState<string | null>(null);
+
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: "welcome",
+      id: "welcome-senior",
       sender: "assistant",
-      text: "مرحباً بك يا بطل كيمياء الثاني الثانوي! 👋<br/>أنا مساعدك الكيميائي الفوري للمنهج السوداني. اكتب أي موضوع أو كلمة تبحث عنها (مثال: <strong>ميثان، صوديوم، هابر، كهروسالبية، كلور، تأصل</strong>) وسأرد عليك فوراً بالمعادلات والمعلومات الكافية الخالية من الذكاء الاصطناعي!",
+      text: `أهلاً بك يا زميل التميز الأكاديمي وبطل الشهادة السودانية! ⚗️🧪<br/><br/>
+أنا <strong>المعلم الكيميائي الأكاديمي الذكي</strong> لمنصة نَقْـلَة للمناهج الإلكترونية، مدعوم بأحدث خوارزميات التفكير والذكاء الاصطناعي للمرحلة الثانوية.<br/><br/>
+جاهز لمساعدتك في استيعاب ومراجعة:
+<ul class="list-disc list-inside space-y-1 my-2 text-emerald-200">
+  <li>⚡ <strong>الكيمياء الكهربية:</strong> خلايا دانيال، التحليل الكهربائي، وقوانين فاراداي.</li>
+  <li>🧪 <strong>الكيمياء التحليلية:</strong> المعايرة الحجمية، أدلة الأحماض والقواعد، وحسابات المولارية.</li>
+  <li>🌿 <strong>الكيمياء العضوية:</strong> تسمية مشتقات الهيدروكربونات (IUPAC) وتفاعلات التمييز.</li>
+  <li>⚖️ <strong>الاتزان الكيميائي:</strong> قاعدة لوشاتيليه، ثابت الاتزان Kc، وتأثير الضغط والحرارة.</li>
+  <li>🔥 <strong>الكيمياء الحرارية:</strong> حسابات المحتوى الحراري ΔH وقانون هس.</li>
+</ul>
+تفضل بطرح أي مسألة، أو اطلب <em>«اديني الزيت»</em> لأي درس وسأوافيك بالقوانين وشراك امتحانات الشهادة السودانية فوراً! 🚀`,
       timestamp: new Date()
     }
   ]);
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
-
   // Auto-scroll to bottom of chat
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isOpen]);
+  }, [messages, isOpen, isLoading]);
 
-  const handleSearch = (searchQuery: string) => {
-    const trimmed = searchQuery.trim();
-    if (!trimmed) return;
+  // Check Local Tunnel status on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function checkTunnel() {
+      try {
+        const res = await fetch(LOCAL_TUNNEL_CHECK_URL, { cache: "no-store" });
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.status === "online" && data.tunnel_url) {
+            if (isMounted) {
+              setActiveTunnelUrl(data.tunnel_url);
+              setConnectionMode("local");
+            }
+            return;
+          }
+        }
+      } catch {
+        // Fallback
+      }
+      if (isMounted) {
+        setConnectionMode(navigator.onLine ? "cloud" : "offline");
+      }
+    }
+    checkTunnel();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
-    // 1. Add student message
+  // Stop TTS audio when unmounting or closing
+  useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  const handleSpeak = async (msgId: string, text: string) => {
+    if (playingMessageId === msgId) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      setPlayingMessageId(null);
+      return;
+    }
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+
+    setPlayingMessageId(msgId);
+    const cleanText = cleanTtsText(text);
+
+    try {
+      const ttsUrl = `${CLOUD_TTS_ENDPOINT}?text=${encodeURIComponent(cleanText.slice(0, 500))}&voice=ar-EG-ShakirNeural`;
+      const audio = new Audio(ttsUrl);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setPlayingMessageId(null);
+        audioRef.current = null;
+      };
+      audio.onerror = () => {
+        // Try fallback browser SpeechSynthesis
+        setPlayingMessageId(null);
+        if ("speechSynthesis" in window) {
+          const utterance = new SpeechSynthesisUtterance(cleanText.slice(0, 300));
+          utterance.lang = "ar-SA";
+          window.speechSynthesis.speak(utterance);
+        }
+      };
+      await audio.play();
+    } catch {
+      setPlayingMessageId(null);
+    }
+  };
+
+  const handleCopy = (msgId: string, text: string) => {
+    const plain = cleanTtsText(text);
+    navigator.clipboard.writeText(plain);
+    setCopiedMessageId(msgId);
+    setTimeout(() => setCopiedMessageId(null), 2000);
+  };
+
+  const handleSendMessage = async (userPrompt: string) => {
+    const trimmed = userPrompt.trim();
+    if (!trimmed || isLoading) return;
+
     const studentMsg: Message = {
       id: Math.random().toString(),
       sender: "student",
@@ -181,27 +305,91 @@ export const StudentAssistant: React.FC = () => {
     };
     setMessages((prev) => [...prev, studentMsg]);
     setQuery("");
+    setIsLoading(true);
 
-    // 2. Perform local non-AI search response
-    setTimeout(() => {
-      const response = executeLocalSearch(trimmed);
-      setMessages((prev) => [...prev, response]);
-    }, 400);
+    // Build chat history payload
+    const historyPayload = messages.slice(-6).map((m) => ({
+      role: m.sender === "student" ? "user" : "assistant",
+      content: cleanTtsText(m.text)
+    }));
+
+    // Target API endpoint (Try Active Local Tunnel first, then Cloudflare Edge fallback)
+    const endpointsToTry = [];
+    if (activeTunnelUrl) {
+      endpointsToTry.push(`${activeTunnelUrl}/api/mentor/chat`);
+    }
+    endpointsToTry.push(CLOUD_MENTOR_ENDPOINT);
+
+    let aiSuccess = false;
+
+    for (const endpoint of endpointsToTry) {
+      try {
+        const response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            message: trimmed,
+            stage: "chemistry-grade-12",
+            history: historyPayload,
+            host_context: {
+              title: "كيمياء الصف الثالث الثانوي - منصة نقلة",
+              url: window.location.href,
+              resources_count: 5
+            }
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data && (data.reply || data.response)) {
+            const replyText = data.reply || data.response;
+            const assistantMsg: Message = {
+              id: Math.random().toString(),
+              sender: "assistant",
+              text: replyText,
+              timestamp: new Date(),
+              media: data.media || null,
+              toolsUsed: data.tools_used || [],
+              reference: {
+                type: "ai",
+                title: "المعلم الأكاديمي الذكي (الشهادة السودانية)"
+              }
+            };
+            setMessages((prev) => [...prev, assistantMsg]);
+            aiSuccess = true;
+            setConnectionMode(endpoint.includes("pages.dev") ? "cloud" : "local");
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn(`[AI Mentor] Failed to connect to ${endpoint}:`, err);
+      }
+    }
+
+    // Offline / Local knowledge base Fallback
+    if (!aiSuccess) {
+      const fallbackMsg = executeLocalFallbackSearch(trimmed);
+      setMessages((prev) => [...prev, fallbackMsg]);
+      setConnectionMode("offline");
+    }
+
+    setIsLoading(false);
   };
 
-  const executeLocalSearch = (userQuery: string): Message => {
+  const executeLocalFallbackSearch = (userQuery: string): Message => {
     const normalizedQuery = normalizeArabic(userQuery);
 
-    // -- Stage 1: Search in custom comprehensive Q&A dataset --
+    // 1. Check custom Q&A
     const foundQA = customQA.find((qa) =>
       qa.keywords.some((kw) => normalizedQuery.includes(normalizeArabic(kw)))
     );
-
     if (foundQA) {
       return {
         id: Math.random().toString(),
         sender: "assistant",
-        text: `<strong>إجابة وافية عن سؤالك: "${foundQA.question}"</strong><br/><br/>${foundQA.answer}`,
+        text: `<strong>إجابة أكاديمية وافية عن: "${foundQA.question}"</strong><br/><br/>${foundQA.answer}`,
         timestamp: new Date(),
         reference: {
           type: "qa",
@@ -211,7 +399,7 @@ export const StudentAssistant: React.FC = () => {
       };
     }
 
-    // -- Stage 2: Search in Glossary Terms --
+    // 2. Check Glossary
     const foundGlossary = glossaryTerms.find((term) => {
       const normTerm = normalizeArabic(term.term);
       const normEng = term.englishTerm ? normalizeArabic(term.englishTerm) : "";
@@ -222,9 +410,9 @@ export const StudentAssistant: React.FC = () => {
       return {
         id: Math.random().toString(),
         sender: "assistant",
-        text: `<strong>وجدنا هذا المصطلح العلمي في القاموس الكيميائي:</strong><br/><br/>
+        text: `<strong>المصطلح العلمي في القاموس الكيميائي:</strong><br/><br/>
         <strong>المصطلح:</strong> ${foundGlossary.term} ${foundGlossary.englishTerm ? `(${foundGlossary.englishTerm})` : ""}<br/>
-        <strong>التعريف الدقيق:</strong> ${foundGlossary.definition}<br/>
+        <strong>التعريف الأكاديمي:</strong> ${foundGlossary.definition}<br/>
         <strong>الوحدة الدراسية:</strong> الوحدة ${foundGlossary.unitId}`,
         timestamp: new Date(),
         reference: {
@@ -235,206 +423,308 @@ export const StudentAssistant: React.FC = () => {
       };
     }
 
-    // -- Stage 3: Deep search in curriculum lessons and content paragraphs --
-    let bestParagraphMatch = "";
-    let matchedLessonTitle = "";
-    let matchedUnitId = "";
-
+    // 3. Curriculum search
     for (const unit of curriculumData) {
       for (const lesson of unit.lessons) {
-        // Search lesson title or subtitle
         if (normalizeArabic(lesson.title).includes(normalizedQuery) || normalizeArabic(lesson.subtitle || "").includes(normalizedQuery)) {
-          bestParagraphMatch = lesson.content.slice(0, 2).join("<br/><br/>") + (lesson.content.length > 2 ? "<br/><br/>..." : "");
-          matchedLessonTitle = lesson.title;
-          matchedUnitId = unit.id;
-          break;
+          return {
+            id: Math.random().toString(),
+            sender: "assistant",
+            text: `<strong>خلاصة درس «${lesson.title}» من كتاب الوزارة:</strong><br/><br/>${lesson.content.slice(0, 2).join("<br/><br/>")}`,
+            timestamp: new Date(),
+            reference: {
+              type: "curriculum",
+              title: lesson.title,
+              unitId: unit.id
+            }
+          };
         }
-
-        // Search lesson content paragraphs
-        for (const paragraph of lesson.content) {
-          const normPara = normalizeArabic(paragraph);
-          if (normPara.includes(normalizedQuery)) {
-            bestParagraphMatch = paragraph;
-            matchedLessonTitle = lesson.title;
-            matchedUnitId = unit.id;
-            break;
-          }
-        }
-        if (bestParagraphMatch) break;
       }
-      if (bestParagraphMatch) break;
     }
 
-    if (bestParagraphMatch) {
-      return {
-        id: Math.random().toString(),
-        sender: "assistant",
-        text: `<strong>وجدنا مرجعاً في كتاب المنهج بدرس "${matchedLessonTitle}":</strong><br/><br/>
-        "... ${bestParagraphMatch} ..."`,
-        timestamp: new Date(),
-        reference: {
-          type: "curriculum",
-          title: matchedLessonTitle,
-          unitId: matchedUnitId
-        }
-      };
-    }
-
-    // -- Stage 4: Generic Fallback search --
     return {
       id: Math.random().toString(),
       sender: "assistant",
-      text: `عذراً يا كيميائي المستقبلي! لم أجد إجابة دقيقة على كلمة "${userQuery}" في المنهج الكيميائي.<br/><br/>
-      💡 <strong>جرّب كلمات مفتاحية مثل:</strong><br/>
-      • <strong>ميثان</strong> (لتحضير ومعادلة غاز الميثان)<br/>
-      • <strong>هابر</strong> (لتحضير غاز الأمونيا والنشادر)<br/>
-      • <strong>صوديوم</strong> (لخلية داونز واستخلاصه وتفاعله)<br/>
-      • <strong>كلور</strong> (لتحضير الكلور وقصر الألوان البصري)<br/>
-      • <strong>بنزين</strong> (لبنية كيكولي وظاهرة الرنين والروابط)<br/>
-      • <strong>كهروسالبية</strong> (لتدرج خواص الجدول الدوري الحديث)`,
+      text: `يا رفيق التميز العلمي، يبدو أن هناك انقطاعاً مؤقتاً في شبكة الاتصال، ولم نعثر على تطابق مباشر في قاعدة البيانات الأوفلاين السريعة.<br/><br/>
+يرجى التأكد من اتصال الإنترنت لتفعيل المعلم الأكاديمي الذكي السحابي، أو اختيار أحد مواضيع الامتحان الجاهزة أعلاه لمتابعة المراجعة! 💡⚗️`,
       timestamp: new Date()
     };
   };
 
-  const handleSuggestClick = (qText: string) => {
-    handleSearch(qText);
+  const handlePresetClick = (presetQuery: string) => {
+    handleSendMessage(presetQuery);
   };
 
   return (
     <>
-      {/* Bottom Right Floating Icon */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-start gap-2" dir="ltr">
-        <button
-          id="student-helper-trigger"
-          onClick={() => setIsOpen(!isOpen)}
-          className={`w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl hover:scale-105 transition-all relative ${
-            isOpen ? "bg-red-600 rotate-90" : "bg-gradient-to-r from-[#E67E22] to-[#D35400] animate-bounce"
-          }`}
-          title="مساعد واستفسارات طلاب الكيمياء"
-          style={{ animationDuration: "3s" }}
-        >
-          {isOpen ? <X className="w-6 h-6" /> : <MessageSquare className="w-6 h-6" />}
-          
-          {/* Notification Badge */}
-          {!isOpen && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 bg-[#2C3E50] border-2 border-white rounded-full text-[10px] font-bold text-white flex items-center justify-center font-sans">
-              ١
-            </span>
-          )}
-        </button>
-      </div>
+      {/* 🌟 Floating Trigger Button */}
+      <AnimatePresence>
+        {!isOpen && (
+          <motion.div
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0, opacity: 0 }}
+            className="fixed bottom-20 sm:bottom-6 left-5 sm:left-6 z-50"
+            dir="rtl"
+          >
+            <button
+              onClick={() => setIsOpen(true)}
+              className="group relative flex items-center gap-2.5 px-4 sm:px-5 py-3 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 text-white font-bold shadow-xl shadow-emerald-950/40 hover:shadow-2xl hover:scale-105 active:scale-95 transition-all duration-200 border-2 border-emerald-400/40 cursor-pointer"
+              title="تحدث مع المعلم الكيميائي الذكي للشهادة السودانية"
+            >
+              {/* Pulsing indicator */}
+              <span className="relative flex h-3.5 w-3.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-300 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3.5 w-3.5 bg-emerald-200"></span>
+              </span>
 
-      {/* Popover Assistant Box */}
+              <div className="flex items-center gap-1.5 font-sans">
+                <Atom className="w-5 h-5 animate-spin-slow text-emerald-100" />
+                <span className="text-xs sm:text-sm font-extrabold tracking-wide">المعلم الذكي (18 سنة)</span>
+                <span className="bg-emerald-800/80 text-[10px] px-1.5 py-0.5 rounded-md border border-emerald-500/40 text-emerald-200">
+                  شهادة سودانية 🇸🇩
+                </span>
+              </div>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 🚀 Active Chat Modal / Drawer */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 40 }}
-            className="fixed bottom-24 right-6 z-50 w-full max-w-sm md:max-w-md bg-white border border-[#E5E2DE] rounded-2xl shadow-2xl flex flex-col overflow-hidden h-[500px]"
+            initial={{ opacity: 0, y: 30, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.96 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className={`fixed z-[100] ${
+              isMaximized
+                ? "inset-2 sm:inset-6 rounded-3xl"
+                : "bottom-4 left-4 right-4 sm:right-auto sm:left-6 sm:w-[480px] h-[640px] max-h-[90vh] rounded-3xl"
+            } bg-[#041a13]/95 backdrop-blur-xl border-2 border-emerald-500/40 shadow-2xl shadow-emerald-950/80 flex flex-col overflow-hidden text-slate-100`}
             dir="rtl"
           >
-            {/* Header */}
-            <div className="bg-[#2C3E50] text-white p-4 flex justify-between items-center shrink-0">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-orange-400" />
+            {/* 🏷️ Header */}
+            <div className="bg-gradient-to-r from-[#06241b] via-[#083326] to-[#041a13] px-4 py-3.5 border-b border-emerald-800/70 flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 flex items-center justify-center border border-emerald-300/40 shadow-inner">
+                  <Atom className="w-6 h-6 text-white animate-spin-slow" />
                 </div>
-                <div className="text-right">
-                  <h3 className="text-xs font-bold font-sans">المساعد الكيميائي الفوري</h3>
-                  <span className="text-[9px] text-gray-300 block leading-none">مستفسر المنهج التفاعلي (بدون ذكاء اصطناعي)</span>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-extrabold text-sm sm:text-base text-white tracking-wide font-sans">
+                      المعلم الكيميائي الأكاديمي
+                    </h3>
+                    <span className="text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/40 px-1.5 py-0.5 rounded">
+                      عمر 18 سنة 🎓
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 text-[11px] text-emerald-300/80">
+                    <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>
+                      {connectionMode === "local" ? "متصل بالنفق المحلي النشط" : connectionMode === "cloud" ? "سحابي 24/7 (منصة نقلة)" : "أوفلاين محلي"}
+                    </span>
+                  </div>
                 </div>
               </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="p-1 rounded hover:bg-white/10 transition-colors text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
+
+              <div className="flex items-center gap-1.5 text-slate-300">
+                <button
+                  onClick={() => setIsMaximized(!isMaximized)}
+                  className="p-1.5 hover:bg-emerald-800/50 rounded-xl transition-colors cursor-pointer text-slate-300 hover:text-white"
+                  title={isMaximized ? "تصغير النافذة" : "تكبير لكامل الشاشة"}
+                >
+                  {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+                <button
+                  onClick={() => {
+                    setMessages([messages[0]]);
+                    if (audioRef.current) {
+                      audioRef.current.pause();
+                      setPlayingMessageId(null);
+                    }
+                  }}
+                  className="p-1.5 hover:bg-emerald-800/50 rounded-xl transition-colors cursor-pointer text-slate-300 hover:text-white"
+                  title="محادثة جديدة"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
+                    if (audioRef.current) {
+                      audioRef.current.pause();
+                      setPlayingMessageId(null);
+                    }
+                  }}
+                  className="p-1.5 hover:bg-red-900/40 hover:text-red-300 rounded-xl transition-colors cursor-pointer"
+                  title="إغلاق"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
-            {/* Suggested quick questions */}
-            <div className="bg-[#F9F8F6] border-b border-[#E5E2DE] p-2 flex gap-1.5 overflow-x-auto shrink-0 scrollbar-none" dir="rtl">
-              <span className="text-[9px] text-[#7F8C8D] font-bold shrink-0 self-center px-1 font-sans">أسئلة شائعة:</span>
-              {customQA.slice(0, 4).map((qa, index) => (
+            {/* ⚡ High-Yield Quick Chips */}
+            <div className="bg-[#02130e] border-b border-emerald-900/60 px-3 py-2 shrink-0 overflow-x-auto no-scrollbar flex items-center gap-2">
+              <span className="text-[10px] font-bold text-emerald-400 whitespace-nowrap flex items-center gap-1">
+                <Zap className="w-3 h-3 text-amber-400" /> أسئلة الشهادة:
+              </span>
+              {HIGH_YIELD_CHEMISTRY_PRESETS.map((preset, idx) => (
                 <button
-                  key={index}
-                  onClick={() => handleSuggestClick(qa.keywords[0])}
-                  className="bg-white border border-[#E5E2DE] hover:border-[#E67E22] text-[#2C3E50] hover:text-[#E67E22] px-2 py-1 rounded text-[10px] font-sans font-bold whitespace-nowrap shrink-0 transition-all"
+                  key={idx}
+                  onClick={() => handlePresetClick(preset.query)}
+                  disabled={isLoading}
+                  className="text-[11px] whitespace-nowrap bg-emerald-900/30 hover:bg-emerald-800/60 text-emerald-200 border border-emerald-700/40 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer disabled:opacity-50"
                 >
-                  {qa.keywords[0]} 🧪
+                  {preset.label}
                 </button>
               ))}
             </div>
 
-            {/* Chat message body list */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-[#FCFBF9]" dir="rtl">
+            {/* 💬 Messages Container */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 font-sans custom-scrollbar">
               {messages.map((msg) => {
-                const isAssistant = msg.sender === "assistant";
+                const isUser = msg.sender === "student";
                 return (
                   <div
                     key={msg.id}
-                    className={`flex ${isAssistant ? "justify-start" : "justify-end"} items-start gap-2 text-right`}
+                    className={`flex flex-col ${isUser ? "items-start" : "items-end"}`}
                   >
-                    {isAssistant && (
-                      <div className="w-6 h-6 rounded-full bg-[#2C3E50]/10 border border-[#2C3E50]/20 flex items-center justify-center text-[#2C3E50] text-[10px] shrink-0 font-bold">
-                        أ
-                      </div>
-                    )}
-                    <div className="max-w-[85%] space-y-1">
+                    <div
+                      className={`max-w-[92%] sm:max-w-[85%] rounded-2xl p-3.5 sm:p-4 text-xs sm:text-sm leading-relaxed ${
+                        isUser
+                          ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-tr-xs shadow-md"
+                          : "bg-[#06241b] border border-emerald-700/40 text-slate-100 rounded-tl-xs shadow-md"
+                      }`}
+                    >
+                      {/* Formatted HTML/Markdown Body */}
                       <div
-                        className={`p-3 rounded-lg text-xs leading-relaxed ${
-                          isAssistant
-                            ? "bg-white border border-[#E5E2DE] text-[#1A1A1A] rounded-tr-none"
-                            : "bg-[#2C3E50] text-white rounded-tl-none font-bold"
-                        }`}
-                      >
-                        <p dangerouslySetInnerHTML={{ __html: msg.text }} />
-                      </div>
+                        className="leading-relaxed break-words font-sans space-y-1"
+                        dangerouslySetInnerHTML={{ __html: renderFormattedContent(msg.text) }}
+                      />
 
-                      {/* Display reference if exists */}
-                      {isAssistant && msg.reference && (
-                        <div className="flex items-center gap-1 text-[9px] text-[#7F8C8D] font-bold px-1 justify-start">
-                          <BookOpen className="w-3 h-3 text-[#E67E22]" />
-                          <span>المرجع: {msg.reference.title}</span>
-                          {msg.reference.unitId && (
-                            <span className="bg-[#2C3E50]/5 px-1 rounded text-[#2C3E50] font-mono text-[8px]">الوحدة {msg.reference.unitId}</span>
-                          )}
+                      {/* 🎬 Attached Media / YouTube Video Card */}
+                      {msg.media && (
+                        <div className="mt-3 pt-3 border-t border-emerald-800/60">
+                          <div className="bg-[#031710] border border-emerald-600/40 rounded-xl p-2.5 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 overflow-hidden">
+                              <span className="text-xl shrink-0">🎬</span>
+                              <div className="truncate">
+                                <div className="text-xs font-bold text-emerald-200 truncate">
+                                  {msg.media.title}
+                                </div>
+                                <div className="text-[10px] text-slate-400">
+                                  {msg.media.channel || "منصات يوتيوب المعتمدة للمنهج السوداني"}
+                                </div>
+                              </div>
+                            </div>
+                            <a
+                              href={msg.media.watch_url || msg.media.search_url || "#"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold rounded-lg shrink-0 flex items-center gap-1 transition-colors"
+                            >
+                              <span>مشاهدة</span>
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Reference Badge & Action Bar */}
+                      {!isUser && (
+                        <div className="mt-2.5 pt-2 border-t border-emerald-800/40 flex items-center justify-between text-[10px] text-emerald-400/80">
+                          <div className="flex items-center gap-2">
+                            <span className="bg-emerald-950/70 border border-emerald-800/50 px-2 py-0.5 rounded text-[10px]">
+                              {msg.reference?.title || "معلم كيمياء الشهادة السودانية"}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1">
+                            {/* TTS Button */}
+                            <button
+                              onClick={() => handleSpeak(msg.id, msg.text)}
+                              className={`p-1 rounded hover:bg-emerald-800/40 transition-colors ${
+                                playingMessageId === msg.id ? "text-amber-400 animate-pulse" : "text-slate-400 hover:text-white"
+                              }`}
+                              title={playingMessageId === msg.id ? "إيقاف الصوت" : "استماع للشرح بصوت المعلم"}
+                            >
+                              {playingMessageId === msg.id ? <Square className="w-3.5 h-3.5 fill-current" /> : <Volume2 className="w-3.5 h-3.5" />}
+                            </button>
+
+                            {/* Copy Button */}
+                            <button
+                              onClick={() => handleCopy(msg.id, msg.text)}
+                              className="p-1 text-slate-400 hover:text-white rounded hover:bg-emerald-800/40 transition-colors"
+                              title="نسخ الشرح"
+                            >
+                              {copiedMessageId === msg.id ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
+
+                    <span className="text-[9px] text-slate-400 mt-1 px-1">
+                      {msg.timestamp.toLocaleTimeString("ar-EG", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
                   </div>
                 );
               })}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex flex-col items-end">
+                  <div className="bg-[#06241b] border border-emerald-700/40 rounded-2xl rounded-tl-xs p-3.5 max-w-[80%] flex items-center gap-3 text-emerald-300 text-xs">
+                    <div className="relative flex h-3 w-3">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                    </div>
+                    <span>المعلم يفكر ويزن التفاعلات الكيميائية ويراجع شراك الامتحان... ⚗️</span>
+                  </div>
+                </div>
+              )}
+
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Footer Input form */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                handleSearch(query);
-              }}
-              className="p-3 bg-white border-t border-[#E5E2DE] flex gap-2 items-center shrink-0"
-              dir="rtl"
-            >
-              <input
-                type="text"
-                placeholder="اسألني عن غاز، معادلة تحضير، أو مصطلح..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="flex-1 bg-[#F9F8F6] border border-[#E5E2DE] rounded-xl px-3 py-2 text-xs text-right focus:outline-none focus:border-[#E67E22] font-sans"
-              />
-              <button
-                type="submit"
-                disabled={!query.trim()}
-                className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${
-                  query.trim() ? "bg-[#E67E22] text-white hover:bg-[#d6721b]" : "bg-[#BDC3C7] text-white cursor-not-allowed"
-                }`}
+            {/* ✍️ Input Bar */}
+            <div className="bg-[#041a13] border-t border-emerald-800/70 p-3 shrink-0">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendMessage(query);
+                }}
+                className="flex items-center gap-2"
               >
-                <Send className="w-3.5 h-3.5 transform rotate-180" />
-              </button>
-            </form>
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder="اكتب سؤالك أو مسألتك الكيميائية (مثال: احسب كمية الكهرباء، أو اديني الزيت)..."
+                    disabled={isLoading}
+                    className="w-full bg-[#072a20] border border-emerald-700/60 rounded-2xl py-2.5 px-4 text-xs sm:text-sm text-white placeholder-emerald-400/60 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-all font-sans"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={!query.trim() || isLoading}
+                  className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white p-2.5 rounded-2xl shadow-lg shadow-emerald-950/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 cursor-pointer shrink-0"
+                  title="إرسال"
+                >
+                  <Send className="w-5 h-5 rotate-180" />
+                </button>
+              </form>
+
+              <div className="flex items-center justify-between mt-2 px-1 text-[10px] text-emerald-400/70 font-sans">
+                <span>💡 نصيحة: اكتب <strong>اديني الزيت في [اسم الدرس]</strong> لتلخيص مباشر لأهم نقاط الامتحان</span>
+                <span>منصة نقلة • المناهج السودانية 🇸🇩</span>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
