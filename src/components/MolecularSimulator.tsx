@@ -336,7 +336,7 @@ export const MolecularSimulator: React.FC = () => {
           role: "reactant" as const,
           gradient: "radial-gradient(circle at 35% 35%, #ffffff 0%, #cbd5e1 45%, #94a3b8 75%, #475569 100%)",
           glowColor: "rgba(203, 213, 225, 0.7)",
-          radius: 18,
+          radius: 22,
           mass: 107.8,
           ionicRadiusPm: 126
         },
@@ -347,7 +347,7 @@ export const MolecularSimulator: React.FC = () => {
           role: "reactant" as const,
           gradient: "radial-gradient(circle at 35% 35%, #a7f3d0 0%, #10b981 50%, #047857 85%, #064e3b 100%)",
           glowColor: "rgba(16, 185, 129, 0.8)",
-          radius: 20,
+          radius: 24,
           mass: 35.45,
           ionicRadiusPm: 181
         },
@@ -358,7 +358,7 @@ export const MolecularSimulator: React.FC = () => {
           role: "spectator" as const,
           gradient: "radial-gradient(circle at 35% 35%, #bfdbfe 0%, #3b82f6 50%, #1d4ed8 85%, #172554 100%)",
           glowColor: "rgba(59, 130, 246, 0.7)",
-          radius: 17,
+          radius: 21,
           mass: 22.99,
           ionicRadiusPm: 102
         },
@@ -369,7 +369,7 @@ export const MolecularSimulator: React.FC = () => {
           role: "spectator" as const,
           gradient: "radial-gradient(circle at 35% 35%, #fed7aa 0%, #f97316 55%, #c2410c 85%, #7c2d12 100%)",
           glowColor: "rgba(249, 115, 22, 0.7)",
-          radius: 21,
+          radius: 27,
           mass: 62.0,
           ionicRadiusPm: 179
         }
@@ -420,7 +420,7 @@ export const MolecularSimulator: React.FC = () => {
           y: plateY,
           vx: 0,
           vy: 0,
-          radius: 20,
+          radius: 23,
           mass: 65.38,
           ionicRadiusPm: 134,
           isFixed: true
@@ -443,7 +443,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 25 + Math.random() * (activeHeight * 0.5),
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          radius: 17,
+          radius: 22,
           mass: 63.55,
           ionicRadiusPm: 73
         });
@@ -465,7 +465,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 25 + Math.random() * (activeHeight * 0.5),
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          radius: 22,
+          radius: 27,
           mass: 96.06,
           ionicRadiusPm: 230
         });
@@ -490,7 +490,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 25 + Math.random() * (activeHeight - 50),
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          radius: 14,
+          radius: 18,
           mass: 1.008,
           ionicRadiusPm: 25
         });
@@ -512,7 +512,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 25 + Math.random() * (activeHeight - 50),
           vx: Math.cos(angle) * speed,
           vy: Math.sin(angle) * speed,
-          radius: 19,
+          radius: 23,
           mass: 17.01,
           ionicRadiusPm: 137
         });
@@ -574,7 +574,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 30 + Math.random() * (activeHeight - 60),
           vx: Math.cos(angle) * 1.2,
           vy: Math.sin(angle) * 1.2,
-          radius: 21,
+          radius: 25,
           mass: 70.9,
           ionicRadiusPm: 198
         });
@@ -595,7 +595,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 30 + Math.random() * (activeHeight - 60),
           vx: Math.cos(angle) * 1.2,
           vy: Math.sin(angle) * 1.2,
-          radius: 20,
+          radius: 24,
           mass: 79.9,
           ionicRadiusPm: 196
         });
@@ -616,7 +616,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 30 + Math.random() * (activeHeight - 60),
           vx: Math.cos(angle) * 1.1,
           vy: Math.sin(angle) * 1.1,
-          radius: 19,
+          radius: 22,
           mass: 39.1,
           ionicRadiusPm: 138
         });
@@ -639,7 +639,7 @@ export const MolecularSimulator: React.FC = () => {
           y: meniscusY + 15,
           vx: (Math.random() - 0.5) * 1.5,
           vy: 0,
-          radius: 22,
+          radius: 26,
           mass: 22.99,
           ionicRadiusPm: 186
         });
@@ -997,6 +997,134 @@ export const MolecularSimulator: React.FC = () => {
   const handleResume = () => setSimulationState("reacting");
   const handleReset = () => initParticles(reactionType);
 
+  // 🔬 High-Contrast Chemical Typography Renderer (Subscripts, Superscripts & Ionic Polarity)
+  const renderParticleLabel = (p: Particle) => {
+    switch (p.type) {
+      case "Ag+":
+        return (
+          <span className="font-extrabold text-slate-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Ag<sup className="text-[10px] font-black ml-0.5 text-blue-900">+</sup>
+          </span>
+        );
+      case "Cl-":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Cl<sup className="text-[11px] font-black ml-0.5 text-emerald-200">−</sup>
+          </span>
+        );
+      case "Na+":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Na<sup className="text-[11px] font-black ml-0.5 text-sky-200">+</sup>
+          </span>
+        );
+      case "NO3-":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[11px] sm:text-[12px] flex items-center justify-center leading-none tracking-tight">
+            NO<sub className="text-[9px] font-black -mb-1">3</sub><sup className="text-[10px] font-black ml-0.5 text-amber-200">−</sup>
+          </span>
+        );
+      case "Cu2+":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Cu<sup className="text-[10px] font-black ml-0.5 text-cyan-200">2+</sup>
+          </span>
+        );
+      case "SO42-":
+      case "SO4_2-":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[11px] sm:text-[12px] flex items-center justify-center leading-none tracking-tight">
+            SO<sub className="text-[9px] font-black -mb-1">4</sub><sup className="text-[10px] font-black ml-0.5 text-yellow-200">2−</sup>
+          </span>
+        );
+      case "Zn":
+        return (
+          <span className="font-extrabold text-slate-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] text-[11px] sm:text-[12px] flex items-center justify-center leading-none tracking-tight">
+            Zn<span className="text-[8px] font-bold text-slate-700 ml-0.5">(s)</span>
+          </span>
+        );
+      case "Zn2+":
+        return (
+          <span className="font-extrabold text-slate-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Zn<sup className="text-[10px] font-black ml-0.5 text-indigo-900">2+</sup>
+          </span>
+        );
+      case "H+":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            H<sup className="text-[11px] font-black ml-0.5 text-rose-200">+</sup>
+          </span>
+        );
+      case "OH-":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            OH<sup className="text-[11px] font-black ml-0.5 text-purple-200">−</sup>
+          </span>
+        );
+      case "H2O":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            H<sub className="text-[9px] font-black -mb-1">2</sub>O
+          </span>
+        );
+      case "Cl2":
+        return (
+          <span className="font-extrabold text-lime-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.7)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Cl<sub className="text-[9px] font-black -mb-1">2</sub>
+          </span>
+        );
+      case "Br-":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Br<sup className="text-[11px] font-black ml-0.5 text-red-200">−</sup>
+          </span>
+        );
+      case "Br2":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Br<sub className="text-[9px] font-black -mb-1">2</sub>
+          </span>
+        );
+      case "K+":
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            K<sup className="text-[11px] font-black ml-0.5 text-purple-200">+</sup>
+          </span>
+        );
+      case "Na_metal":
+        return (
+          <span className="font-extrabold text-amber-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.7)] text-[12px] sm:text-[13px] flex items-center justify-center leading-none tracking-tight">
+            Na<span className="text-[8px] font-bold text-amber-900 ml-0.5">(s)</span>
+          </span>
+        );
+      case "AgCl":
+        return (
+          <span className="font-extrabold text-slate-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] text-[11px] sm:text-[12px] flex items-center justify-center leading-none tracking-tight">
+            AgCl<span className="text-[10px] font-black text-emerald-800 ml-0.5">↓</span>
+          </span>
+        );
+      case "Cu":
+        return (
+          <span className="font-extrabold text-amber-100 drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-[11px] sm:text-[12px] flex items-center justify-center leading-none tracking-tight">
+            Cu<span className="text-[9px] font-bold text-amber-300 ml-0.5">↓</span>
+          </span>
+        );
+      case "H2_gas":
+        return (
+          <span className="font-extrabold text-sky-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] text-[11px] sm:text-[12px] flex items-center justify-center leading-none tracking-tight">
+            H<sub className="text-[8px] font-black -mb-1">2</sub><span className="text-[9px] font-black text-sky-700 ml-0.5">↑</span>
+          </span>
+        );
+      default:
+        return (
+          <span className="font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] text-xs flex items-center justify-center leading-none">
+            {p.label}
+          </span>
+        );
+    }
+  };
+
+
   return (
     <div id="molecular_simulator_panel" className="bg-[#FAF9F5] border border-[#E5E2DE] rounded-2xl p-4 sm:p-6 space-y-5 shadow-xs text-right mt-6 select-none">
       
@@ -1199,10 +1327,21 @@ export const MolecularSimulator: React.FC = () => {
         {/* Beaker Glassware Reflections & Inner Depth */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-sky-900/20 via-transparent to-black/40" />
 
-        {/* Beaker Lip Rim at Top */}
-        <div className="absolute top-0 left-0 right-0 h-4 border-b border-white/20 bg-white/5 backdrop-blur-xs flex items-center justify-between px-6 text-[9px] font-mono text-slate-400">
-          <span>BOROSILICATE GLASS 3.3 • 500 mL</span>
-          <span className="text-amber-400">T = {temperature}°C</span>
+        {/* Beaker Lip Rim at Top with Frosted Glass Edge */}
+        <div className="absolute top-0 left-0 right-0 h-6 border-b border-white/20 bg-gradient-to-r from-slate-700/50 via-white/15 to-slate-700/50 backdrop-blur-sm flex items-center justify-between px-6 text-[10px] font-mono text-slate-300 z-30 shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+            <span className="font-bold text-emerald-400 tracking-wider">BOROSILICATE GLASS 3.3</span>
+            <span className="text-slate-500">•</span>
+            <span className="text-slate-400">DIN 12331 / ISO 3819 • 500 mL</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sky-300 font-bold font-mono">0.05 nm RESOLUTION</span>
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold text-[10px] flex items-center gap-1">
+              <Thermometer className="w-3 h-3" />
+              T = {temperature}°C
+            </span>
+          </div>
         </div>
 
         {/* Microscopic Grid Scale Lines (0.1 nm Grid) */}
@@ -1215,11 +1354,16 @@ export const MolecularSimulator: React.FC = () => {
         />
 
         {/* Beaker Volumetric Graduation Marks on Left Glass Wall */}
-        <div className="absolute left-4 top-14 bottom-10 flex flex-col justify-between text-[9px] font-mono font-bold text-slate-400 pointer-events-none z-10 border-l border-slate-600/80 pl-2">
-          <span className="flex items-center gap-1"><span className="w-2.5 h-[1px] bg-slate-500" /> 400 mL</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-[1px] bg-slate-500" /> 300 mL</span>
-          <span className="flex items-center gap-1"><span className="w-2.5 h-[1px] bg-slate-500" /> 200 mL</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-[1px] bg-slate-500" /> 100 mL</span>
+        <div className="absolute left-4 top-14 bottom-10 flex flex-col justify-between text-[10px] font-mono font-bold text-slate-300 pointer-events-none z-20 border-l-2 border-slate-500/60 pl-2">
+          <span className="flex items-center gap-1.5"><span className="w-4 h-[1.5px] bg-slate-300" /> 500 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-[1px] bg-slate-500" /> 450 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-[1.5px] bg-slate-300" /> 400 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-[1px] bg-slate-500" /> 350 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-[1.5px] bg-slate-300" /> 300 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-[1px] bg-slate-500" /> 250 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-[1.5px] bg-slate-300" /> 200 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-2.5 h-[1px] bg-slate-500" /> 150 mL</span>
+          <span className="flex items-center gap-1.5"><span className="w-4 h-[1.5px] bg-slate-300" /> 100 mL</span>
         </div>
 
         {/* Animated Fluid Meniscus & Solution Color */}
@@ -1250,7 +1394,7 @@ export const MolecularSimulator: React.FC = () => {
           </motion.div>
         )}
 
-        {/* ⚛️ PARTICLES LAYER (3D GLOSSY IONS & ATOMS) */}
+        {/* ⚛️ PARTICLES LAYER (3D VOLUMETRIC GLOSSY IONS & ATOMS) */}
         {particles.map(p => {
           const isDimmed = filterSpectators && p.role === "spectator";
           const isInspected = clickedParticle?.id === p.id;
@@ -1269,28 +1413,43 @@ export const MolecularSimulator: React.FC = () => {
                 zIndex: isInspected ? 45 : (p.isFixed ? 15 : 25)
               }}
             >
-              {/* 3D Sphere Container with Radial Gradient & Specular Highlight */}
+              {/* 3D Sphere Container with Radial Gradient, Dual Specular Highlights & Luminous Glow */}
               <div
-                className={`relative rounded-full flex items-center justify-center select-none font-bold text-white transition-transform ${
-                  isInspected ? "scale-125 ring-4 ring-amber-400" : "hover:scale-115 active:scale-95"
+                className={`relative rounded-full flex items-center justify-center select-none font-bold transition-all duration-200 ${
+                  isInspected 
+                    ? "scale-125 ring-4 ring-amber-400 shadow-2xl z-40" 
+                    : "hover:scale-115 active:scale-95 shadow-lg hover:shadow-2xl"
                 }`}
                 style={{
                   width: `${p.radius * 2}px`,
                   height: `${p.radius * 2}px`,
                   background: p.gradient,
-                  boxShadow: `0 0 16px ${p.glowColor}, inset 0 2px 5px rgba(255,255,255,0.7), inset 0 -3px 6px rgba(0,0,0,0.5)`
+                  boxShadow: `0 0 20px ${p.glowColor}, inset 0 3px 6px rgba(255,255,255,0.85), inset 0 -4px 8px rgba(0,0,0,0.6)`
                 }}
               >
-                {/* Specular Glare Dot */}
+                {/* Primary Top-Left Curved Specular Lens Highlight */}
                 <div 
-                  className="absolute top-1.5 left-1.5 rounded-full bg-white/80 pointer-events-none" 
-                  style={{ width: `${Math.max(4, p.radius * 0.4)}px`, height: `${Math.max(4, p.radius * 0.4)}px` }} 
+                  className="absolute top-1 left-1.5 rounded-full bg-gradient-to-br from-white/95 via-white/50 to-transparent pointer-events-none" 
+                  style={{ 
+                    width: `${Math.max(7, p.radius * 0.45)}px`, 
+                    height: `${Math.max(5, p.radius * 0.32)}px`,
+                    transform: "rotate(-28deg)"
+                  }} 
                 />
 
-                {/* Chemical Symbol Label */}
-                <span className="text-[10px] sm:text-[11px] font-sans font-extrabold tracking-tighter drop-shadow-md pointer-events-none leading-none">
-                  {p.label}
-                </span>
+                {/* Secondary Bottom-Right Subsurface Bounce Light */}
+                <div 
+                  className="absolute bottom-1 right-1.5 rounded-full bg-white/30 pointer-events-none blur-[0.5px]" 
+                  style={{ 
+                    width: `${Math.max(6, p.radius * 0.35)}px`, 
+                    height: `${Math.max(4, p.radius * 0.25)}px` 
+                  }} 
+                />
+
+                {/* Chemical Symbol Label Rendered with High Contrast & Sub/Superscripts */}
+                <div className="pointer-events-none select-none z-10 flex items-center justify-center">
+                  {renderParticleLabel(p)}
+                </div>
               </div>
             </div>
           );
