@@ -772,6 +772,82 @@ export const VirtualLab: React.FC<VirtualLabProps> = ({
   const [isIndicatorAdded, setIsIndicatorAdded] = useState<boolean>(false);
   const [isCutAndDried, setIsCutAndDried] = useState<boolean>(false);
   const [toolToast, setToolToast] = useState<string | null>(null);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
+
+  // 🧪 Helper to determine physical manipulation method (Forceps vs Spatula vs Liquid Pouring vs Flame)
+  const getActionTypeInfo = (itemName: string) => {
+    const name = (itemName || "").toLowerCase();
+    if (name.includes("بوتاسيوم") || name.includes("صوديوم") || name.includes("كالسيوم") || name.includes("مغنسيوم") || name.includes("ملقط") || name.includes("ليثيوم") || name.includes("باريوم") || name.includes("استرونشيوم") || (name.includes("فلز") && !name.includes("حمض"))) {
+      return {
+        type: "forceps",
+        label: "ملقط (إسقاط صلب)",
+        icon: "🥢",
+        badgeClass: "bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800"
+      };
+    }
+    if (name.includes("مسحوق") || name.includes("ملح") || name.includes("عينة") || name.includes("كربونات") || name.includes("أكسيد") || name.includes("خلات") || name.includes("جير") || name.includes("سيانات")) {
+      return {
+        type: "spatula",
+        label: "ملعقة (مسحوق جاف)",
+        icon: "🥄",
+        badgeClass: "bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800"
+      };
+    }
+    if (name.includes("سكين") || name.includes("ورق ترشيح") || name.includes("قطع")) {
+      return {
+        type: "knife",
+        label: "سكين تقطيع وتجفيف",
+        icon: "🔪",
+        badgeClass: "bg-slate-100 text-slate-800 border-slate-300 dark:bg-slate-800 dark:text-slate-200 dark:border-slate-700"
+      };
+    }
+    if (name.includes("سلك") || name.includes("شظية") || name.includes("لهب") || name.includes("طيف")) {
+      return {
+        type: "flame_test",
+        label: "سلك كشف اللهب",
+        icon: "🔥",
+        badgeClass: "bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800"
+      };
+    }
+    if (name.includes("موقد") || name.includes("بنسن") || name.includes("تسخين")) {
+      return {
+        type: "burner",
+        label: "إشعال موقد بنسن",
+        icon: "♨️",
+        badgeClass: "bg-orange-100 text-orange-900 border-orange-300 dark:bg-orange-950/60 dark:text-orange-300 dark:border-orange-800"
+      };
+    }
+    if (name.includes("ميزان") || name.includes("وزن")) {
+      return {
+        type: "scale",
+        label: "ميزان حساس رقمي",
+        icon: "⚖️",
+        badgeClass: "bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800"
+      };
+    }
+    if (name.includes("قمع") || name.includes("ترشيح")) {
+      return {
+        type: "filter",
+        label: "قمع ترشيح",
+        icon: "⚗️",
+        badgeClass: "bg-teal-100 text-teal-900 border-teal-300 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800"
+      };
+    }
+    if (name.includes("ساق") || name.includes("تقليب") || name.includes("رج")) {
+      return {
+        type: "stir",
+        label: "ساق زجاجي للتقليب",
+        icon: "🥢",
+        badgeClass: "bg-cyan-100 text-cyan-900 border-cyan-300 dark:bg-cyan-950/60 dark:text-cyan-300 dark:border-cyan-800"
+      };
+    }
+    return {
+      type: "liquid",
+      label: "سكب سائل/محلول",
+      icon: "💧",
+      badgeClass: "bg-blue-100 text-blue-900 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800"
+    };
+  };
 
   // Helper icons for tools
   const getToolIcon = (toolName: string) => {

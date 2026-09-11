@@ -231,8 +231,11 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     radius: 1.5
   });
 
-  // 🌊 Pouring Physics & Natural Liquid Stream References
+  // 🌊 Laboratory Multi-Category Physical Actions & Physics References
+  type LabActionType = "pour_liquid" | "forceps_drop" | "spatula_powder" | "knife_slice" | "wire_flame";
+
   const activePourRef = useRef<{
+    actionCategory: LabActionType;
     toolGroup: THREE.Group;
     actionId: string;
     toolLabel: string;
@@ -245,6 +248,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     isCompleted: boolean;
   } | null>(null);
 
+  const solidDropMeshRef = useRef<THREE.Mesh | null>(null);
   const pouringComponentsRef = useRef<{
     group: THREE.Group;
     stream: THREE.Mesh;
@@ -825,6 +829,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       knifeGroup.userData = {
         id: "cut_metal",
         label: "سكين حاد 🔪",
+        iconType: "knife",
         homePos: knifeHome.clone()
       };
 
@@ -856,6 +861,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       forcepsGroup.userData = {
         id: "drop_sodium",
         label: "ملقط معدني بالصوديوم 🥢",
+        iconType: "forceps",
         homePos: forcepsHome.clone()
       };
 
@@ -893,6 +899,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       dropperGroup.userData = {
         id: "add_indicator",
         label: "قطارة الفينول فثالين 🌸",
+        iconType: "pipette",
         homePos: dropperHome.clone()
       };
 
@@ -937,6 +944,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       kJarGroup.userData = {
         id: "drop_potassium",
         label: "قطعة بوتاسيوم K 🟣",
+        iconType: "forceps",
         homePos: kJarHome.clone()
       };
 
@@ -1757,6 +1765,7 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         toolGroup.userData = {
           id: tool.id,
           label: tool.label,
+          iconType: tool.iconType,
           homePos: homePos.clone(),
           badgeSprite: badge,
           beaconMesh: beaconMesh,
@@ -2037,91 +2046,255 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
         }
       }
 
-      // 🌊 Real-Time Natural Fluid Pouring Physics
+      // 🧪 Real-Time Physics Engine: Forceps Drop vs Spatula vs Knife vs Liquid Pouring
       if (activePourRef.current) {
         const pour = activePourRef.current;
         const now = performance.now();
         const progress = (now - pour.startTime) / (pour.duration * 1000);
         const pc = pouringComponentsRef.current;
+        const solidMesh = solidDropMeshRef.current;
 
-        if (progress < 0.22) {
-          // Phase 1: Lift & Glide towards container rim
-          const t = Math.min(1, progress / 0.22);
-          const ease = t * t * (3 - 2 * t);
-          pour.toolGroup.position.lerpVectors(pour.startPos, pour.targetPourPos, ease);
-          pour.toolGroup.rotation.z = THREE.MathUtils.lerp(0, -0.3, ease);
-          if (pc) pc.group.visible = false;
-        } else if (progress < 0.78) {
-          // Phase 2: Tilt to 65° & Pouring Stream
-          const pourT = (progress - 0.22) / 0.56;
-          pour.toolGroup.position.copy(pour.targetPourPos);
+        // Ensure liquid stream is hidden for non-liquid actions
+        if (pour.actionCategory !== "pour_liquid" && pc) {
+          pc.group.visible = false;
+        }
 
-          const tiltEase = Math.min(1, pourT * 3.0);
-          pour.toolGroup.rotation.z = THREE.MathUtils.lerp(-0.3, -1.15, tiltEase);
-          pour.toolGroup.rotation.x = 0.16;
+        // ===================================================================
+        // 🥢 CATEGORY A: FORCEPS DROPPING SOLID CHUNK (Sodium, Potassium, Calcium...)
+        // ===================================================================
+        if (pour.actionCategory === "forceps_drop") {
+          if (progress < 0.25) {
+            // Phase 1: Lift forceps & glide horizontally directly above vessel (NO TILT)
+            const t = Math.min(1, progress / 0.25);
+            const ease = t * t * (3 - 2 * t);
+            pour.toolGroup.position.lerpVectors(pour.startPos, pour.targetPourPos, ease);
+            pour.toolGroup.rotation.set(0, 0.4, 0); // Keep level!
+            if (solidMesh) solidMesh.visible = false;
+          } else if (progress < 0.70) {
+            // Phase 2: Forceps stationary, prongs open, solid pellet drops vertically under gravity!
+            pour.toolGroup.position.copy(pour.targetPourPos);
+            pour.toolGroup.rotation.set(0, 0.4, 0);
 
-          if (pc) {
-            pc.group.visible = true;
-            const nozzleLocal = new THREE.Vector3(0, 1.15, 0);
-            const nozzleWorld = nozzleLocal.applyMatrix4(pour.toolGroup.matrixWorld);
+            const dropT = (progress - 0.25) / 0.45;
+            // Gravity free-fall quadratic curve (t^2)
+            const gravityEase = dropT * dropT;
 
-            const streamDir = new THREE.Vector3().subVectors(pour.targetImpactPos, nozzleWorld);
-            const streamDist = streamDir.length();
-
-            pc.stream.position.copy(nozzleWorld);
-            pc.stream.scale.set(
-              1.0 + Math.sin(now * 0.035) * 0.15,
-              streamDist,
-              1.0 + Math.cos(now * 0.035) * 0.15
-            );
-            pc.stream.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), streamDir.clone().normalize());
-            (pc.stream.material as THREE.MeshPhysicalMaterial).color.setHex(pour.pourColor);
-
-            pc.droplets.forEach((dm) => {
-              const ud = dm.userData;
-              ud.progress = (ud.progress + 0.032 * ud.speed) % 1.0;
-              dm.position.lerpVectors(nozzleWorld, pour.targetImpactPos, ud.progress).add(ud.jitter);
-              (dm.material as THREE.MeshBasicMaterial).color.setHex(pour.pourColor);
-            });
-
-            pc.ripple.position.copy(pour.targetImpactPos);
-            pc.ripple.position.y += 0.01;
-            const ripT = (now * 0.0035) % 1.0;
-            const ripScale = 0.6 + ripT * 2.2;
-            pc.ripple.scale.set(ripScale, ripScale, ripScale);
-            (pc.ripple.material as THREE.MeshBasicMaterial).opacity = (1.0 - ripT) * 0.75;
-            (pc.ripple.material as THREE.MeshBasicMaterial).color.setHex(pour.pourColor);
-
-            if (liquidMeshRef.current) {
-              liquidMeshRef.current.position.y += Math.sin(now * 0.03) * 0.002;
+            if (solidMesh) {
+              solidMesh.visible = dropT < 0.95;
+              solidMesh.position.lerpVectors(pour.targetPourPos, pour.targetImpactPos, gravityEase);
+              solidMesh.rotation.x += 0.08;
+              solidMesh.rotation.y += 0.12;
             }
-          }
-        } else if (progress <= 1.0) {
-          // Phase 3: Straighten & Return home
-          const returnT = (progress - 0.78) / 0.22;
-          const ease = returnT * returnT * (3 - 2 * returnT);
-          if (pc) pc.group.visible = false;
 
-          pour.toolGroup.rotation.z = THREE.MathUtils.lerp(-1.15, 0, ease);
-          pour.toolGroup.rotation.x = THREE.MathUtils.lerp(0.16, 0, ease);
-          const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
-          pour.toolGroup.position.lerpVectors(pour.targetPourPos, home, ease);
-        } else {
-          // Phase 4: Finish!
-          if (pc) pc.group.visible = false;
-          const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
-          pour.toolGroup.position.copy(home);
-          pour.toolGroup.rotation.set(0, 0, 0);
-
-          if (!pour.isCompleted) {
-            pour.isCompleted = true;
-            if (onActionTrigger) {
-              onActionTrigger(pour.actionId);
+            // Impact with water surface: trigger circular ripple splash
+            if (dropT >= 0.85 && pc) {
+              pc.ripple.position.copy(pour.targetImpactPos);
+              pc.ripple.position.y += 0.02;
+              const splashT = (dropT - 0.85) / 0.15;
+              const splashScale = 0.5 + splashT * 2.5;
+              pc.ripple.scale.set(splashScale, splashScale, splashScale);
+              (pc.ripple.material as THREE.MeshBasicMaterial).opacity = (1.0 - splashT) * 0.9;
+              (pc.ripple.material as THREE.MeshBasicMaterial).color.setHex(pour.pourColor);
+              pc.ripple.visible = true;
             }
-            setDragFeedback("✨ تم سكب وإضافة " + pour.toolLabel + " بنجاح!");
-            setTimeout(() => setDragFeedback(null), 1800);
+          } else if (progress <= 1.0) {
+            // Phase 3: Forceps prongs close & glide smoothly back home
+            const returnT = (progress - 0.70) / 0.30;
+            const ease = returnT * returnT * (3 - 2 * returnT);
+            if (solidMesh) solidMesh.visible = false;
+            if (pc) pc.ripple.visible = false;
+
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.lerpVectors(pour.targetPourPos, home, ease);
+            pour.toolGroup.rotation.set(0, 0.4, 0);
+          } else {
+            // Phase 4: Complete action
+            if (solidMesh) solidMesh.visible = false;
+            if (pc) pc.ripple.visible = false;
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.copy(home);
+            pour.toolGroup.rotation.set(0, 0, 0);
+
+            if (!pour.isCompleted) {
+              pour.isCompleted = true;
+              if (onActionTrigger) {
+                onActionTrigger(pour.actionId);
+              }
+              setDragFeedback("✨ تم إسقاط قطعة الفلز بالملقط بنجاح في الوعاء!");
+              setTimeout(() => setDragFeedback(null), 1800);
+            }
+            activePourRef.current = null;
           }
-          activePourRef.current = null;
+        }
+        // ===================================================================
+        // 🔪 CATEGORY B: KNIFE SLICING METAL ON FILTER PAPER
+        // ===================================================================
+        else if (pour.actionCategory === "knife_slice") {
+          if (progress < 0.25) {
+            const t = Math.min(1, progress / 0.25);
+            pour.toolGroup.position.lerpVectors(pour.startPos, pour.targetPourPos, t);
+          } else if (progress < 0.75) {
+            const sliceT = (progress - 0.25) / 0.50;
+            const yOffset = Math.sin(sliceT * Math.PI * 4) * 0.18;
+            pour.toolGroup.position.set(pour.targetPourPos.x, pour.targetPourPos.y + yOffset, pour.targetPourPos.z);
+            pour.toolGroup.rotation.z = Math.sin(sliceT * Math.PI * 4) * 0.2;
+          } else if (progress <= 1.0) {
+            const returnT = (progress - 0.75) / 0.25;
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.lerpVectors(pour.targetPourPos, home, returnT);
+            pour.toolGroup.rotation.set(0, 0, 0);
+          } else {
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.copy(home);
+            pour.toolGroup.rotation.set(0, 0, 0);
+
+            if (!pour.isCompleted) {
+              pour.isCompleted = true;
+              if (onActionTrigger) onActionTrigger(pour.actionId);
+              setDragFeedback("✨ تم قطع قطعة الفلز وتجفيفها بورق الترشيح بنجاح!");
+              setTimeout(() => setDragFeedback(null), 1800);
+            }
+            activePourRef.current = null;
+          }
+        }
+        // ===================================================================
+        // 🔥 CATEGORY C: WIRE / FLAME TEST (Platinum Wire)
+        // ===================================================================
+        else if (pour.actionCategory === "wire_flame") {
+          if (progress < 0.3) {
+            const t = progress / 0.3;
+            pour.toolGroup.position.lerpVectors(pour.startPos, pour.targetPourPos, t);
+          } else if (progress < 0.75) {
+            pour.toolGroup.position.copy(pour.targetPourPos);
+            pour.toolGroup.position.y += Math.sin(now * 0.02) * 0.02;
+          } else if (progress <= 1.0) {
+            const returnT = (progress - 0.75) / 0.25;
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.lerpVectors(pour.targetPourPos, home, returnT);
+          } else {
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.copy(home);
+            if (!pour.isCompleted) {
+              pour.isCompleted = true;
+              if (onActionTrigger) onActionTrigger(pour.actionId);
+              setDragFeedback("✨ تم تعريض سلك البلاتين للهب واشتعال طيف الانبعاث المميز!");
+              setTimeout(() => setDragFeedback(null), 1800);
+            }
+            activePourRef.current = null;
+          }
+        }
+        // ===================================================================
+        // 🥄 CATEGORY D: SPATULA POWDER / SALT WEIGHING
+        // ===================================================================
+        else if (pour.actionCategory === "spatula_powder") {
+          if (progress < 0.25) {
+            const t = progress / 0.25;
+            pour.toolGroup.position.lerpVectors(pour.startPos, pour.targetPourPos, t);
+            pour.toolGroup.rotation.z = THREE.MathUtils.lerp(0, -0.2, t);
+          } else if (progress < 0.75) {
+            pour.toolGroup.position.copy(pour.targetPourPos);
+            pour.toolGroup.rotation.z = -0.32 + Math.sin(now * 0.04) * 0.05;
+          } else if (progress <= 1.0) {
+            const returnT = (progress - 0.75) / 0.25;
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.lerpVectors(pour.targetPourPos, home, returnT);
+            pour.toolGroup.rotation.z = THREE.MathUtils.lerp(-0.32, 0, returnT);
+          } else {
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.copy(home);
+            pour.toolGroup.rotation.set(0, 0, 0);
+            if (!pour.isCompleted) {
+              pour.isCompleted = true;
+              if (onActionTrigger) onActionTrigger(pour.actionId);
+              setDragFeedback("✨ تمت إضافة العينة بالملعقة المعملية بنجاح!");
+              setTimeout(() => setDragFeedback(null), 1800);
+            }
+            activePourRef.current = null;
+          }
+        }
+        // ===================================================================
+        // 💧 CATEGORY E: LIQUID POURING (Water, acids, reagent solutions)
+        // ===================================================================
+        else {
+          if (progress < 0.22) {
+            // Phase 1: Lift & Glide towards container rim
+            const t = Math.min(1, progress / 0.22);
+            const ease = t * t * (3 - 2 * t);
+            pour.toolGroup.position.lerpVectors(pour.startPos, pour.targetPourPos, ease);
+            pour.toolGroup.rotation.z = THREE.MathUtils.lerp(0, -0.3, ease);
+            if (pc) pc.group.visible = false;
+          } else if (progress < 0.78) {
+            // Phase 2: Tilt to 65° & Pouring Stream
+            const pourT = (progress - 0.22) / 0.56;
+            pour.toolGroup.position.copy(pour.targetPourPos);
+
+            const tiltEase = Math.min(1, pourT * 3.0);
+            pour.toolGroup.rotation.z = THREE.MathUtils.lerp(-0.3, -1.15, tiltEase);
+            pour.toolGroup.rotation.x = 0.16;
+
+            if (pc) {
+              pc.group.visible = true;
+              const nozzleLocal = new THREE.Vector3(0, 1.15, 0);
+              const nozzleWorld = nozzleLocal.applyMatrix4(pour.toolGroup.matrixWorld);
+
+              const streamDir = new THREE.Vector3().subVectors(pour.targetImpactPos, nozzleWorld);
+              const streamDist = streamDir.length();
+
+              pc.stream.position.copy(nozzleWorld);
+              pc.stream.scale.set(
+                1.0 + Math.sin(now * 0.035) * 0.15,
+                streamDist,
+                1.0 + Math.cos(now * 0.035) * 0.15
+              );
+              pc.stream.quaternion.setFromUnitVectors(new THREE.Vector3(0, -1, 0), streamDir.clone().normalize());
+              (pc.stream.material as THREE.MeshPhysicalMaterial).color.setHex(pour.pourColor);
+
+              pc.droplets.forEach((dm) => {
+                const ud = dm.userData;
+                ud.progress = (ud.progress + 0.032 * ud.speed) % 1.0;
+                dm.position.lerpVectors(nozzleWorld, pour.targetImpactPos, ud.progress).add(ud.jitter);
+                (dm.material as THREE.MeshBasicMaterial).color.setHex(pour.pourColor);
+              });
+
+              pc.ripple.position.copy(pour.targetImpactPos);
+              pc.ripple.position.y += 0.01;
+              const ripT = (now * 0.0035) % 1.0;
+              const ripScale = 0.6 + ripT * 2.2;
+              pc.ripple.scale.set(ripScale, ripScale, ripScale);
+              (pc.ripple.material as THREE.MeshBasicMaterial).opacity = (1.0 - ripT) * 0.75;
+              (pc.ripple.material as THREE.MeshBasicMaterial).color.setHex(pour.pourColor);
+
+              if (liquidMeshRef.current) {
+                liquidMeshRef.current.position.y += Math.sin(now * 0.03) * 0.002;
+              }
+            }
+          } else if (progress <= 1.0) {
+            // Phase 3: Straighten & Return home
+            const returnT = (progress - 0.78) / 0.22;
+            const ease = returnT * returnT * (3 - 2 * returnT);
+            if (pc) pc.group.visible = false;
+
+            pour.toolGroup.rotation.z = THREE.MathUtils.lerp(-1.15, 0, ease);
+            pour.toolGroup.rotation.x = THREE.MathUtils.lerp(0.16, 0, ease);
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.lerpVectors(pour.targetPourPos, home, ease);
+          } else {
+            // Phase 4: Finish!
+            if (pc) pc.group.visible = false;
+            const home = (pour.toolGroup.userData.homePos as THREE.Vector3) || pour.startPos;
+            pour.toolGroup.position.copy(home);
+            pour.toolGroup.rotation.set(0, 0, 0);
+
+            if (!pour.isCompleted) {
+              pour.isCompleted = true;
+              if (onActionTrigger) {
+                onActionTrigger(pour.actionId);
+              }
+              setDragFeedback("✨ تم سكب وإضافة " + pour.toolLabel + " بنجاح!");
+              setTimeout(() => setDragFeedback(null), 1800);
+            }
+            activePourRef.current = null;
+          }
         }
       }
 
@@ -2280,7 +2453,36 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
     }
   }, [onActionTrigger]);
 
-  // 🌊 Trigger Realistic Physical Liquid Pouring Animation
+  // 🧪 Multi-Category Physical Laboratory Action Engine (Forceps Drop vs Spatula vs Pouring vs Flame)
+  const getActionCategory = (toolGroup: THREE.Group, actionId: string): LabActionType => {
+    const id = (actionId || (toolGroup.userData && toolGroup.userData.id) || "").toLowerCase();
+    const label = ((toolGroup.userData && toolGroup.userData.label) || "").toLowerCase();
+    const iconType = ((toolGroup.userData && toolGroup.userData.iconType) || "").toLowerCase();
+
+    // 1. Forceps with solid metal piece (Sodium, Potassium, Calcium, Magnesium...)
+    if (iconType === "forceps" || id.includes("drop_sodium") || id.includes("drop_potassium") || id.includes("drop_na") || id.includes("drop_k") || id.includes("drop_mg") || id.includes("drop_ca") || label.includes("ملقط") || label.includes("صوديوم") || label.includes("بوتاسيوم")) {
+      return "forceps_drop";
+    }
+
+    // 2. Sharp knife cutting & drying on filter paper
+    if (iconType === "knife" || id.includes("cut") || label.includes("سكين")) {
+      return "knife_slice";
+    }
+
+    // 3. Platinum wire / flame test / splint
+    if (iconType === "rod" || id.includes("wire") || id.includes("flame_test") || label.includes("سلك") || label.includes("شظية")) {
+      return "wire_flame";
+    }
+
+    // 4. Spatula powder / dry salts / balance sample weighing
+    if (id.includes("weigh") || id.includes("powder") || id.includes("salt") || label.includes("مسحوق") || label.includes("ملح") || label.includes("عينة")) {
+      return "spatula_powder";
+    }
+
+    // 5. Default: Liquid pouring (Water, acids, solutions, pipettes)
+    return "pour_liquid";
+  };
+
   const startPourAnimation = useCallback((toolGroup: THREE.Group, actionId: string) => {
     if (activePourRef.current) return; // already active
 
@@ -2290,37 +2492,96 @@ export const Lab3DScene: React.FC<Lab3DProps> = ({
       return;
     }
 
-    const pourColor = getToolPourColor(toolGroup);
+    const actionCategory = getActionCategory(toolGroup, actionId);
     const dropTarget = dropZoneTargetRef.current;
+    const toolLabel = (toolGroup.userData && toolGroup.userData.label) || "المادة";
 
-    // Pour position positioned naturally right above the container lip
-    const targetPourPos = new THREE.Vector3(
+    // Configure distinct target positions based on physical action category
+    let targetPourPos = new THREE.Vector3(
       dropTarget.position.x + 0.92,
       dropTarget.position.y + 0.52,
       dropTarget.position.z + 0.32
     );
 
-    // Target impact point on liquid surface inside container
-    const targetImpactPos = new THREE.Vector3(
+    let targetImpactPos = new THREE.Vector3(
       dropTarget.position.x + 0.04,
       Math.max(1.65, dropTarget.position.y - 1.15 + (liquidHeight || 0.4) * 1.35),
       dropTarget.position.z + 0.04
     );
 
+    let duration = 1.6;
+
+    if (actionCategory === "forceps_drop") {
+      // Forceps moves directly centered horizontally over the basin / beaker
+      targetPourPos = new THREE.Vector3(
+        dropTarget.position.x,
+        dropTarget.position.y + 1.15,
+        dropTarget.position.z
+      );
+      targetImpactPos = new THREE.Vector3(
+        dropTarget.position.x,
+        Math.max(1.65, dropTarget.position.y - 1.15 + (liquidHeight || 0.4) * 1.35),
+        dropTarget.position.z
+      );
+      duration = 1.8;
+
+      // Colorize the falling solid pellet
+      if (solidDropMeshRef.current) {
+        if (actionId.includes("potassium") || toolLabel.includes("بوتاسيوم")) {
+          (solidDropMeshRef.current.material as THREE.MeshStandardMaterial).color.setHex(0xa855f7); // Potassium metallic purple
+        } else if (actionId.includes("calcium") || toolLabel.includes("كالسيوم")) {
+          (solidDropMeshRef.current.material as THREE.MeshStandardMaterial).color.setHex(0xd1d5db); // Calcium metallic silver
+        } else {
+          (solidDropMeshRef.current.material as THREE.MeshStandardMaterial).color.setHex(0xfacc15); // Sodium gold metallic
+        }
+        solidDropMeshRef.current.position.copy(targetPourPos);
+        solidDropMeshRef.current.visible = false;
+      }
+
+      setDragFeedback("🥢 جاري التقاط قطعة الفلز بالملقط وإسقاطها في الحوض...");
+    } else if (actionCategory === "knife_slice") {
+      targetPourPos = new THREE.Vector3(
+        toolGroup.position.x + 0.6,
+        toolGroup.position.y + 0.15,
+        toolGroup.position.z
+      );
+      duration = 1.4;
+      setDragFeedback("🔪 جاري قطع قطعة الفلز وتجفيفها بورق الترشيح...");
+    } else if (actionCategory === "wire_flame") {
+      targetPourPos = new THREE.Vector3(
+        dropTarget.position.x + 0.1,
+        dropTarget.position.y + 0.6,
+        dropTarget.position.z
+      );
+      duration = 1.6;
+      setDragFeedback("🔥 جاري تعريض سلك البلاتين للهب لاختبار طيف الانبعاث...");
+    } else if (actionCategory === "spatula_powder") {
+      targetPourPos = new THREE.Vector3(
+        dropTarget.position.x + 0.5,
+        dropTarget.position.y + 0.65,
+        dropTarget.position.z
+      );
+      duration = 1.5;
+      setDragFeedback("🥄 جاري إضافة المسحوق بالملعقة المعملية...");
+    } else {
+      setDragFeedback("💧 جاري سكب وإضافة " + toolLabel + "...");
+    }
+
+    const pourColor = getToolPourColor(toolGroup);
+
     activePourRef.current = {
+      actionCategory,
       toolGroup,
       actionId,
-      toolLabel: (toolGroup.userData && toolGroup.userData.label) || "المحلول",
+      toolLabel,
       startTime: performance.now(),
-      duration: 1.6,
+      duration,
       startPos: toolGroup.position.clone(),
       targetPourPos,
       targetImpactPos,
       pourColor,
       isCompleted: false
     };
-
-    setDragFeedback("🧪 جاري سكب وإضافة " + ((toolGroup.userData && toolGroup.userData.label) || "المحلول") + "...");
   }, [liquidHeight, handleToggleBurner]);
 
   // 🖱️ Dispatch tool clicks with smooth pouring animation
