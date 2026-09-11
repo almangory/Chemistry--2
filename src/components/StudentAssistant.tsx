@@ -19,7 +19,11 @@ import {
   ExternalLink,
   BookOpen,
   Wifi,
-  Cloud
+  Cloud,
+  Mic,
+  MicOff,
+  Camera,
+  Image as ImageIcon
 } from "lucide-react";
 import { glossaryTerms } from "../data/glossary";
 import { curriculumData } from "../data/curriculum";
@@ -39,6 +43,7 @@ interface Message {
   id: string;
   sender: "student" | "assistant";
   text: string;
+  image?: string;
   timestamp: Date;
   media?: MediaData | null;
   toolsUsed?: any[];
@@ -380,12 +385,16 @@ export const StudentAssistant: React.FC = () => {
 
   const handleSendMessage = async (userPrompt: string) => {
     const trimmed = userPrompt.trim();
-    if (!trimmed || isLoading) return;
+    if ((!trimmed && !selectedImage) || isLoading) return;
+
+    const currentImage = selectedImage;
+    setSelectedImage(null);
 
     const studentMsg: Message = {
       id: Math.random().toString(),
       sender: "student",
-      text: trimmed,
+      text: trimmed || "📸 [صورة مسألة كيميائية / معادلة]",
+      image: currentImage || undefined,
       timestamp: new Date()
     };
     setMessages((prev) => [...prev, studentMsg]);
@@ -415,11 +424,12 @@ export const StudentAssistant: React.FC = () => {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            message: trimmed,
+            message: trimmed || "حلل هذه الصورة الكيميائية واشرح المسألة والمعادلة بالتفصيل",
+            image: currentImage || undefined,
             stage: "chemistry-grade-12",
             history: historyPayload,
             host_context: {
-              title: "كيمياء الصف الثالث الثانوي - منصة نقلة",
+              title: "كيمياء الصف الثاني الثانوي - منصة نقلة",
               url: window.location.href,
               resources_count: 5
             }
@@ -714,6 +724,18 @@ export const StudentAssistant: React.FC = () => {
                             : "bg-[#06241b] border border-emerald-700/40 text-slate-100 rounded-tl-xs shadow-md ml-auto"
                         }`}
                     >
+                      {/* Attached Image Preview */}
+                      {msg.image && (
+                        <div className="mb-2.5 rounded-xl overflow-hidden border border-emerald-400/40 max-w-[260px] max-h-[200px] bg-black/40">
+                          <img
+                            src={msg.image}
+                            alt="مسألة كيميائية مرفقة"
+                            className="w-full h-full object-contain cursor-pointer hover:scale-105 transition-transform"
+                            onClick={() => window.open(msg.image, "_blank")}
+                          />
+                        </div>
+                      )}
+
                       {/* Formatted HTML/Markdown Body */}
                       <div
                         className="leading-relaxed break-words font-sans space-y-1"
@@ -815,27 +837,93 @@ export const StudentAssistant: React.FC = () => {
 
             {/* ✍️ Input Bar */}
             <div className="bg-[#041a13] border-t border-emerald-800/70 p-3 shrink-0">
+              {/* 📸 Attached Image Preview Thumbnail */}
+              {selectedImage && (
+                <div className="flex items-center gap-2.5 mb-2.5 p-2 bg-[#072a20] border border-emerald-600/60 rounded-2xl shadow-sm">
+                  <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-emerald-500/50 bg-black/40 shrink-0">
+                    <img src={selectedImage} alt="المسألة المرفقة" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 text-right text-xs text-emerald-200 truncate">
+                    <span className="font-bold block">📸 تم إرفاق صورة المسألة / المعادلة</span>
+                    <span className="text-[10px] text-emerald-400/80">اضغط إرسال ليقوم سودان بوت بتحليلها</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeSelectedImage}
+                    className="p-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 hover:text-rose-100 transition-colors cursor-pointer"
+                    title="حذف الصورة"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
                   handleSendMessage(query);
                 }}
-                className="flex items-center gap-2"
+                className="flex items-center gap-1.5 sm:gap-2"
               >
+                {/* Hidden File Input for Camera/Gallery */}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+
+                {/* 📷 Camera / Image Upload Button */}
+                <button
+                  type="button"
+                  onClick={triggerCamera}
+                  disabled={isLoading}
+                  className="p-2.5 rounded-2xl bg-[#072a20] hover:bg-emerald-800/50 text-emerald-300 hover:text-white border border-emerald-700/60 transition-all cursor-pointer shrink-0 disabled:opacity-40"
+                  title="التقاط صورة لمسألة كيميائية أو إرفاقها بالكاميرا"
+                >
+                  <Camera className="w-5 h-5" />
+                </button>
+
+                {/* 🎙️ Voice Input Microphone Button */}
+                <button
+                  type="button"
+                  onClick={startListening}
+                  disabled={isLoading}
+                  className={`p-2.5 rounded-2xl border transition-all cursor-pointer shrink-0 disabled:opacity-40 ${
+                    isListening
+                      ? "bg-rose-600 text-white border-rose-400 animate-pulse ring-2 ring-rose-500/50"
+                      : "bg-[#072a20] hover:bg-emerald-800/50 text-emerald-300 hover:text-white border-emerald-700/60"
+                  }`}
+                  title={isListening ? "إيقاف التسجيل الصوتي" : "تحدّث بسؤالك بصوتك (إدخال صوتي)"}
+                >
+                  {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+                </button>
+
+                {/* Text Input Field */}
                 <div className="relative flex-1">
                   <input
                     type="text"
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="اكتب سؤالك أو مسألتك الكيميائية (مثال: احسب كمية الكهرباء، أو لخص لي درس كذا)..."
+                    placeholder={
+                      isListening
+                        ? "🎙️ جاري الاستماع إلى سؤالك الكيميائي... تحدّث الآن"
+                        : "اكتب سؤالك أو التقط صورة للمسألة الكيميائية..."
+                    }
                     disabled={isLoading}
-                    className="w-full bg-[#072a20] border border-emerald-700/60 rounded-2xl py-2.5 px-4 text-xs sm:text-sm text-white placeholder-emerald-400/60 focus:outline-none focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400 transition-all font-sans"
+                    className={`w-full bg-[#072a20] border rounded-2xl py-2.5 px-3.5 sm:px-4 text-xs sm:text-sm text-white placeholder-emerald-400/60 focus:outline-none transition-all font-sans ${
+                      isListening
+                        ? "border-rose-500 ring-1 ring-rose-500 placeholder-rose-300"
+                        : "border-emerald-700/60 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-400"
+                    }`}
                   />
                 </div>
 
+                {/* Send Button */}
                 <button
                   type="submit"
-                  disabled={!query.trim() || isLoading}
+                  disabled={(!query.trim() && !selectedImage) || isLoading}
                   className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white p-2.5 rounded-2xl shadow-lg shadow-emerald-950/50 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95 cursor-pointer shrink-0"
                   title="إرسال"
                 >
