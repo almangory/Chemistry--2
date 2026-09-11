@@ -9,10 +9,14 @@ import {
   Atom, 
   Layers, 
   CheckCircle2,
-  ChevronLeft
+  ChevronLeft,
+  Video,
+  FileText
 } from "lucide-react";
 import { curriculumData } from "../data/curriculum";
 import { SudanCaseStudies } from "./SudanCaseStudies";
+import { UnitMediaModal } from "./UnitMediaModal";
+import { Unit } from "../types";
 
 interface DashboardProps {
   completedLessons: string[];
@@ -39,6 +43,17 @@ export const Dashboard: React.FC<DashboardProps> = ({
     "4": { icon: "💨", color: "text-purple-700", bg: "bg-purple-50/80", borderColor: "border-purple-200", tag: "النيتروجين وتآصل الفوسفور" },
     "5": { icon: "🧂", color: "text-rose-700", bg: "bg-rose-50/80", borderColor: "border-rose-200", tag: "الهالوجينات والكلور" },
     "6": { icon: "🔩", color: "text-teal-800", bg: "bg-teal-50/80", borderColor: "border-teal-200", tag: "العناصر الانتقالية والحديد" }
+  };
+
+  const [isMediaModalOpen, setIsMediaModalOpen] = React.useState<boolean>(false);
+  const [mediaModalMode, setMediaModalMode] = React.useState<"video" | "pdf">("video");
+  const [mediaTargetUnit, setMediaTargetUnit] = React.useState<Unit>(curriculumData[0]);
+
+  const handleOpenMedia = (e: React.MouseEvent, unit: Unit, mode: "video" | "pdf") => {
+    e.stopPropagation();
+    setMediaTargetUnit(unit);
+    setMediaModalMode(mode);
+    setIsMediaModalOpen(true);
   };
 
   const handleOpenUnit = (unitId: string) => {
@@ -215,6 +230,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     />
                   </div>
 
+
+                  {/* Quick Video & PDF Buttons */}
+                  {unit.media && (
+                    <div className="flex items-center gap-1.5 pt-1">
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenMedia(e, unit, "video")}
+                        className="flex-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/80 text-[#047857] dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                        title="مشاهدة فيديو شرح الوحدة"
+                      >
+                        <Video className="w-3 h-3" />
+                        <span>فيديو الشرح 🎥</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={(e) => handleOpenMedia(e, unit, "pdf")}
+                        className="flex-1 px-2.5 py-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/60 hover:bg-teal-100 dark:hover:bg-teal-900/80 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 text-[11px] font-bold transition-all flex items-center justify-center gap-1 cursor-pointer"
+                        title="تصفح أو تحميل مذكرة الوحدة PDF"
+                      >
+                        <FileText className="w-3 h-3" />
+                        <span>مذكرة PDF 📄</span>
+                      </button>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between pt-0.5">
                     <span className="text-[11px] font-bold text-[#047857] dark:text-emerald-400 group-hover:translate-x-[-3px] transition-transform flex items-center gap-0.5">
                       <span>ادخل إلى الدروس</span>
@@ -230,6 +271,14 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
       {/* 🇸🇩 3. Real-world Case Studies: Chemistry in Sudan */}
       <SudanCaseStudies />
+
+      {/* 🎬 Unit Media Modal (Video Player & PDF Viewer) */}
+      <UnitMediaModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        unit={mediaTargetUnit}
+        initialMode={mediaModalMode}
+      />
     </div>
   );
 };

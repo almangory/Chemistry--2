@@ -37,6 +37,16 @@ export const curriculumData: Unit[] = [
     title: "الترتيب الدوري للعناصر",
     description: "دراسة محاولات العلماء التاريخية لترتيب العناصر، القانون الدوري لموزلي، الجدول الدوري الحديث، وتدرج الخواص الفيزيائية والكيميائية للعناصر.",
     color: "from-blue-500 to-indigo-600 border-indigo-200",
+    media: {
+      videoUrl: "/mothakira/videos/1.mp4",
+      videoTitle: "شرح مرئي شامل: الوحدة الأولى - الترتيب الدوري للعناصر",
+      videoFileName: "1.mp4",
+      videoSize: "31.7 ميغابايت",
+      pdfUrl: "/mothakira/pdf/unit-1.pdf",
+      pdfTitle: "مذكرة الوحدة الأولى - الترتيب الدوري للعناصر",
+      pdfFileName: "الوحدة الاولى.pdf",
+      pdfSize: "17.7 ميغابايت"
+    },
     lessons: [
       {
         id: "u1_l1",
@@ -144,6 +154,16 @@ export const curriculumData: Unit[] = [
     title: "فلزات المجموعة الأولى (فلزات الأقلاء)",
     description: "دراسة شاملة لعناصر عائلة الأقلاء، خواصها الفيزيائية الفريدة ونشاطها الكيميائي الفائق، مع التركيز على الصوديوم وطرق استخلاصه صناعياً ومركباته الهامة.",
     color: "from-orange-500 to-amber-600 border-amber-200",
+    media: {
+      videoUrl: "/mothakira/videos/2.mp4",
+      videoTitle: "شرح مرئي شامل: الوحدة الثانية - فلزات المجموعة الأولى (فلزات الأقلاء)",
+      videoFileName: "2.mp4",
+      videoSize: "29.9 ميغابايت",
+      pdfUrl: "/mothakira/pdf/unit-2.pdf",
+      pdfTitle: "مذكرة الوحدة الثانية - فلزات المجموعة الأولى",
+      pdfFileName: "الوحدة الثانية.pdf",
+      pdfSize: "12.2 ميغابايت"
+    },
     lessons: [
       {
         id: "u2_l1",
@@ -226,6 +246,16 @@ export const curriculumData: Unit[] = [
     title: "الكيمياء العضوية",
     description: "تعتبر مادة الحياة على الأرض. تدرس بنية ذرة الكربون الاستثنائية، قواعد التسمية IUPAC، تصنيف الهيدروكربونات، السلسلة المتجانسة وغاز الميثان، الألكينات، الألكاينات، الحلقيات والبنزين، والتماكب السلسلي.",
     color: "from-emerald-500 to-teal-600 border-teal-200",
+    media: {
+      videoUrl: "/mothakira/videos/3.mp4",
+      videoTitle: "شرح مرئي شامل: الوحدة الثالثة - الكيمياء العضوية والهيدروكربونات",
+      videoFileName: "3.mp4",
+      videoSize: "42.8 ميغابايت",
+      pdfUrl: "/mothakira/pdf/unit-3.pdf",
+      pdfTitle: "مذكرة الوحدة الثالثة - الكيمياء العضوية",
+      pdfFileName: "الوحدة الثالثة.pdf",
+      pdfSize: "16.0 ميغابايت"
+    },
     lessons: [
       {
         id: "u3_l1",
@@ -508,6 +538,16 @@ export const curriculumData: Unit[] = [
     title: "النيتروجين والمجموعة الخامسة",
     description: "استعراض عناصر المجموعة الخامسة وتدرج خواصها وظاهرة التأصل، مع دراسة تفصيلية لغاز النيتروجين معملياً وصناعياً، الأمونيا وطريقة هابر، ومخصبات التربة.",
     color: "from-purple-500 to-fuchsia-600 border-fuchsia-200",
+    media: {
+      videoUrl: "/mothakira/videos/4.mp4",
+      videoTitle: "شرح مرئي شامل: الوحدة الرابعة - النيتروجين والمجموعة الخامسة",
+      videoFileName: "4.mp4",
+      videoSize: "46.3 ميغابايت",
+      pdfUrl: "/mothakira/pdf/unit-4.pdf",
+      pdfTitle: "مذكرة الوحدة الرابعة - النيتروجين والمجموعة الخامسة",
+      pdfFileName: "الوحدة الرابعة.pdf",
+      pdfSize: "12.2 ميغابايت"
+    },
     lessons: [
       {
         id: "u4_l1",
@@ -637,6 +677,16 @@ export const curriculumData: Unit[] = [
     title: "الهالوجينات",
     description: "دراسة شاملة لعناصر المجموعة السابعة (صنّاع الأملاح)، نشاطها الفائق وتدرجه الكيميائي، مع التركيز على تحضير الكلور معملياً وصناعياً وخواصه الكيميائية الفريدة وقصر الألوان.",
     color: "from-red-500 to-rose-600 border-rose-200",
+    media: {
+      videoUrl: "/mothakira/videos/5.mp4",
+      videoTitle: "شرح مرئي شامل: الوحدة الخامسة - الهالوجينات والكلور",
+      videoFileName: "5.mp4",
+      videoSize: "37.6 ميغابايت",
+      pdfUrl: "/mothakira/pdf/unit-5.pdf",
+      pdfTitle: "مذكرة الوحدة الخامسة - الهالوجينات",
+      pdfFileName: "الوحدة الخامسة.pdf",
+      pdfSize: "14.9 ميغابايت"
+    },
     lessons: [
       {
         id: "u5_l1",
@@ -758,6 +808,16 @@ export const curriculumData: Unit[] = [
     title: "العناصر الانتقالية",
     description: "دراسة الفلزات الانتقالية وموقعها المتميز في الجدول الدوري، التركيب الإلكتروني وتفصيل استقرارية d5 وd10، والخواص الفيزيائية والكيميائية الرائعة والدرع الواقي للأوكسيد والماء الملكي.",
     color: "from-slate-500 to-zinc-600 border-zinc-200",
+    media: {
+      videoUrl: "/mothakira/videos/6.mp4",
+      videoTitle: "شرح مرئي شامل: الوحدة السادسة - العناصر الانتقالية والحديد",
+      videoFileName: "6.mp4",
+      videoSize: "36.7 ميغابايت",
+      pdfUrl: "/mothakira/pdf/unit-6.pdf",
+      pdfTitle: "مذكرة الوحدة السادسة - العناصر الانتقالية",
+      pdfFileName: "الوحدة السادسة.pdf",
+      pdfSize: "14.1 ميغابايت"
+    },
     lessons: [
       {
         id: "u6_l1",

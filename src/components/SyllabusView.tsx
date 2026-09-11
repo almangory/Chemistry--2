@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { curriculumData } from "../data/curriculum";
 import { InteractiveDiagram } from "./InteractiveDiagram";
+import { UnitMediaModal } from "./UnitMediaModal";
 import { applySmartHighlights } from "../utils/textHighlighter";
 import { 
   BookOpen, 
@@ -22,7 +23,10 @@ import {
   Sun,
   Moon,
   ScrollText,
-  Type
+  Type,
+  Video,
+  FileText,
+  Download
 } from "lucide-react";
 import { Unit, Lesson } from "../types";
 
@@ -62,6 +66,16 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
   });
   const [fontSize, setFontSize] = useState<"sm" | "base" | "lg" | "xl">("base");
   const [isSmartHighlight, setIsSmartHighlight] = useState<boolean>(true);
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState<boolean>(false);
+  const [mediaModalMode, setMediaModalMode] = useState<"video" | "pdf">("video");
+  const [mediaTargetUnit, setMediaTargetUnit] = useState<Unit>(curriculumData[0]);
+
+  const openUnitMedia = (unit: Unit, mode: "video" | "pdf") => {
+    setMediaTargetUnit(unit);
+    setMediaModalMode(mode);
+    setIsMediaModalOpen(true);
+  };
+
 
   // Sync reading theme when global dark mode toggles
   useEffect(() => {
@@ -179,6 +193,49 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
         </div>
       </div>
 
+
+      {/* 🎥 & 📄 Unit Resources Action Bar (فيديو الشرح ومذكرة الوحدة) */}
+      {selectedUnit.media && (
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50/60 to-emerald-50 dark:from-emerald-950/40 dark:via-teal-950/30 dark:to-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3 text-right w-full sm:w-auto">
+            <div className="w-10 h-10 rounded-xl bg-[#047857] text-white flex items-center justify-center text-lg shrink-0 shadow-xs">
+              📚
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#047857] text-white">
+                  ملحقات الوحدة {selectedUnit.number}
+                </span>
+                <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 font-sans">
+                  {selectedUnit.title}
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-600 dark:text-slate-300 font-sans mt-0.5">
+                شرح فيديو مسجل للمقرر ومذكرة PDF الرسمية للتحميل والمذاكرة أوفلاين
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <button
+              onClick={() => openUnitMedia(selectedUnit, "video")}
+              className="flex-1 sm:flex-initial px-3.5 py-2 bg-[#047857] hover:bg-[#064E3B] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs hover:shadow-md cursor-pointer"
+            >
+              <Video className="w-3.5 h-3.5" />
+              <span>شرح الفيديو 🎥</span>
+            </button>
+
+            <button
+              onClick={() => openUnitMedia(selectedUnit, "pdf")}
+              className="flex-1 sm:flex-initial px-3.5 py-2 bg-white dark:bg-slate-800 text-[#047857] dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-slate-700 border border-emerald-300 dark:border-emerald-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-xs cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>مذكرة الوحدة PDF 📄</span>
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* 📚 View Mode: Lessons Grid of the Current Unit */}
       {viewMode === "grid" && (
         <motion.div
@@ -199,6 +256,70 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
               {selectedUnit.lessons.length} دروس
             </span>
           </div>
+
+
+          {/* Unit Media Cards in Grid Mode */}
+          {selectedUnit.media && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div 
+                onClick={() => openUnitMedia(selectedUnit, "video")}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-[#047857] dark:hover:border-emerald-500 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-[#047857] dark:text-emerald-400 flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                    🎥
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-300">
+                        فيديو الشرح
+                      </span>
+                      {selectedUnit.media.videoSize && (
+                        <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                          {selectedUnit.media.videoSize}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 font-sans group-hover:text-[#047857] dark:group-hover:text-emerald-400 transition-colors">
+                      {selectedUnit.media.videoTitle}
+                    </h4>
+                  </div>
+                </div>
+                <button className="px-3 py-1.5 bg-[#047857] text-white text-xs font-bold rounded-xl shadow-xs shrink-0 flex items-center gap-1 group-hover:bg-[#064E3B]">
+                  <span>مشاهدة</span>
+                </button>
+              </div>
+
+              <div 
+                onClick={() => openUnitMedia(selectedUnit, "pdf")}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-[#047857] dark:hover:border-emerald-500 rounded-2xl p-4 flex items-center justify-between gap-3 shadow-xs hover:shadow-md transition-all cursor-pointer group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-teal-100 dark:bg-teal-950/80 text-teal-800 dark:text-teal-300 flex items-center justify-center text-xl shrink-0 group-hover:scale-105 transition-transform">
+                    📄
+                  </div>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300">
+                        مذكرة الوحدة
+                      </span>
+                      {selectedUnit.media.pdfSize && (
+                        <span className="text-[10px] font-mono text-slate-500 dark:text-slate-400">
+                          {selectedUnit.media.pdfSize}
+                        </span>
+                      )}
+                    </div>
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-slate-100 font-sans group-hover:text-[#047857] dark:group-hover:text-emerald-400 transition-colors">
+                      {selectedUnit.media.pdfTitle}
+                    </h4>
+                  </div>
+                </div>
+                <button className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-[#047857] dark:text-emerald-300 text-xs font-bold rounded-xl shadow-xs shrink-0 flex items-center gap-1 border border-slate-200 dark:border-slate-700">
+                  <span>فتح المذكرة</span>
+                </button>
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {selectedUnit.lessons.map((lesson, idx) => {
@@ -777,6 +898,14 @@ export const SyllabusView: React.FC<SyllabusViewProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 🎬 Unit Media Modal (Video Player & PDF Viewer) */}
+      <UnitMediaModal
+        isOpen={isMediaModalOpen}
+        onClose={() => setIsMediaModalOpen(false)}
+        unit={mediaTargetUnit}
+        initialMode={mediaModalMode}
+      />
     </div>
   );
 };

@@ -12,6 +12,17 @@ export interface Lesson {
   }[];
 }
 
+export interface UnitMedia {
+  videoUrl: string;
+  videoTitle: string;
+  videoFileName: string;
+  videoSize?: string;
+  pdfUrl: string;
+  pdfTitle: string;
+  pdfFileName: string;
+  pdfSize?: string;
+}
+
 export interface Unit {
   id: string;
   number: number;
@@ -19,6 +30,7 @@ export interface Unit {
   description: string;
   color: string; // Tailwind color classes
   lessons: Lesson[];
+  media?: UnitMedia;
 }
 
 export interface QuizQuestion {

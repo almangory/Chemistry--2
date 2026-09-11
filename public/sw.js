@@ -51,6 +51,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
+  // Skip video streaming requests (.mp4 or byte ranges) to allow native browser media streaming
+  if (event.request.url.includes(".mp4") || event.request.headers.get("range")) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       // 1. If cached, serve immediately and update in background if online
