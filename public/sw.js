@@ -1,4 +1,4 @@
-const CACHE_NAME = "sudan-chemistry-offline-v2";
+const CACHE_NAME = "sudan-chemistry-offline-v3";
 const ASSETS_TO_CACHE = [
   "/",
   "/index.html",
@@ -9,15 +9,20 @@ const ASSETS_TO_CACHE = [
   "/icon-512.png",
   "/apple-touch-icon.png",
   "/app-logo.jpg",
-  "/src/main.tsx",
-  "/src/index.css"
+  "/sudan-bot-avatar.png"
 ];
 
-// Install Event
+// Install Event - Resilient pre-caching
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+    caches.open(CACHE_NAME).then(async (cache) => {
+      for (const asset of ASSETS_TO_CACHE) {
+        try {
+          await cache.add(asset);
+        } catch (err) {
+          console.warn(`[ServiceWorker] Could not pre-cache: ${asset}`, err);
+        }
+      }
     })
   );
   self.skipWaiting();
@@ -39,21 +44,33 @@ self.addEventListener("activate", (event) => {
   self.clients.claim();
 });
 
-// Fetch Event - Stale-While-Revalidate Strategy
+// Fetch Event - Cache-First with Background Revalidation & Offline Navigation Fallback
 self.addEventListener("fetch", (event) => {
-  // Only intercept same-origin HTTP/HTTPS requests
-  if (!event.request.url.startsWith(self.location.origin)) {
-    return;
-  }
-
-  // Skip POST, PUT, DELETE etc. Only cache GET
-  if (event.request.method !== "GET") {
+  // Only intercept same-origin HTTP/HTTPS GET requests
+  if (!event.request.url.startsWith(self.location.origin) || event.request.method !== "GET") {
     return;
   }
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
+      // 1. If cached, serve immediately and update in background if online
+      if (cachedResponse) {
+        fetch(event.request)
+          .then((networkResponse) => {
+            if (networkResponse && networkResponse.status === 200) {
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, networkResponse);
+              });
+            }
+          })
+          .catch(() => {
+            // Offline - normal behavior
+          });
+        return cachedResponse;
+      }
+
+      // 2. Not cached yet - fetch and cache
+      return fetch(event.request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const responseToCache = networkResponse.clone();
@@ -63,12 +80,12 @@ self.addEventListener("fetch", (event) => {
           }
           return networkResponse;
         })
-        .catch((error) => {
-          console.log("Fetch failed, returning cached assets:", error);
+        .catch(() => {
+          // 3. If offline and navigating to a page, fallback to cached index.html
+          if (event.request.mode === "navigate") {
+            return caches.match("/") || caches.match("/index.html");
+          }
         });
-
-      // Return cached response immediately if available, otherwise wait for network
-      return cachedResponse || fetchPromise;
     })
   );
 });
