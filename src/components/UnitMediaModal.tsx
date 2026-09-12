@@ -23,6 +23,13 @@ interface UnitMediaModalProps {
   initialMode?: "video" | "pdf";
 }
 
+function getYouTubeEmbedUrl(url?: string): string | null {
+  if (!url) return null;
+  const regExp = /(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=|shorts\/)|youtu\.be\/)([^"&?\/\s]{11})/;
+  const match = url.match(regExp);
+  return match ? `https://www.youtube-nocookie.com/embed/${match[1]}?rel=0&modestbranding=1` : null;
+}
+
 export const UnitMediaModal: React.FC<UnitMediaModalProps> = ({
   isOpen,
   onClose,
@@ -63,6 +70,7 @@ export const UnitMediaModal: React.FC<UnitMediaModalProps> = ({
   if (!isOpen || !unit.media) return null;
 
   const { media } = unit;
+  const youtubeEmbedUrl = getYouTubeEmbedUrl(media.videoUrl);
 
   // Video playback controls
   const togglePlay = () => {
@@ -209,111 +217,123 @@ export const UnitMediaModal: React.FC<UnitMediaModalProps> = ({
                   ref={videoContainerRef}
                   className="relative rounded-2xl overflow-hidden bg-black border border-slate-800 shadow-lg group aspect-video flex items-center justify-center"
                 >
-                  <video
-                    ref={videoRef}
-                    src={media.videoUrl}
-                    className="w-full h-full object-contain cursor-pointer"
-                    onClick={togglePlay}
-                    onTimeUpdate={handleTimeUpdate}
-                    onLoadedMetadata={handleLoadedMetadata}
-                    onPlay={() => setIsPlaying(true)}
-                    onPause={() => setIsPlaying(false)}
-                    playsInline
-                  />
-
-                  {/* Big Central Play Button when paused */}
-                  {!isPlaying && (
-                    <button
-                      onClick={togglePlay}
-                      className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-[#047857]/90 text-white flex items-center justify-center shadow-xl hover:scale-110 hover:bg-[#047857] transition-all cursor-pointer backdrop-blur-xs"
-                    >
-                      <Play className="w-8 h-8 translate-x-[-1px] fill-current" />
-                    </button>
-                  )}
-
-                  {/* Bottom Video Controls Overlay */}
-                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 pt-6 flex flex-col gap-2 transition-opacity">
-                    {/* Progress Bar */}
-                    <div className="flex items-center gap-2 text-white text-[11px] font-mono">
-                      <span>{formatTime(currentTime)}</span>
-                      <input
-                        type="range"
-                        min={0}
-                        max={duration || 100}
-                        step={0.1}
-                        value={currentTime}
-                        onChange={handleSeek}
-                        className="flex-1 h-1.5 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[#10B981]"
+                  {youtubeEmbedUrl ? (
+                    <iframe
+                      src={youtubeEmbedUrl}
+                      title={media.videoTitle || unit.title}
+                      className="w-full h-full border-0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                      allowFullScreen
+                    />
+                  ) : (
+                    <>
+                      <video
+                        ref={videoRef}
+                        src={media.videoUrl}
+                        className="w-full h-full object-contain cursor-pointer"
+                        onClick={togglePlay}
+                        onTimeUpdate={handleTimeUpdate}
+                        onLoadedMetadata={handleLoadedMetadata}
+                        onPlay={() => setIsPlaying(true)}
+                        onPause={() => setIsPlaying(false)}
+                        playsInline
                       />
-                      <span>{formatTime(duration)}</span>
-                    </div>
 
-                    {/* Toolbar buttons */}
-                    <div className="flex items-center justify-between text-white text-xs">
-                      <div className="flex items-center gap-2">
+                      {/* Big Central Play Button when paused */}
+                      {!isPlaying && (
                         <button
                           onClick={togglePlay}
-                          className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
-                          title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                          className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-[#047857]/90 text-white flex items-center justify-center shadow-xl hover:scale-110 hover:bg-[#047857] transition-all cursor-pointer backdrop-blur-xs"
                         >
-                          {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+                          <Play className="w-8 h-8 translate-x-[-1px] fill-current" />
                         </button>
+                      )}
 
-                        <button
-                          onClick={() => skipTime(-10)}
-                          className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
-                          title="رجوع 10 ثوانٍ"
-                        >
-                          <RotateCcw className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={() => skipTime(10)}
-                          className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
-                          title="تقديم 10 ثوانٍ"
-                        >
-                          <RotateCw className="w-4 h-4" />
-                        </button>
-
-                        <button
-                          onClick={toggleMute}
-                          className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
-                          title={isMuted ? "إلغاء الكتم" : "كتم الصوت"}
-                        >
-                          {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
-                        </button>
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        {/* Speed Selector */}
-                        <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-lg">
-                          <span className="text-[10px] text-white/70">السرعة:</span>
-                          {[1, 1.25, 1.5, 2].map((rate) => (
-                            <button
-                              key={rate}
-                              onClick={() => changePlaybackRate(rate)}
-                              className={`text-[10px] px-1 py-0.5 rounded ${
-                                playbackRate === rate
-                                  ? "bg-[#10B981] font-bold text-white"
-                                  : "text-white/80 hover:text-white"
-                              } cursor-pointer`}
-                            >
-                              {rate}x
-                            </button>
-                          ))}
+                      {/* Bottom Video Controls Overlay */}
+                      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 pt-6 flex flex-col gap-2 transition-opacity">
+                        {/* Progress Bar */}
+                        <div className="flex items-center gap-2 text-white text-[11px] font-mono">
+                          <span>{formatTime(currentTime)}</span>
+                          <input
+                            type="range"
+                            min={0}
+                            max={duration || 100}
+                            step={0.1}
+                            value={currentTime}
+                            onChange={handleSeek}
+                            className="flex-1 h-1.5 bg-white/30 rounded-lg appearance-none cursor-pointer accent-[#10B981]"
+                          />
+                          <span>{formatTime(duration)}</span>
                         </div>
 
-                        {/* Fullscreen */}
-                        <button
-                          onClick={toggleFullscreen}
-                          className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
-                          title="ملء الشاشة"
-                        >
-                          <Maximize className="w-4 h-4" />
-                        </button>
+                        {/* Toolbar buttons */}
+                        <div className="flex items-center justify-between text-white text-xs">
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={togglePlay}
+                              className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                              title={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
+                            >
+                              {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+                            </button>
+
+                            <button
+                              onClick={() => skipTime(-10)}
+                              className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                              title="رجوع 10 ثوانٍ"
+                            >
+                              <RotateCcw className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={() => skipTime(10)}
+                              className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                              title="تقديم 10 ثوانٍ"
+                            >
+                              <RotateCw className="w-4 h-4" />
+                            </button>
+
+                            <button
+                              onClick={toggleMute}
+                              className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                              title={isMuted ? "إلغاء الكتم" : "كتم الصوت"}
+                            >
+                              {isMuted ? <VolumeX className="w-4 h-4 text-rose-400" /> : <Volume2 className="w-4 h-4" />}
+                            </button>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {/* Speed Selector */}
+                            <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-lg">
+                              <span className="text-[10px] text-white/70">السرعة:</span>
+                              {[1, 1.25, 1.5, 2].map((rate) => (
+                                <button
+                                  key={rate}
+                                  onClick={() => changePlaybackRate(rate)}
+                                  className={`text-[10px] px-1 py-0.5 rounded ${
+                                    playbackRate === rate
+                                      ? "bg-[#10B981] font-bold text-white"
+                                      : "text-white/80 hover:text-white"
+                                  } cursor-pointer`}
+                                >
+                                  {rate}x
+                                </button>
+                              ))}
+                            </div>
+
+                            {/* Fullscreen */}
+                            <button
+                              onClick={toggleFullscreen}
+                              className="p-1.5 rounded-lg hover:bg-white/20 transition-colors cursor-pointer"
+                              title="ملء الشاشة"
+                            >
+                              <Maximize className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
+                    </>
+                  )}
                 </div>
 
                 {/* Video Info & Download Bar */}
@@ -335,14 +355,26 @@ export const UnitMediaModal: React.FC<UnitMediaModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-                    <a
-                      href={media.videoUrl}
-                      download={`فيديو_شرح_الوحدة_${unit.number}_كيمياء_الثاني_ثانوي.mp4`}
-                      className="px-3.5 py-2 bg-[#047857] hover:bg-[#064E3B] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer w-full sm:w-auto justify-center"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>تحميل الفيديو للمشاهدة أوفلاين</span>
-                    </a>
+                    {youtubeEmbedUrl ? (
+                      <a
+                        href={media.videoUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3.5 py-2 bg-[#047857] hover:bg-[#064E3B] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer w-full sm:w-auto justify-center"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>فتح الشرح في يوتيوب</span>
+                      </a>
+                    ) : (
+                      <a
+                        href={media.videoUrl}
+                        download={`فيديو_شرح_الوحدة_${unit.number}_كيمياء_الثاني_ثانوي.mp4`}
+                        className="px-3.5 py-2 bg-[#047857] hover:bg-[#064E3B] text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs cursor-pointer w-full sm:w-auto justify-center"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>تحميل الفيديو للمشاهدة أوفلاين</span>
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>

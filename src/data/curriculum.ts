@@ -38,7 +38,7 @@ export const curriculumData: Unit[] = [
     description: "دراسة محاولات العلماء التاريخية لترتيب العناصر، القانون الدوري لموزلي، الجدول الدوري الحديث، وتدرج الخواص الفيزيائية والكيميائية للعناصر.",
     color: "from-blue-500 to-indigo-600 border-indigo-200",
     media: {
-      videoUrl: "/mothakira/videos/1.mp4",
+      videoUrl: "https://youtu.be/O76owDmZBgM",
       videoTitle: "شرح مرئي شامل: الوحدة الأولى - الترتيب الدوري للعناصر",
       videoFileName: "1.mp4",
       videoSize: "31.7 ميغابايت",
@@ -155,7 +155,7 @@ export const curriculumData: Unit[] = [
     description: "دراسة شاملة لعناصر عائلة الأقلاء، خواصها الفيزيائية الفريدة ونشاطها الكيميائي الفائق، مع التركيز على الصوديوم وطرق استخلاصه صناعياً ومركباته الهامة.",
     color: "from-orange-500 to-amber-600 border-amber-200",
     media: {
-      videoUrl: "/mothakira/videos/2.mp4",
+      videoUrl: "https://youtu.be/wBijnBMUynM",
       videoTitle: "شرح مرئي شامل: الوحدة الثانية - فلزات المجموعة الأولى (فلزات الأقلاء)",
       videoFileName: "2.mp4",
       videoSize: "29.9 ميغابايت",
@@ -247,7 +247,7 @@ export const curriculumData: Unit[] = [
     description: "تعتبر مادة الحياة على الأرض. تدرس بنية ذرة الكربون الاستثنائية، قواعد التسمية IUPAC، تصنيف الهيدروكربونات، السلسلة المتجانسة وغاز الميثان، الألكينات، الألكاينات، الحلقيات والبنزين، والتماكب السلسلي.",
     color: "from-emerald-500 to-teal-600 border-teal-200",
     media: {
-      videoUrl: "/mothakira/videos/3.mp4",
+      videoUrl: "https://youtu.be/B3tC8fYXUvY",
       videoTitle: "شرح مرئي شامل: الوحدة الثالثة - الكيمياء العضوية والهيدروكربونات",
       videoFileName: "3.mp4",
       videoSize: "42.8 ميغابايت",
@@ -539,7 +539,7 @@ export const curriculumData: Unit[] = [
     description: "استعراض عناصر المجموعة الخامسة وتدرج خواصها وظاهرة التأصل، مع دراسة تفصيلية لغاز النيتروجين معملياً وصناعياً، الأمونيا وطريقة هابر، ومخصبات التربة.",
     color: "from-purple-500 to-fuchsia-600 border-fuchsia-200",
     media: {
-      videoUrl: "/mothakira/videos/4.mp4",
+      videoUrl: "https://youtu.be/h8K0p1vkXBw",
       videoTitle: "شرح مرئي شامل: الوحدة الرابعة - النيتروجين والمجموعة الخامسة",
       videoFileName: "4.mp4",
       videoSize: "46.3 ميغابايت",
@@ -678,7 +678,7 @@ export const curriculumData: Unit[] = [
     description: "دراسة شاملة لعناصر المجموعة السابعة (صنّاع الأملاح)، نشاطها الفائق وتدرجه الكيميائي، مع التركيز على تحضير الكلور معملياً وصناعياً وخواصه الكيميائية الفريدة وقصر الألوان.",
     color: "from-red-500 to-rose-600 border-rose-200",
     media: {
-      videoUrl: "/mothakira/videos/5.mp4",
+      videoUrl: "https://youtu.be/AHYkiepRN6U",
       videoTitle: "شرح مرئي شامل: الوحدة الخامسة - الهالوجينات والكلور",
       videoFileName: "5.mp4",
       videoSize: "37.6 ميغابايت",
@@ -809,7 +809,7 @@ export const curriculumData: Unit[] = [
     description: "دراسة الفلزات الانتقالية وموقعها المتميز في الجدول الدوري، التركيب الإلكتروني وتفصيل استقرارية d5 وd10، والخواص الفيزيائية والكيميائية الرائعة والدرع الواقي للأوكسيد والماء الملكي.",
     color: "from-slate-500 to-zinc-600 border-zinc-200",
     media: {
-      videoUrl: "/mothakira/videos/6.mp4",
+      videoUrl: "https://youtu.be/8m_YMZyQuCo",
       videoTitle: "شرح مرئي شامل: الوحدة السادسة - العناصر الانتقالية والحديد",
       videoFileName: "6.mp4",
       videoSize: "36.7 ميغابايت",
